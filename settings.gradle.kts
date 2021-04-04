@@ -1,2 +1,2 @@
-rootProject.name = "Muorg"
+rootProject.name = "muon"
 
