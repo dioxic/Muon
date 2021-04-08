@@ -7,13 +7,16 @@ val ktorVersion = "1.5.3"
 val kotlinVersion = "1.5.0-M2"
 val serializationVersion = "1.1.0"
 val log4jVersion = "2.14.1"
+val muirwikComponentVersion = "0.6.8"
+val reactVersion = "17.0.2"
+val kotlinJsWrapperVersion = "pre.150-kotlin-1.4.31"
 
 plugins {
     kotlin("multiplatform") version "1.5.0-M2"
     kotlin("plugin.serialization") version "1.5.0-M2"
     application
     id("pl.allegro.tech.build.axion-release") version "1.13.1"
-    id("com.github.johnrengelman.shadow") version ("6.1.0")
+    id("com.github.johnrengelman.shadow") version "6.1.0"
     id("com.github.ben-manes.versions") version "0.38.0"
 }
 
@@ -25,7 +28,8 @@ repositories {
     mavenCentral()
     maven("https://dl.bintray.com/kotlin/kotlin-eap")
     maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
-    maven("https://kotlin.bintray.com/kotlin-js-wrappers/")
+    maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-js-wrappers")
+    maven("https://dl.bintray.com/cfraser/muirwik")
     flatDir {
         dirs("libs")
     }
@@ -33,14 +37,20 @@ repositories {
 
 application {
     mainClass.set("uk.dioxic.muon.ApplicationKt")
+    @Suppress("DEPRECATION")
+    mainClassName = "uk.dioxic.muon.ApplicationKt"
 }
 
 kotlin {
     jvm {
         withJava()
     }
-    js {
+    js(LEGACY) {
         browser {
+            commonWebpackConfig {
+                cssSupport.enabled = true
+            }
+            useCommonJs()
             binaries.executable()
         }
     }
@@ -65,7 +75,7 @@ kotlin {
                 implementation("io.ktor:ktor-server-core:$ktorVersion")
                 implementation("io.ktor:ktor-server-netty:$ktorVersion")
                 implementation("io.ktor:ktor-websockets:$ktorVersion")
-                implementation("org.litote.kmongo:kmongo-coroutine-serialization:4.2.5")
+//                implementation("org.litote.kmongo:kmongo-coroutine-serialization:4.2.5")
                 implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.0-M2")
                 // logging
 //                implementation(platform("org.apache.logging.log4j:log4j-bom:2.14.1"))
@@ -90,24 +100,23 @@ kotlin {
 
         val jsMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-js:$ktorVersion") //include http&websockets
-
                 //ktor client js json
+                implementation("io.ktor:ktor-client-js:$ktorVersion") //include http&websockets
                 implementation("io.ktor:ktor-client-json-js:$ktorVersion")
                 implementation("io.ktor:ktor-client-serialization-js:$ktorVersion")
 
                 //React, React DOM + Wrappers
-                implementation("org.jetbrains:kotlin-react:17.0.1-pre.148-kotlin-1.4.30")
-                implementation("org.jetbrains:kotlin-react-dom:17.0.1-pre.148-kotlin-1.4.30")
-                implementation(npm("react", "17.0.1"))
-                implementation(npm("react-dom", "17.0.1"))
+                implementation("org.jetbrains:kotlin-react:$reactVersion-$kotlinJsWrapperVersion")
+                implementation("org.jetbrains:kotlin-react-dom:$reactVersion-$kotlinJsWrapperVersion")
+                implementation(npm("react", reactVersion))
+                implementation(npm("react-dom", reactVersion))
 
                 //styled components
-                implementation("org.jetbrains:kotlin-styled:5.2.1-pre.148-kotlin-1.4.21")
+                implementation("org.jetbrains:kotlin-styled:5.2.1-$kotlinJsWrapperVersion")
                 implementation(npm("styled-components", "~5.2.1"))
 
                 // material ui
-                
+                implementation("com.ccfraser.muirwik:muirwik-components:$muirwikComponentVersion")
             }
         }
     }
@@ -169,6 +178,6 @@ tasks.withType<ShadowJar> {
     mergeServiceFiles()
     archiveFileName.set("muon")
     manifest {
-        attributes(mapOf("Main-Class" to "uk.dioxic.muon.CliKt"))
+        attributes(mapOf("Main-Class" to "uk.dioxic.muon.ApplicationKt"))
     }
 }

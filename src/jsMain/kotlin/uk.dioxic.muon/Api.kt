@@ -1,3 +1,5 @@
+package uk.dioxic.muon
+
 import io.ktor.http.*
 import io.ktor.client.*
 import io.ktor.client.request.*
@@ -5,7 +7,6 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
 
 import kotlinx.browser.window
-import uk.dioxic.muon.ShoppingListItem
 
 val endpoint = window.location.origin // only needed until https://github.com/ktorio/ktor/issues/1695 is resolved
 
@@ -15,6 +16,10 @@ val jsonClient = HttpClient {
 
 suspend fun getShoppingList(): List<ShoppingListItem> {
     return jsonClient.get(endpoint + ShoppingListItem.path)
+}
+
+suspend fun getMusicList(): List<MusicFile> {
+    return jsonClient.get(endpoint + MusicFile.path)
 }
 
 suspend fun addShoppingListItem(shoppingListItem: ShoppingListItem) {

@@ -1,3 +1,5 @@
+package uk.dioxic.muon
+
 import react.*
 import react.dom.*
 import kotlinx.html.js.*

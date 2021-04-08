@@ -8,7 +8,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
 import org.jaudiotagger.audio.AudioFileIO
-import uk.dioxic.muon.MusicFile
+import uk.dioxic.muon.MusicFileJvm
 import uk.dioxic.muon.isAudioFile
 import java.util.logging.Level
 
@@ -34,7 +34,7 @@ class Rename : CliktCommand(help = "Rename music files") {
         } else {
             dir.listFiles()!!.asSequence()
         }.filter { it.isAudioFile }
-            .map { MusicFile(it) }
+            .map { MusicFileJvm(it) }
             .forEach { println("${it.file.name} -> ${it.targetFilename}") }
     }
 }

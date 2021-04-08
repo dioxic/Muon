@@ -8,6 +8,9 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
+import org.jaudiotagger.audio.AudioFileIO
+import java.io.File
+import java.util.logging.Level
 
 val shoppingList = mutableListOf(
     ShoppingListItem("Cucumbers 🥒", 1),
@@ -15,7 +18,10 @@ val shoppingList = mutableListOf(
     ShoppingListItem("Orange Juice 🍊", 3)
 )
 
-fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
+fun main(args: Array<String>) {
+    AudioFileIO.logger.level = Level.OFF
+    io.ktor.server.netty.EngineMain.main(args)
+}
 
 fun Application.module() {
     install(ContentNegotiation) {
@@ -46,6 +52,11 @@ fun Application.module() {
                 val id = call.parameters["id"]?.toInt() ?: error("Invalid delete request")
                 shoppingList.removeIf { it.id == id }
                 call.respond(HttpStatusCode.OK)
+            }
+        }
+        route(MusicFile.path) {
+            get {
+                call.respond(readMusicFiles(File("Q:/Music/tmp/complete")))
             }
         }
         get("/") {

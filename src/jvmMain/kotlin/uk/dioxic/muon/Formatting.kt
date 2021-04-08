@@ -4,7 +4,7 @@ import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.tag.Tag
 import java.io.File
 
-class MusicFile(val file: File) {
+class MusicFileJvm(val file: File) {
     private val audioFile = AudioFileIO.read(file)
 
     val targetFilename: String by lazy { formatFilename(file.name, audioFile.tag) }
