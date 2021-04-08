@@ -31,6 +31,7 @@ val App = functionalComponent<RProps> {
     themeOptions.palette?.primary.main = Colors.Blue.shade500.toString()
 
     mThemeProvider(createMuiTheme(themeOptions)) {
+        child(AppBar)
         child(MusicTable)
 //        child(ShoppingList)
 //        mainFrame("Intro") { setThemeColor(if (themeColor == "dark") "light" else "dark") }
