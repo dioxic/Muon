@@ -64,21 +64,21 @@ val MusicTable = functionalComponent<RProps> {
         }
     }
 
-    val handleSelectAll: (Boolean) -> Unit = {
-        if (it) {
+    fun handleSelectAll(selectAll: Boolean) {
+        if (selectAll) {
             setSelected(musicList.map { music -> music.path })
         } else {
             setSelected(emptyList())
         }
     }
 
-    val handleRequestSort: (MusicFileField) -> Unit = { field ->
+    fun handleRequestSort(field : MusicFileField) {
         val isAsc = orderBy == field && order == MTableCellSortDirection.asc
         setOrder(if (isAsc) MTableCellSortDirection.desc else MTableCellSortDirection.asc)
         setOrderByColumn(field)
     }
 
-    val handleRowClick: (String) -> Unit = { field ->
+    fun handleRowClick(field: String) {
         if (selected.contains(field)) {
             setSelected(selected.filterNot { it == field })
         } else {
@@ -86,24 +86,24 @@ val MusicTable = functionalComponent<RProps> {
         }
     }
 
-    val handleGenreButtonClick: () -> Unit = {
+    fun handleGenreButtonClick() {
         setGenreDialogOpen(true)
     }
 
-    val handleGenreDialogClose: () -> Unit = {
+    fun handleGenreDialogClose() {
         setGenreDialogOpen(false)
     }
 
-    val handleGenreSelect: (String) -> Unit = { genre ->
+    fun handleGenreSelect(genre :String) {
         setGenreDialogOpen(false)
         setMusicList(musicList.map { if (selected.contains(it.path)) it.copy(genre = genre) else it }.toList())
     }
 
-    val handleClearComments: () -> Unit = {
+    fun handleClearComments() {
         setMusicList(musicList.map { if (selected.contains(it.path)) it.copy(comment = "") else it }.toList())
     }
 
-    val handleRefresh: () -> Unit = {
+    fun handleRefresh() {
         setBackdropOpen(true)
         scope.launch {
             setMusicList(getMusicList())
@@ -118,7 +118,7 @@ val MusicTable = functionalComponent<RProps> {
             marginTop = 3.spacingUnits
         }
 
-        enhancedTableToolbar(selected.size, handleGenreButtonClick, handleClearComments, handleRefresh)
+        enhancedTableToolbar(selected.size, ::handleGenreButtonClick, ::handleClearComments, ::handleRefresh)
         styledDiv {
             css { overflowX = Overflow.auto }
             mTable {
@@ -129,8 +129,8 @@ val MusicTable = functionalComponent<RProps> {
                     order = order,
                     orderBy = orderBy,
                     rowCount = musicList.size,
-                    onSelectAllClick = handleSelectAll,
-                    onRequestSort = handleRequestSort,
+                    onSelectAllClick = ::handleSelectAll,
+                    onRequestSort = ::handleRequestSort,
                 )
                 mTableBody {
                     musicList.sortedWith { a, b -> comparator(a, b, order, orderBy) }
@@ -171,7 +171,7 @@ val MusicTable = functionalComponent<RProps> {
             }
         )
     }
-    genreDialog(genreDialogOpen, handleGenreDialogClose, handleGenreSelect)
+    genreDialog(genreDialogOpen, ::handleGenreDialogClose, ::handleGenreSelect)
     backdrop(backdropOpen)
 }
 
