@@ -52,7 +52,7 @@ private fun String.parse(): Pair<String,String>? {
     return null
 }
 
-private fun String.extension() = Regex(""".(\w{3})$""").find(this)?.groupValues?.get(1)
+private fun String.extension() = Regex(""".(\w{3,4})$""").find(this)?.groupValues?.get(1)
 
 private fun String.spacing() = this.replace("_", " ")
 

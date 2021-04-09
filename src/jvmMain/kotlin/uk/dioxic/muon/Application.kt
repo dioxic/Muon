@@ -54,7 +54,12 @@ fun Application.module() {
                 call.respond(HttpStatusCode.OK)
             }
         }
-        route(MusicFile.path) {
+        route(AudioFile.path) {
+            get {
+                call.respond(readMusicFiles(File("Q:/Music/tmp/complete")))
+            }
+        }
+        route(AudioFile.path) {
             get {
                 call.respond(readMusicFiles(File("Q:/Music/tmp/complete")))
             }

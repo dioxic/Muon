@@ -18,8 +18,8 @@ suspend fun getShoppingList(): List<ShoppingListItem> {
     return jsonClient.get(endpoint + ShoppingListItem.path)
 }
 
-suspend fun getMusicList(): List<MusicFile> {
-    return jsonClient.get(endpoint + MusicFile.path)
+suspend fun getMusicList(): List<AudioFile> {
+    return jsonClient.get(endpoint + AudioFile.path)
 }
 
 suspend fun addShoppingListItem(shoppingListItem: ShoppingListItem) {

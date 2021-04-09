@@ -10,6 +10,8 @@ import kotlinx.css.*
 import kotlinx.css.properties.Timing
 import kotlinx.css.properties.Transition
 import kotlinx.css.properties.ms
+import org.w3c.dom.HTMLInputElement
+import org.w3c.dom.events.Event
 import react.RProps
 import react.functionalComponent
 import styled.StyleSheet
@@ -28,7 +30,19 @@ private val styles = object : StyleSheet("ComponentStyles", isStatic = true) {
     }
 }
 
-val AppBar = functionalComponent<RProps> {
+external interface AppBarProps : RProps {
+    var onSearchSubmit: (String) -> Unit
+}
+
+val AppBar = functionalComponent<AppBarProps> { props ->
+
+    fun changeHandler(event: Event) {
+        val value = (event.target as HTMLInputElement).value
+        if  (value.length > 2 || value.isBlank()) {
+            props.onSearchSubmit(value)
+        }
+    }
+
     themeContext.Consumer { theme ->
         val themeStyles = object : StyleSheet("ComponentStyles", isStatic = true) {
             val search by css {
@@ -45,21 +59,6 @@ val AppBar = functionalComponent<RProps> {
                     width = LinearDimension.auto
                 }
             }
-
-            val inputInput by css {
-                paddingTop = 1.spacingUnits
-                paddingRight = 1.spacingUnits
-                paddingBottom = 1.spacingUnits
-                paddingLeft = 10.spacingUnits
-                transition += Transition("width", theme.transitions.duration.standard.ms, Timing.easeInOut, 0.ms)
-                width = 100.pct
-                media(theme.breakpoints.up(Breakpoint.sm)) {
-                    width = 120.px
-                    focus {
-                        width = 200.px
-                    }
-                }
-            }
         }
         mAppBar(position = MAppBarPosition.static) {
             mToolbar {
@@ -74,7 +73,7 @@ val AppBar = functionalComponent<RProps> {
                     val inputProps = object : RProps {
                         val className = "${styles.name}-inputInput"
                     }
-                    mInput(placeholder = "Search...", disableUnderline = true) {
+                    mInput(placeholder = "Search...", disableUnderline = true, onChange = ::changeHandler) {
                         attrs.inputProps = inputProps
                         css {
                             color = Color.inherit

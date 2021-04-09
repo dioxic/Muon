@@ -1,11 +1,13 @@
 package uk.dioxic.muon
 
 import com.ccfraser.muirwik.components.*
+import com.ccfraser.muirwik.components.button.MIconButtonSize
 import com.ccfraser.muirwik.components.button.mIconButton
 import com.ccfraser.muirwik.components.dialog.*
 import com.ccfraser.muirwik.components.list.*
 import com.ccfraser.muirwik.components.styles.lighten
 import com.ccfraser.muirwik.components.table.*
+import kotlinext.js.jsObject
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.css.*
@@ -14,13 +16,13 @@ import react.dom.div
 import styled.StyleSheet
 import styled.css
 import styled.styledDiv
-import uk.dioxic.muon.MusicFileField.*
+import uk.dioxic.muon.AudioFileField.*
 import kotlin.math.min
 
 private val scope = MainScope()
 
 private data class Column(
-    val id: MusicFileField,
+    val id: AudioFileField,
     val rightAligned: Boolean,
     val disablePadding: Boolean,
     val label: String,
@@ -32,27 +34,36 @@ private val columns = listOf(
     Column(Title, rightAligned = false, disablePadding = false, label = "Title"),
     Column(Genre, rightAligned = false, disablePadding = false, label = "Genre"),
     Column(Comment, rightAligned = false, disablePadding = false, label = "Comment"),
+    Column(Lyricist, rightAligned = false, disablePadding = false, label = "Lyricist"),
+    Column(Year, rightAligned = true, disablePadding = false, label = "Year"),
     Column(Length, rightAligned = true, disablePadding = false, label = "Length"),
     Column(Bitrate, rightAligned = true, disablePadding = false, label = "Bitrate"),
-    Column(VBR, rightAligned = true, disablePadding = false, label = "VBR"),
+    Column(VBR, rightAligned = true, disablePadding = false, label = "VBR", visible = false),
     Column(Type, rightAligned = false, disablePadding = false, label = "Type"),
-    Column(Filename, rightAligned = false, disablePadding = false, label = "Filename"),
+    Column(NewFilename, rightAligned = false, disablePadding = false, label = "New Filename"),
+    Column(Album, rightAligned = false, disablePadding = false, label = "Album", visible = false),
 )
 
-private fun comparator(a: MusicFile, b: MusicFile, order: MTableCellSortDirection, orderBy: MusicFileField) =
+private fun comparator(a: AudioFile, b: AudioFile, order: MTableCellSortDirection, orderBy: AudioFileField) =
     when (order) {
-        MTableCellSortDirection.asc -> MusicFile.comparator(a, b, orderBy)
-        else -> MusicFile.comparator(b, a, orderBy)
+        MTableCellSortDirection.asc -> AudioFile.comparator(a, b, orderBy)
+        else -> AudioFile.comparator(b, a, orderBy)
     }
 
-val MusicTable = functionalComponent<RProps> {
-    val (musicList, setMusicList) = useState(emptyList<MusicFile>())
+external interface MusicTableProps : RProps {
+    var filter: String
+}
+
+val MusicTable = functionalComponent<MusicTableProps> { props ->
+    val (musicList, setMusicList) = useState(emptyList<AudioFile>())
     val (selected, setSelected) = useState(emptyList<String>())
+    val (editing, setEditing) = useState<AudioFile?>(null)
     val (order, setOrder) = useState(MTableCellSortDirection.asc)
     val (orderBy, setOrderByColumn) = useState(Artist)
     val (page, setPage) = useState(0)
-    val (rowsPerPage, setRowsPerPage) = useState(100)
+    val (rowsPerPage, setRowsPerPage) = useState(25)
     val (genreDialogOpen, setGenreDialogOpen) = useState(false)
+    val (editDialogOpen, setEditDialogOpen) = useState(false)
     val (backdropOpen, setBackdropOpen) = useState(false)
 
     useEffect(dependencies = listOf()) {
@@ -72,7 +83,7 @@ val MusicTable = functionalComponent<RProps> {
         }
     }
 
-    fun handleRequestSort(field : MusicFileField) {
+    fun handleRequestSort(field: AudioFileField) {
         val isAsc = orderBy == field && order == MTableCellSortDirection.asc
         setOrder(if (isAsc) MTableCellSortDirection.desc else MTableCellSortDirection.asc)
         setOrderByColumn(field)
@@ -94,7 +105,12 @@ val MusicTable = functionalComponent<RProps> {
         setGenreDialogOpen(false)
     }
 
-    fun handleGenreSelect(genre :String) {
+    fun handleEditButtonClick(audioFile: AudioFile) {
+        setEditing(audioFile)
+        setEditDialogOpen(true)
+    }
+
+    fun handleGenreSelect(genre: String) {
         setGenreDialogOpen(false)
         setMusicList(musicList.map { if (selected.contains(it.path)) it.copy(genre = genre) else it }.toList())
     }
@@ -112,13 +128,19 @@ val MusicTable = functionalComponent<RProps> {
         }
     }
 
+
     mPaper {
         css {
             width = 100.pct
             marginTop = 3.spacingUnits
         }
 
-        enhancedTableToolbar(selected.size, ::handleGenreButtonClick, ::handleClearComments, ::handleRefresh)
+        enhancedTableToolbar(
+            numSelected = selected.size,
+            onGenreClick = ::handleGenreButtonClick,
+            onClearCommentsClick = ::handleClearComments,
+            onRefreshClick = ::handleRefresh
+        )
         styledDiv {
             css { overflowX = Overflow.auto }
             mTable {
@@ -133,11 +155,27 @@ val MusicTable = functionalComponent<RProps> {
                     onRequestSort = ::handleRequestSort,
                 )
                 mTableBody {
-                    musicList.sortedWith { a, b -> comparator(a, b, order, orderBy) }
-                        .subList(page * rowsPerPage, min((page + 1) * rowsPerPage, musicList.size))
+                    val filtedMusicList = if (props.filter.isNotBlank())
+                        musicList
+                            .filter {
+                                it.artist.contains(props.filter, ignoreCase = true)
+                                        || it.title.contains(props.filter, ignoreCase = true)
+                                        || it.originalFilename.contains(props.filter, ignoreCase = true)
+                                        || it.newFilename.contains(props.filter, ignoreCase = true)
+                            }
+                    else
+                        musicList
+
+                    filtedMusicList
+                        .sortedWith { a, b -> comparator(a, b, order, orderBy) }
+                        .subList(page * rowsPerPage, min((page + 1) * rowsPerPage, filtedMusicList.size))
                         .forEach { music ->
                             val isSelected = selected.contains(music.path)
-                            mTableRow(music.path, isSelected, true, onClick = { handleRowClick(music.path) }) {
+                            mTableRow(music.path, isSelected, true, onClick = { event ->
+                                if (!listOf("edit").contains(event.target.asDynamic().innerText as String)) {
+                                    handleRowClick(music.path)
+                                }
+                            }) {
                                 mTableCell(padding = MTableCellPadding.checkbox) {
                                     mCheckbox(isSelected)
                                 }
@@ -148,39 +186,50 @@ val MusicTable = functionalComponent<RProps> {
                                         padding = if (column.disablePadding) MTableCellPadding.none else MTableCellPadding.default,
                                     ) { +music.get(column.id) }
                                 }
+                                mTableCell(
+                                    padding = MTableCellPadding.default,
+                                    align = MTableCellAlign.center
+                                ) {
+                                    mIconButton("edit", size = MIconButtonSize.small, onClick = {
+                                        handleEditButtonClick(music)
+                                    })
+                                }
                             }
                         }
-                    val emptyRows = rowsPerPage - min(rowsPerPage, musicList.size - page * rowsPerPage)
-                    if (emptyRows > 0) {
-                        mTableRow {
-                            css { height = (49 * emptyRows).px }
-                            mTableCell(colSpan = 6)
-                        }
-                    }
                 }
             }
         }
         mTablePagination(
+            page = page,
             count = musicList.size,
             rowsPerPage = rowsPerPage,
-            page = page,
             onChangePage = { _, newPage -> setPage(newPage) },
-            onChangeRowsPerPage = {
-                setRowsPerPage(it.target.asDynamic().value as Int)
+            onChangeRowsPerPage = { event ->
+                setRowsPerPage(event.target.asDynamic().value as Int)
                 setPage(0)
             }
         )
     }
     genreDialog(genreDialogOpen, ::handleGenreDialogClose, ::handleGenreSelect)
     backdrop(backdropOpen)
+    child(MusicEdit, props = jsObject {
+        open = editDialogOpen
+        audioFile = editing
+        onChange = { musicFile -> setEditing(musicFile) }
+        onSave = {
+            setMusicList(musicList.map { if (editing?.path == it.path) editing else it }.toList())
+            setEditDialogOpen(false)
+        }
+        onClose = { setEditDialogOpen(false) }
+    })
 }
 
 private fun RBuilder.backdrop(
     open: Boolean
 ) {
     themeContext.Consumer { theme ->
-        val styles = object: StyleSheet("BackdropStyles", isStatic = true) {
-            val backdrop by css  {
+        val styles = object : StyleSheet("BackdropStyles", isStatic = true) {
+            val backdrop by css {
                 zIndex = theme.zIndex.drawer + 1
                 color = Color("#fff")
             }
@@ -257,10 +306,10 @@ private fun RBuilder.enhancedTableToolbar(
 private fun RBuilder.enhancedTableHead(
     numSelected: Int,
     order: MTableCellSortDirection,
-    orderBy: MusicFileField,
+    orderBy: AudioFileField,
     rowCount: Int,
     onSelectAllClick: (checked: Boolean) -> Unit,
-    onRequestSort: (field: MusicFileField) -> Unit
+    onRequestSort: (field: AudioFileField) -> Unit
 ) {
     mTableHead {
         mTableRow {
@@ -292,6 +341,7 @@ private fun RBuilder.enhancedTableHead(
                     }
                 }
             }
+            mTableCell(padding = MTableCellPadding.checkbox) { +"Actions" }
         }
     }
 }
