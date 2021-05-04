@@ -1,61 +1,48 @@
 package uk.dioxic.muon
 
 import kotlinx.serialization.Serializable
-import uk.dioxic.muon.AudioFileField.*
+import uk.dioxic.muon.AudioFileFieldKey.*
 
-enum class AudioFileField { Artist, Title, Genre, Comment, Bitrate, VBR, Type, OriginalFilename, NewFilename, Length, Lyricist, Year, Album }
+enum class AudioFileFieldKey { Artist, Title, Genre, Comment, Bitrate, VBR, Type, Path, Filename, Length, Lyricist, Year, Album }
 
 @Serializable
 data class AudioFile(
-    val path: String,
-    val originalFilename: String,
-    val newFilename: String,
-    val artist: String,
-    val title: String,
-    val genre: String,
-    val comment: String,
-    val length: Int,
-    val bitrate: Int,
-    val year: String,
-    val lyricist: String,
-    val vbr: Boolean,
-    val fileType: String,
-    val album: String
+    val location: Location,
+    val tags: Tags,
+    val header: Header
 ) {
-    fun get(field: AudioFileField): String =
+    fun get(field: AudioFileFieldKey): String =
         when (field) {
-            Artist -> artist
-            Title -> title
-            Genre -> genre
-            Comment -> comment
-            Length -> length.toTimeString()
-            Bitrate -> bitrate.toString()
-            VBR -> vbr.toString()
-            Type -> fileType
-            OriginalFilename -> originalFilename
-            NewFilename -> newFilename
-            Lyricist -> lyricist
-            Year -> year
-            Album -> album
+            Artist -> tags.artist
+            Title -> tags.title
+            Genre -> tags.genre
+            Comment -> tags.comment
+            Length -> header.length.toTimeString()
+            Bitrate -> header.bitrate.toString()
+            VBR -> header.vbr.toString()
+            Type -> header.fileType
+            Filename -> location.filename
+            Path -> location.path
+            Lyricist -> tags.lyricist
+            Year -> tags.year
+            Album -> tags.album
         }
+
+    fun matches(text: String) =
+        tags.artist.contains(text, ignoreCase = true)
+                || tags.title.contains(text, ignoreCase = true)
+                || tags.album.contains(text, ignoreCase = true)
+                || tags.comment.contains(text, ignoreCase = true)
+                || location.filename.contains(text, ignoreCase = true)
 
     companion object {
         const val path = "/music"
-        fun comparator(a: AudioFile, b: AudioFile, orderBy: AudioFileField) =
+        fun comparator(a: AudioFile, b: AudioFile, orderBy: AudioFileFieldKey) =
             when (orderBy) {
-                Artist -> a.artist.compareTo(b.artist)
-                Title -> a.title.compareTo(b.title)
-                Genre -> a.genre.compareTo(b.genre)
-                Comment -> a.comment.compareTo(b.comment)
-                Bitrate -> a.bitrate.compareTo(b.bitrate)
-                VBR -> a.vbr.compareTo(b.vbr)
-                Type -> a.fileType.compareTo(b.fileType)
-                OriginalFilename -> a.originalFilename.compareTo(b.originalFilename)
-                NewFilename -> a.newFilename.compareTo(b.newFilename)
-                Length -> a.length.compareTo(b.length)
-                Lyricist -> a.lyricist.compareTo(b.lyricist)
-                Year -> a.year.compareTo(b.year)
-                Album -> a.album.compareTo(b.album)
+                Bitrate -> a.header.bitrate.compareTo(b.header.bitrate)
+                VBR -> a.header.vbr.compareTo(b.header.vbr)
+                Length -> a.header.length.compareTo(b.header.length)
+                else -> a.get(orderBy).compareTo(b.get(orderBy))
             }
     }
 }

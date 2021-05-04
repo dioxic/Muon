@@ -1,4 +1,4 @@
-package uk.dioxic.muon
+package uk.dioxic.muon.component
 
 import com.ccfraser.muirwik.components.*
 import com.ccfraser.muirwik.components.button.mIconButton
@@ -7,9 +7,6 @@ import com.ccfraser.muirwik.components.styles.Breakpoint
 import com.ccfraser.muirwik.components.styles.fade
 import com.ccfraser.muirwik.components.styles.up
 import kotlinx.css.*
-import kotlinx.css.properties.Timing
-import kotlinx.css.properties.Transition
-import kotlinx.css.properties.ms
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.events.Event
 import react.RProps

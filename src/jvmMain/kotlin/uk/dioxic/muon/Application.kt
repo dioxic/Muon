@@ -9,8 +9,12 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
 import org.jaudiotagger.audio.AudioFileIO
+import uk.dioxic.muon.ConfigKey.AudioImport
+import uk.dioxic.muon.config.ConfigDal
 import java.io.File
+import java.util.*
 import java.util.logging.Level
+import kotlin.io.path.ExperimentalPathApi
 
 val shoppingList = mutableListOf(
     ShoppingListItem("Cucumbers 🥒", 1),
@@ -18,11 +22,15 @@ val shoppingList = mutableListOf(
     ShoppingListItem("Orange Juice 🍊", 3)
 )
 
+@ExperimentalPathApi
+val configDal = ConfigDal("${System.getenv("HOMEPATH")}/.muon")
+
 fun main(args: Array<String>) {
     AudioFileIO.logger.level = Level.OFF
     io.ktor.server.netty.EngineMain.main(args)
 }
 
+@ExperimentalPathApi
 fun Application.module() {
     install(ContentNegotiation) {
         json()
@@ -56,12 +64,26 @@ fun Application.module() {
         }
         route(AudioFile.path) {
             get {
-                call.respond(readMusicFiles(File("Q:/Music/tmp/complete")))
+                call.respond(readAudioFiles(File("Q:/Music/tmp/complete")))
             }
         }
-        route(AudioFile.path) {
+        route(AudioFileImport.path) {
             get {
-                call.respond(readMusicFiles(File("Q:/Music/tmp/complete")))
+                call.respond(readAudioFiles(File("Q:/Music/tmp/complete")).map { it.format() })
+            }
+        }
+        route("/config") {
+            get("/{key}") {
+                val key = call.parameters["key"] ?: error("Invalid config get request")
+                val configKey = ConfigKey.valueOf(key)
+                call.respond(configDal.get(configKey))
+            }
+            post("/{key}") {
+                requireNotNull(call.parameters["key"]) { "Config key required" }
+                when(val configKey = ConfigKey.valueOf(call.parameters["key"]!!)) {
+                    AudioImport -> configDal.set(configKey, call.receive<AudioImportConfig>())
+                }
+                call.respond(HttpStatusCode.OK)
             }
         }
         get("/") {

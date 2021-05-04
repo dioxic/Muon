@@ -1,4 +1,4 @@
-package uk.dioxic.muon
+package uk.dioxic.muon.component
 
 import com.ccfraser.muirwik.components.*
 import com.ccfraser.muirwik.components.button.mIconButton
@@ -15,6 +15,8 @@ import react.useState
 import styled.StyleSheet
 import styled.css
 import styled.styledDiv
+import uk.dioxic.muon.ShoppingListItem
+import uk.dioxic.muon.api.getShoppingList
 
 private object ComponentStyles : StyleSheet("ComponentStyles", isStatic = true) {
     val listDiv by css {

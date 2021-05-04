@@ -1,4 +1,4 @@
-package uk.dioxic.muon
+package uk.dioxic.muon.component
 
 import com.ccfraser.muirwik.components.*
 import com.ccfraser.muirwik.components.button.MIconButtonSize
@@ -16,38 +16,55 @@ import react.dom.div
 import styled.StyleSheet
 import styled.css
 import styled.styledDiv
-import uk.dioxic.muon.AudioFileField.*
+import uk.dioxic.muon.*
+import uk.dioxic.muon.AudioImportFieldKey.*
+import uk.dioxic.muon.api.getAudioImportConfig
+import uk.dioxic.muon.api.getAudioImportList
+import uk.dioxic.muon.api.saveAudioImportConfig
 import kotlin.math.min
 
 private val scope = MainScope()
 
-private data class Column(
-    val id: AudioFileField,
-    val rightAligned: Boolean,
-    val disablePadding: Boolean,
-    val label: String,
-    val visible: Boolean = true
-)
+//private data class Column(
+//    val id: AudioFileImportFieldKey,
+//    val rightAligned: Boolean = false,
+//    val disablePadding: Boolean = false,
+//    val label: String,
+//    val visible: Boolean = true
+//)
+//
+//private val defaultColumns = listOf(
+//    Column(OriginalArtist, disablePadding = true, label = "Original Artist", visible = false),
+//    Column(OriginalTitle, label = "Original Title", visible = false),
+//    Column(OriginalGenre, label = "Original Genre", visible = false),
+//    Column(OriginalComment, label = "Original Comment", visible = false),
+//    Column(OriginalLyricist, label = "Original Lyricist", visible = false),
+//    Column(OriginalYear, rightAligned = true, label = "Original Year", visible = false),
+//    Column(OriginalFilename, label = "Original Filename", visible = false),
+//    Column(OriginalAlbum, label = "Original Album", visible = false),
+//    Column(StandardizedArtist, disablePadding = true, label = "Artist"),
+//    Column(StandardizedTitle, label = "Title"),
+//    Column(StandardizedGenre, label = "Genre"),
+//    Column(StandardizedComment, label = "Comment"),
+//    Column(StandardizedLyricist, label = "Lyricist"),
+//    Column(StandardizedYear, rightAligned = true, label = "Year"),
+//    Column(StandardizedFilename, label = "Filename"),
+//    Column(StandardizedAlbum, label = "Album", visible = false),
+//    Column(Length, rightAligned = true, label = "Length"),
+//    Column(Bitrate, rightAligned = true, label = "Bitrate"),
+//    Column(VBR, rightAligned = true, label = "VBR", visible = false),
+//    Column(Type, label = "Type"),
+//)
 
-private val columns = listOf(
-    Column(Artist, rightAligned = false, disablePadding = true, label = "Artist"),
-    Column(Title, rightAligned = false, disablePadding = false, label = "Title"),
-    Column(Genre, rightAligned = false, disablePadding = false, label = "Genre"),
-    Column(Comment, rightAligned = false, disablePadding = false, label = "Comment"),
-    Column(Lyricist, rightAligned = false, disablePadding = false, label = "Lyricist"),
-    Column(Year, rightAligned = true, disablePadding = false, label = "Year"),
-    Column(Length, rightAligned = true, disablePadding = false, label = "Length"),
-    Column(Bitrate, rightAligned = true, disablePadding = false, label = "Bitrate"),
-    Column(VBR, rightAligned = true, disablePadding = false, label = "VBR", visible = false),
-    Column(Type, rightAligned = false, disablePadding = false, label = "Type"),
-    Column(NewFilename, rightAligned = false, disablePadding = false, label = "New Filename"),
-    Column(Album, rightAligned = false, disablePadding = false, label = "Album", visible = false),
-)
-
-private fun comparator(a: AudioFile, b: AudioFile, order: MTableCellSortDirection, orderBy: AudioFileField) =
+private fun comparator(
+    a: AudioFileImport,
+    b: AudioFileImport,
+    order: MTableCellSortDirection,
+    orderBy: AudioImportFieldKey
+) =
     when (order) {
-        MTableCellSortDirection.asc -> AudioFile.comparator(a, b, orderBy)
-        else -> AudioFile.comparator(b, a, orderBy)
+        MTableCellSortDirection.asc -> AudioFileImport.comparator(a, b, orderBy)
+        else -> AudioFileImport.comparator(b, a, orderBy)
     }
 
 external interface MusicTableProps : RProps {
@@ -55,35 +72,46 @@ external interface MusicTableProps : RProps {
 }
 
 val MusicTable = functionalComponent<MusicTableProps> { props ->
-    val (musicList, setMusicList) = useState(emptyList<AudioFile>())
+    val (config, setConfig) = useState(AudioImportConfig.Default)
+    val (musicList, setMusicList) = useState(emptyList<AudioFileImport>())
     val (selected, setSelected) = useState(emptyList<String>())
-    val (editing, setEditing) = useState<AudioFile?>(null)
+    val (editing, setEditing) = useState<AudioFileImport?>(null)
     val (order, setOrder) = useState(MTableCellSortDirection.asc)
-    val (orderBy, setOrderByColumn) = useState(Artist)
+    val (orderBy, setOrderByColumn) = useState(StandardizedArtist)
     val (page, setPage) = useState(0)
     val (rowsPerPage, setRowsPerPage) = useState(25)
     val (genreDialogOpen, setGenreDialogOpen) = useState(false)
+    val (columnDialogOpen, setColumnDialogOpen) = useState(false)
     val (editDialogOpen, setEditDialogOpen) = useState(false)
     val (backdropOpen, setBackdropOpen) = useState(false)
 
     useEffect(dependencies = listOf()) {
         setBackdropOpen(true)
         scope.launch {
-            setMusicList(getMusicList())
+//            setMusicList(getAudioImportList())
+            setConfig(getAudioImportConfig())
         }.invokeOnCompletion {
             setBackdropOpen(false)
         }
     }
 
+    fun saveConfig(config: AudioImportConfig) {
+        println(config)
+        setConfig(config)
+        scope.launch {
+            saveAudioImportConfig(config)
+        }
+    }
+
     fun handleSelectAll(selectAll: Boolean) {
         if (selectAll) {
-            setSelected(musicList.map { music -> music.path })
+            setSelected(musicList.map { music -> music.id })
         } else {
             setSelected(emptyList())
         }
     }
 
-    fun handleRequestSort(field: AudioFileField) {
+    fun handleRequestSort(field: AudioImportFieldKey) {
         val isAsc = orderBy == field && order == MTableCellSortDirection.asc
         setOrder(if (isAsc) MTableCellSortDirection.desc else MTableCellSortDirection.asc)
         setOrderByColumn(field)
@@ -105,29 +133,60 @@ val MusicTable = functionalComponent<MusicTableProps> { props ->
         setGenreDialogOpen(false)
     }
 
-    fun handleEditButtonClick(audioFile: AudioFile) {
+    fun handleEditButtonClick(audioFile: AudioFileImport) {
         setEditing(audioFile)
         setEditDialogOpen(true)
     }
 
     fun handleGenreSelect(genre: String) {
         setGenreDialogOpen(false)
-        setMusicList(musicList.map { if (selected.contains(it.path)) it.copy(genre = genre) else it }.toList())
+        setMusicList(musicList.map {
+            if (selected.contains(it.id))
+                it.copy(standardizedTags = it.standardizedTags.copy(genre = genre))
+            else it
+        }.toList())
     }
 
     fun handleClearComments() {
-        setMusicList(musicList.map { if (selected.contains(it.path)) it.copy(comment = "") else it }.toList())
+        setMusicList(musicList.map {
+            if (selected.contains(it.id))
+                it.copy(standardizedTags = it.standardizedTags.copy(comment = ""))
+            else it
+        }.toList())
     }
 
     fun handleRefresh() {
         setBackdropOpen(true)
         scope.launch {
-            setMusicList(getMusicList())
+            setMusicList(getAudioImportList())
         }.invokeOnCompletion {
             setBackdropOpen(false)
         }
     }
 
+    fun handleColumnVisibilityChange(key: AudioImportFieldKey, visible: Boolean) {
+        saveConfig(config.copy(
+            columns = config.columns.toMutableMap().apply {
+                this[key] = this[key]!!.copy(visible = visible)
+            }
+        ))
+    }
+
+    fun handleColumnReorderUp(key: AudioImportFieldKey) {
+        saveConfig(
+            config.copy(
+                columns = config.columns.orderUp(key)
+            )
+        )
+    }
+
+    fun handleColumnReorderDown(key: AudioImportFieldKey) {
+        saveConfig(
+            config.copy(
+                columns = config.columns.orderDown(key)
+            )
+        )
+    }
 
     mPaper {
         css {
@@ -139,7 +198,8 @@ val MusicTable = functionalComponent<MusicTableProps> { props ->
             numSelected = selected.size,
             onGenreClick = ::handleGenreButtonClick,
             onClearCommentsClick = ::handleClearComments,
-            onRefreshClick = ::handleRefresh
+            onRefreshClick = ::handleRefresh,
+            onFilterClick = { setColumnDialogOpen(true) }
         )
         styledDiv {
             css { overflowX = Overflow.auto }
@@ -151,18 +211,13 @@ val MusicTable = functionalComponent<MusicTableProps> { props ->
                     order = order,
                     orderBy = orderBy,
                     rowCount = musicList.size,
+                    columns = config.columns,
                     onSelectAllClick = ::handleSelectAll,
                     onRequestSort = ::handleRequestSort,
                 )
                 mTableBody {
                     val filtedMusicList = if (props.filter.isNotBlank())
-                        musicList
-                            .filter {
-                                it.artist.contains(props.filter, ignoreCase = true)
-                                        || it.title.contains(props.filter, ignoreCase = true)
-                                        || it.originalFilename.contains(props.filter, ignoreCase = true)
-                                        || it.newFilename.contains(props.filter, ignoreCase = true)
-                            }
+                        musicList.filter { it.matches(props.filter) }
                     else
                         musicList
 
@@ -170,22 +225,23 @@ val MusicTable = functionalComponent<MusicTableProps> { props ->
                         .sortedWith { a, b -> comparator(a, b, order, orderBy) }
                         .subList(page * rowsPerPage, min((page + 1) * rowsPerPage, filtedMusicList.size))
                         .forEach { music ->
-                            val isSelected = selected.contains(music.path)
-                            mTableRow(music.path, isSelected, true, onClick = { event ->
+                            val isSelected = selected.contains(music.id)
+                            mTableRow(music.id, isSelected, true, onClick = { event ->
                                 if (!listOf("edit").contains(event.target.asDynamic().innerText as String)) {
-                                    handleRowClick(music.path)
+                                    handleRowClick(music.id)
                                 }
                             }) {
                                 mTableCell(padding = MTableCellPadding.checkbox) {
                                     mCheckbox(isSelected)
                                 }
-                                columns.filter { it.visible }.forEach { column ->
-                                    mTableCell(
-                                        key = column.id,
-                                        align = if (column.rightAligned) MTableCellAlign.right else MTableCellAlign.left,
-                                        padding = if (column.disablePadding) MTableCellPadding.none else MTableCellPadding.default,
-                                    ) { +music.get(column.id) }
-                                }
+                                config.columns.filter { (_, column) -> column.visible }
+                                    .forEach { (id, column) ->
+                                        mTableCell(
+                                            key = id,
+                                            align = if (column.rightAligned) MTableCellAlign.right else MTableCellAlign.left,
+                                            padding = if (column.disablePadding) MTableCellPadding.none else MTableCellPadding.default,
+                                        ) { +music.get(id) }
+                                    }
                                 mTableCell(
                                     padding = MTableCellPadding.default,
                                     align = MTableCellAlign.center
@@ -211,13 +267,21 @@ val MusicTable = functionalComponent<MusicTableProps> { props ->
         )
     }
     genreDialog(genreDialogOpen, ::handleGenreDialogClose, ::handleGenreSelect)
+    columnDialog(
+        columnDialogOpen,
+        { setColumnDialogOpen(false) },
+        config.columns,
+        ::handleColumnVisibilityChange,
+        ::handleColumnReorderUp,
+        ::handleColumnReorderDown
+    )
     backdrop(backdropOpen)
     child(MusicEdit, props = jsObject {
         open = editDialogOpen
         audioFile = editing
         onChange = { musicFile -> setEditing(musicFile) }
         onSave = {
-            setMusicList(musicList.map { if (editing?.path == it.path) editing else it }.toList())
+            setMusicList(musicList.map { if (editing?.id == it.id) editing else it }.toList())
             setEditDialogOpen(false)
         }
         onClose = { setEditDialogOpen(false) }
@@ -247,6 +311,7 @@ private fun RBuilder.enhancedTableToolbar(
     onGenreClick: () -> Unit,
     onClearCommentsClick: () -> Unit,
     onRefreshClick: () -> Unit,
+    onFilterClick: () -> Unit,
 ) {
     themeContext.Consumer { theme ->
         val styles = object : StyleSheet("ToolbarStyles", isStatic = true) {
@@ -294,6 +359,9 @@ private fun RBuilder.enhancedTableToolbar(
                         mIconButton("get_app_rounded")
                     }
                 } else {
+                    mTooltip("Filter") {
+                        mIconButton("filter_list_rounded", onClick = { onFilterClick() })
+                    }
                     mTooltip("Refresh") {
                         mIconButton("refresh_rounded", onClick = { onRefreshClick() })
                     }
@@ -306,10 +374,11 @@ private fun RBuilder.enhancedTableToolbar(
 private fun RBuilder.enhancedTableHead(
     numSelected: Int,
     order: MTableCellSortDirection,
-    orderBy: AudioFileField,
+    orderBy: AudioImportFieldKey,
     rowCount: Int,
+    columns: Map<AudioImportFieldKey, Column>,
     onSelectAllClick: (checked: Boolean) -> Unit,
-    onRequestSort: (field: AudioFileField) -> Unit
+    onRequestSort: (id: AudioImportFieldKey) -> Unit
 ) {
     mTableHead {
         mTableRow {
@@ -320,12 +389,12 @@ private fun RBuilder.enhancedTableHead(
                     onChange = { _, checked -> onSelectAllClick(checked) }
                 )
             }
-            columns.filter { it.visible }.forEach { column ->
+            columns.filter { (_, column) -> column.visible }.forEach { (id, column) ->
                 mTableCell(
-                    key = column.id,
+                    key = id,
                     align = if (column.rightAligned) MTableCellAlign.right else MTableCellAlign.left,
                     padding = if (column.disablePadding) MTableCellPadding.none else MTableCellPadding.default,
-                    sortDirection = if (orderBy == column.id) order else MTableCellSortDirection.False
+                    sortDirection = if (orderBy == id) order else MTableCellSortDirection.False
                 ) {
                     mTooltip(
                         title = "Sort",
@@ -334,14 +403,72 @@ private fun RBuilder.enhancedTableHead(
                     ) {
                         mTableSortLabel(
                             label = column.label,
-                            active = orderBy == column.id,
+                            active = orderBy == id,
                             direction = if (order == MTableCellSortDirection.asc) MTableSortLabelDirection.asc else MTableSortLabelDirection.desc,
-                            onClick = { onRequestSort(column.id) }
+                            onClick = { onRequestSort(id) }
                         )
                     }
                 }
             }
             mTableCell(padding = MTableCellPadding.checkbox) { +"Actions" }
+        }
+    }
+}
+
+private fun RBuilder.columnDialog(
+    dialogOpen: Boolean,
+    onDialogClose: () -> Unit,
+    columns: Map<AudioImportFieldKey, Column>,
+    onVisibilityChange: (AudioImportFieldKey, Boolean) -> Unit,
+    onMoveUp: (AudioImportFieldKey) -> Unit,
+    onMoveDown: (AudioImportFieldKey) -> Unit,
+) {
+    themeContext.Consumer { theme ->
+        val styles = object : StyleSheet("ComponentStyles", isStatic = true) {
+            val listDiv by css {
+                display = Display.inlineFlex
+                padding(1.spacingUnits)
+            }
+            val inline by css {
+                display = Display.inlineBlock
+            }
+            val list by css {
+                width = 320.px
+                backgroundColor = Color(theme.palette.background.paper)
+            }
+        }
+        mDialog(dialogOpen, onClose = { _, _ -> onDialogClose() }) {
+            mDialogTitle("Column Config")
+            div {
+//                css(styles.listDiv)
+                mList(dense = true) {
+                    css(styles.list)
+//                    mListSubheader("\"Full\" ListItemAvatar (more code)", disableSticky = true)
+                    columns.toList()
+                        .forEachIndexed { idx, (id, column) ->
+                            mListItem(button = false) {
+                                mCheckbox(
+                                    column.visible,
+                                    onChange = { _, visible -> onVisibilityChange(id, visible) })
+                                mListItemText(column.label)
+                                mListItemSecondaryAction {
+                                    if (idx > 0) {
+                                        mIconButton(
+                                            "arrow_upward_rounded",
+                                            size = MIconButtonSize.small,
+                                            onClick = { onMoveUp(id) })
+                                    }
+                                    if (idx < columns.size - 1) {
+                                        mIconButton(
+                                            "arrow_downward_rounded",
+                                            size = MIconButtonSize.small,
+                                            onClick = { onMoveDown(id) })
+                                    }
+                                }
+                            }
+                        }
+                }
+            }
         }
     }
 }
@@ -352,7 +479,7 @@ private fun RBuilder.genreDialog(
     onGenreSelect: (genre: String) -> Unit
 ) {
     themeContext.Consumer { theme ->
-        val styles = object : StyleSheet("DialogStyles", isStatic = true) {
+        val styles = object : StyleSheet("ComponentStyles", isStatic = true) {
             val avatarStyle by css {
                 backgroundColor = Color(lighten(theme.palette.secondary.light, 0.85))
                 color = Color(theme.palette.text.secondary)

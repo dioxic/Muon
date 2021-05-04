@@ -1,4 +1,4 @@
-package uk.dioxic.muon
+package uk.dioxic.muon.api
 
 import io.ktor.http.*
 import io.ktor.client.*
@@ -7,6 +7,10 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
 
 import kotlinx.browser.window
+import uk.dioxic.muon.AudioFileImport
+import uk.dioxic.muon.AudioImportConfig
+import uk.dioxic.muon.Config
+import uk.dioxic.muon.ShoppingListItem
 
 val endpoint = window.location.origin // only needed until https://github.com/ktorio/ktor/issues/1695 is resolved
 
@@ -18,8 +22,27 @@ suspend fun getShoppingList(): List<ShoppingListItem> {
     return jsonClient.get(endpoint + ShoppingListItem.path)
 }
 
-suspend fun getMusicList(): List<AudioFile> {
-    return jsonClient.get(endpoint + AudioFile.path)
+//suspend fun getAudioLibraryList(): List<AudioFile> {
+//    return jsonClient.get(endpoint + AudioFile.path)
+//}
+
+suspend fun getAudioImportList(): List<AudioFileImport> {
+    return jsonClient.get(endpoint + AudioFileImport.path)
+}
+
+suspend fun getAudioImportConfig(): AudioImportConfig {
+    return jsonClient.get(endpoint + AudioImportConfig.path)
+}
+
+suspend fun fetchFullConfig(): Config {
+    return jsonClient.get(endpoint + Config.path)
+}
+
+suspend fun saveAudioImportConfig(config: AudioImportConfig) {
+    return jsonClient.post(endpoint + AudioImportConfig.path) {
+        contentType(ContentType.Application.Json)
+        body = config
+    }
 }
 
 suspend fun addShoppingListItem(shoppingListItem: ShoppingListItem) {

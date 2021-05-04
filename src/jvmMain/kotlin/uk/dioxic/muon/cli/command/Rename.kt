@@ -8,8 +8,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
 import org.jaudiotagger.audio.AudioFileIO
-import uk.dioxic.muon.MusicFileJvm
-import uk.dioxic.muon.isAudioFile
 import java.util.logging.Level
 
 class Rename : CliktCommand(help = "Rename music files") {
@@ -27,14 +25,14 @@ class Rename : CliktCommand(help = "Rename music files") {
 
         AudioFileIO.logger.level = Level.OFF
 
-        if (dir.isFile) {
-            sequenceOf(dir)
-        } else if (recursive) {
-            dir.walk().asSequence()
-        } else {
-            dir.listFiles()!!.asSequence()
-        }.filter { it.isAudioFile }
-            .map { MusicFileJvm(it) }
-            .forEach { println("${it.file.name} -> ${it.targetFilename}") }
+//        if (dir.isFile) {
+//            sequenceOf(dir)
+//        } else if (recursive) {
+//            dir.walk().asSequence()
+//        } else {
+//            dir.listFiles()!!.asSequence()
+//        }.filter { it.isAudioFile }
+//            .map { MusicFileJvm(it) }
+//            .forEach { println("${it.file.name} -> ${it.targetFilename}") }
     }
 }
