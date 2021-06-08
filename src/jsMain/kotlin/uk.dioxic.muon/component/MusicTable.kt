@@ -17,10 +17,13 @@ import styled.StyleSheet
 import styled.css
 import styled.styledDiv
 import uk.dioxic.muon.*
-import uk.dioxic.muon.AudioImportFieldKey.*
+import uk.dioxic.muon.audio.AudioImportFieldKey.*
 import uk.dioxic.muon.api.getAudioImportConfig
 import uk.dioxic.muon.api.getAudioImportList
 import uk.dioxic.muon.api.saveAudioImportConfig
+import uk.dioxic.muon.audio.AudioFileImport
+import uk.dioxic.muon.audio.AudioImportFieldKey
+import uk.dioxic.muon.config.AudioImportConfig
 import kotlin.math.min
 
 private val scope = MainScope()

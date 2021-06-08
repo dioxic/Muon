@@ -9,12 +9,15 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
 import org.jaudiotagger.audio.AudioFileIO
-import uk.dioxic.muon.ConfigKey.AudioImport
-import uk.dioxic.muon.config.ConfigDal
 import java.io.File
 import java.util.*
 import java.util.logging.Level
 import kotlin.io.path.ExperimentalPathApi
+import uk.dioxic.muon.config.ConfigDal
+import uk.dioxic.muon.ConfigKey.*
+import uk.dioxic.muon.config.AudioImportConfig
+import uk.dioxic.muon.audio.AudioFile
+import uk.dioxic.muon.audio.AudioFileImport
 
 val shoppingList = mutableListOf(
     ShoppingListItem("Cucumbers 🥒", 1),
@@ -64,12 +67,12 @@ fun Application.module() {
         }
         route(AudioFile.path) {
             get {
-                call.respond(readAudioFiles(File("J:\\import\\complete")))
+                call.respond(readAudioFiles(File(configDal.library().importPath)))
             }
         }
         route(AudioFileImport.path) {
             get {
-                call.respond(readAudioFiles(File("J:\\import\\complete")).map { it.format() })
+                call.respond(readAudioFiles(File(configDal.library().importPath)).map { it.format() })
             }
         }
         route("/config") {

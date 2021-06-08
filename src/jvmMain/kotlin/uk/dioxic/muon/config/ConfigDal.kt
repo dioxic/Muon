@@ -6,7 +6,7 @@ import kotlinx.serialization.json.Json
 import org.apache.logging.log4j.LogBuilder
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import uk.dioxic.muon.AudioImportConfig
+import uk.dioxic.muon.config.AudioImportConfig
 import uk.dioxic.muon.Config
 import uk.dioxic.muon.ConfigKey
 import java.nio.file.Files
@@ -52,6 +52,10 @@ class ConfigDal(configDir: String) {
         return Config.Default
     }
 
+    fun audioImport() = config.audioImportConfig
+
+    fun library() = config.libraryConfig
+
     fun get(key: ConfigKey) = config[key]
 
     fun get() = config
@@ -61,6 +65,10 @@ class ConfigDal(configDir: String) {
             ConfigKey.AudioImport -> {
                 require(value is AudioImportConfig) { "Invalid audio import config" }
                 config = config.copy(audioImportConfig = value)
+            }
+            ConfigKey.Library -> {
+                require(value is LibraryConfig) { "Invalid library config" }
+                config = config.copy(libraryConfig = value)
             }
         }
         save(config)

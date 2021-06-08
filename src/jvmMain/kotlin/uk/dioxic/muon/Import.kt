@@ -3,6 +3,10 @@ package uk.dioxic.muon
 import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.audio.SupportedFileFormat
 import java.io.File
+import uk.dioxic.muon.audio.AudioFile
+import uk.dioxic.muon.audio.Tags
+import uk.dioxic.muon.audio.Header
+import uk.dioxic.muon.audio.Location
 
 fun readAudioFiles(dir: File): List<AudioFile> =
     if (dir.isFile) {

@@ -1,4 +1,4 @@
-package uk.dioxic.muon
+package uk.dioxic.muon.audio
 
 import kotlinx.serialization.Serializable
 

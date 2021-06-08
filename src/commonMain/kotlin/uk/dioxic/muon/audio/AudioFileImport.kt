@@ -1,7 +1,8 @@
-package uk.dioxic.muon
+package uk.dioxic.muon.audio
 
 import kotlinx.serialization.Serializable
-import uk.dioxic.muon.AudioImportFieldKey.*
+import uk.dioxic.muon.audio.AudioImportFieldKey.*
+import uk.dioxic.muon.toTimeString
 
 @Serializable
 enum class AudioImportFieldKey {

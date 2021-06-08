@@ -1,5 +1,10 @@
 package uk.dioxic.muon
 
+import uk.dioxic.muon.audio.AudioFile
+import uk.dioxic.muon.audio.AudioFileImport
+import uk.dioxic.muon.audio.Tags
+import uk.dioxic.muon.audio.Location
+
 fun formatFilename(originalFilename: String, tags: Tags): String {
 
     val extension = originalFilename.extension()

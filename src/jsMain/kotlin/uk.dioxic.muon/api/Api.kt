@@ -7,8 +7,8 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
 
 import kotlinx.browser.window
-import uk.dioxic.muon.AudioFileImport
-import uk.dioxic.muon.AudioImportConfig
+import uk.dioxic.muon.audio.AudioFileImport
+import uk.dioxic.muon.config.AudioImportConfig
 import uk.dioxic.muon.Config
 import uk.dioxic.muon.ShoppingListItem
 

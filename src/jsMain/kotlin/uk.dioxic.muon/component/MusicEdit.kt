@@ -10,7 +10,7 @@ import kotlinx.html.InputType
 import org.w3c.dom.HTMLInputElement
 import react.RProps
 import react.functionalComponent
-import uk.dioxic.muon.AudioFileImport
+import uk.dioxic.muon.audio.AudioFileImport
 
 external interface MusicEditProps : RProps {
     var audioFile: AudioFileImport?

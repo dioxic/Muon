@@ -1,7 +1,8 @@
-package uk.dioxic.muon
+package uk.dioxic.muon.audio
 
 import kotlinx.serialization.Serializable
-import uk.dioxic.muon.AudioFileFieldKey.*
+import uk.dioxic.muon.audio.AudioFileFieldKey.*
+import uk.dioxic.muon.toTimeString
 
 enum class AudioFileFieldKey { Artist, Title, Genre, Comment, Bitrate, VBR, Type, Path, Filename, Length, Lyricist, Year, Album }
 
