@@ -1,23 +1,23 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+//import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val spekVersion = "2.0.16"
-val ktorVersion = "1.5.4"
-val kotlinVersion = "1.5.0"
-val serializationVersion = "1.2.0"
+val ktorVersion = "1.6.0"
+val kotlinVersion = "1.5.10"
+val serializationVersion = "1.2.1"
 val log4jVersion = "2.14.1"
-val muirwikComponentVersion = "0.6.7"
+val muirwikComponentVersion = "0.6.7-IR"
 val reactVersion = "17.0.2"
-val kotlinJsWrapperVersion = "pre.154-kotlin-1.5.0"
+val kotlinJsWrapperVersion = "pre.207-kotlin-1.5.10"
 
 plugins {
-    kotlin("multiplatform") version "1.5.0"
-    kotlin("plugin.serialization") version "1.5.0"
+    kotlin("multiplatform") version "1.5.10"
+    kotlin("plugin.serialization") version "1.5.10"
     application
     id("pl.allegro.tech.build.axion-release") version "1.13.2"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("com.github.ben-manes.versions") version "0.38.0"
+//    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("com.github.ben-manes.versions") version "0.39.0"
 }
 
 group = "uk.dioxic.muon"
@@ -25,10 +25,12 @@ version = scmVersion.version
 
 repositories {
     mavenCentral()
-    jcenter()
+    mavenLocal()
+//    maven("https://jitpack.io")
+    //jcenter()
 //    maven("https://dl.bintray.com/kotlin/kotlin-eap")
-    maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
-    maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-js-wrappers")
+    //maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
+    //maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-js-wrappers")
     //maven("https://dl.bintray.com/cfraser/muirwik")
     flatDir {
         dirs("libs")
@@ -36,7 +38,7 @@ repositories {
 }
 
 application {
-    mainClass.set("uk.dioxic.muon.ApplicationKt")
+//    mainClass.set("uk.dioxic.muon.ApplicationKt")
     @Suppress("DEPRECATION")
     mainClassName = "uk.dioxic.muon.ApplicationKt"
 }
@@ -45,12 +47,15 @@ kotlin {
     jvm {
         withJava()
     }
-    js(LEGACY) {
+    js(IR) {
+        useCommonJs()
         browser {
             commonWebpackConfig {
                 cssSupport.enabled = true
             }
-            useCommonJs()
+//            dceTask {
+//                dceOptions.devMode = true
+//            }
             binaries.executable()
         }
     }
@@ -70,6 +75,7 @@ kotlin {
         }
 
         val jvmMain by getting {
+//            dependsOn(commonMain)
             dependencies {
                 implementation("io.ktor:ktor-serialization:$ktorVersion")
                 implementation("io.ktor:ktor-server-core:$ktorVersion")
@@ -91,32 +97,38 @@ kotlin {
         }
 
         val jvmTest by getting {
+//            dependsOn(commonTest)
             dependencies {
-                implementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
+//                implementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
                 implementation("org.assertj:assertj-core:3.19.0")
-                runtimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
+//                runtimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
+//                runtimeOnly("org.spekframework.spek2:spek-runtime-jvm:$spekVersion")
             }
         }
 
         val jsMain by getting {
+//            dependsOn(commonMain)
             dependencies {
+                implementation(kotlin("stdlib-js", kotlinVersion))
+
                 //ktor client js json
                 implementation("io.ktor:ktor-client-js:$ktorVersion") //include http&websockets
                 implementation("io.ktor:ktor-client-json-js:$ktorVersion")
                 implementation("io.ktor:ktor-client-serialization-js:$ktorVersion")
 
                 //React, React DOM + Wrappers
-                implementation("org.jetbrains:kotlin-react:$reactVersion-$kotlinJsWrapperVersion")
-                implementation("org.jetbrains:kotlin-react-dom:$reactVersion-$kotlinJsWrapperVersion")
                 implementation(npm("react", reactVersion))
                 implementation(npm("react-dom", reactVersion))
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-react:$reactVersion-$kotlinJsWrapperVersion")
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom:$reactVersion-$kotlinJsWrapperVersion")
 
                 //styled components
-                implementation("org.jetbrains:kotlin-styled:5.2.3-$kotlinJsWrapperVersion")
-                implementation(npm("styled-components", "~5.2.3"))
+                implementation(npm("styled-components", "~5.3.0"))
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-styled:5.3.0-$kotlinJsWrapperVersion")
 
                 // material ui
                 implementation("com.ccfraser.muirwik:muirwik-components:$muirwikComponentVersion")
+//                implementation("com.github.cfnz:muirwik:IR-Compiler-SNAPSHOT")
             }
         }
     }
@@ -148,22 +160,22 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform {
-        includeEngines("spek2")
-    }
-}
-
-//distributions {
-//    main {
-//        contents {
-//            from("$buildDir/libs") {
-//                rename("${rootProject.name}-jvm", rootProject.name)
-//                into("lib")
-//            }
-//        }
+//tasks.withType<Test> {
+//    useJUnitPlatform {
+//        includeEngines("spek2")
 //    }
 //}
+
+distributions {
+    main {
+        contents {
+            from("$buildDir/libs") {
+                rename("${rootProject.name}-jvm", rootProject.name)
+                into("lib")
+            }
+        }
+    }
+}
 
 // Alias "installDist" as "stage" (for cloud providers)
 tasks.create("stage") {
@@ -174,11 +186,11 @@ tasks.getByName<JavaExec>("run") {
     classpath(tasks.getByName<Jar>("jvmJar")) // so that the JS artifacts generated by `jvmJar` can be found and served
 }
 
-tasks.withType<ShadowJar> {
-    archiveBaseName.set("shadow")
-    mergeServiceFiles()
-    archiveFileName.set("muon")
-    manifest {
-        attributes(mapOf("Main-Class" to "uk.dioxic.muon.ApplicationKt"))
-    }
-}
+//tasks.withType<ShadowJar> {
+//    archiveBaseName.set("shadow")
+//    mergeServiceFiles()
+//    archiveFileName.set("muon")
+//    manifest {
+//        attributes(mapOf("Main-Class" to "uk.dioxic.muon.ApplicationKt"))
+//    }
+//}

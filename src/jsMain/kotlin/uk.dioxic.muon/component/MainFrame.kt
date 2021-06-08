@@ -10,6 +10,7 @@ import com.ccfraser.muirwik.components.styles.Breakpoint
 import com.ccfraser.muirwik.components.styles.down
 import com.ccfraser.muirwik.components.styles.fade
 import com.ccfraser.muirwik.components.styles.up
+import kotlinext.js.Object
 import kotlinext.js.js
 import kotlinext.js.jsObject
 import kotlinx.css.*
@@ -23,7 +24,7 @@ import styled.StyleSheet
 import styled.css
 import styled.styledDiv
 
-interface MainFrameProps : RProps {
+external interface MainFrameProps : RProps {
     var onThemeSwitch: () -> Unit
     var initialView: String
 }
@@ -271,7 +272,7 @@ private fun RBuilder.spacer() {
     themeContext.Consumer { theme ->
         val themeStyles = object : StyleSheet("ComponentStyles", isStatic = true) {
             val toolbar by css {
-                toolbarJsCssToPartialCss(theme.mixins.toolbar)
+                toolbarJsCssToPartialCss(theme.mixins.toolbar as Object)
             }
         }
 

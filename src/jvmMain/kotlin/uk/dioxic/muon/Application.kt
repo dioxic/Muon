@@ -64,26 +64,31 @@ fun Application.module() {
         }
         route(AudioFile.path) {
             get {
-                call.respond(readAudioFiles(File("Q:/Music/tmp/complete")))
+                call.respond(readAudioFiles(File("J:\\import\\complete")))
             }
         }
         route(AudioFileImport.path) {
             get {
-                call.respond(readAudioFiles(File("Q:/Music/tmp/complete")).map { it.format() })
+                call.respond(readAudioFiles(File("J:\\import\\complete")).map { it.format() })
             }
         }
         route("/config") {
-            get("/{key}") {
-                val key = call.parameters["key"] ?: error("Invalid config get request")
-                val configKey = ConfigKey.valueOf(key)
-                call.respond(configDal.get(configKey))
-            }
-            post("/{key}") {
-                requireNotNull(call.parameters["key"]) { "Config key required" }
-                when(val configKey = ConfigKey.valueOf(call.parameters["key"]!!)) {
-                    AudioImport -> configDal.set(configKey, call.receive<AudioImportConfig>())
+            route("/{key}") {
+                get {
+                    val key = call.parameters["key"] ?: error("Invalid config get request")
+                    val configKey = ConfigKey.valueOf(key)
+                    call.respond(configDal.get(configKey))
                 }
-                call.respond(HttpStatusCode.OK)
+                post {
+                    requireNotNull(call.parameters["key"]) { "Config key required" }
+                    when (val configKey = ConfigKey.valueOf(call.parameters["key"]!!)) {
+                        AudioImport -> configDal.set(configKey, call.receive<AudioImportConfig>())
+                    }
+                    call.respond(HttpStatusCode.OK)
+                }
+            }
+            get {
+                call.respond(configDal.get())
             }
         }
         get("/") {
