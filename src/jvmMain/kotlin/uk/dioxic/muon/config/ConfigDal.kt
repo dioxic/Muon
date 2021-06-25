@@ -3,11 +3,11 @@ package uk.dioxic.muon.config
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.apache.logging.log4j.LogBuilder
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import uk.dioxic.muon.config.AudioImportConfig
-import uk.dioxic.muon.Config
+import uk.dioxic.muon.ConfigMap
 import uk.dioxic.muon.ConfigKey
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -17,9 +17,15 @@ import kotlin.io.path.*
 class ConfigDal(configDir: String) {
     private val log: Logger = LogManager.getLogger()
     private val configFile = Paths.get(configDir, "config.json")
-    private var config: Config
+    private var configMap: ConfigMap
     private val json = Json {
         prettyPrint = true
+        serializersModule = SerializersModule {
+            polymorphic(Config::class) {
+                subclass(LibraryConfig::class, LibraryConfig.serializer())
+                subclass(AudioImportConfig::class, AudioImportConfig.serializer())
+            }
+        }
     }
 
     init {
@@ -34,7 +40,7 @@ class ConfigDal(configDir: String) {
         require(configPath.isDirectory()) { "config dir must be a directory" }
         require(configPath.isReadable()) { "config dir must be readable" }
         require(configPath.isWritable()) { "config dir must be writable" }
-        config = if (configFile.exists()) {
+        configMap = if (configFile.exists()) {
             try {
                 json.decodeFromString(Files.readString(configFile))
             } catch (e: Exception) {
@@ -46,37 +52,37 @@ class ConfigDal(configDir: String) {
         }
     }
 
-    private fun default(): Config {
+    private fun default(): ConfigMap {
         log.info("Saving default config")
-        save(Config.Default)
-        return Config.Default
+        save(ConfigMap.Default)
+        return ConfigMap.Default
     }
 
-    fun audioImport() = config.audioImportConfig
+    fun getLibraryConfig() = configMap.getLibraryConfig()
+    fun getAudioImportConfig() = configMap.getAudioImportConfig()
 
-    fun library() = config.libraryConfig
+    fun getAll() = configMap
 
-    fun get(key: ConfigKey) = config[key]
+    operator fun get(key: ConfigKey) = configMap.getValue(key)
 
-    fun get() = config
-
-    fun set(key: ConfigKey, value: Any) {
-        when (key) {
-            ConfigKey.AudioImport -> {
-                require(value is AudioImportConfig) { "Invalid audio import config" }
-                config = config.copy(audioImportConfig = value)
-            }
-            ConfigKey.Library -> {
-                require(value is LibraryConfig) { "Invalid library config" }
-                config = config.copy(libraryConfig = value)
-            }
-        }
-        save(config)
+    operator fun set(key: ConfigKey, value: Config) {
+        configMap = configMap.copy(key, value)
+//        configMap = when (key) {
+//            ConfigKey.AudioImport -> {
+//                require(value is AudioImportConfig) { "Invalid audio import config" }
+//                configMap.copy(audioImportConfig = value)
+//            }
+//            ConfigKey.Library -> {
+//                require(value is LibraryConfig) { "Invalid library config" }
+//                configMap.copy(libraryConfig = value)
+//            }
+//        }
+        save(configMap)
     }
 
-    private fun save(config: Config) {
-        Files.writeString(configFile, json.encodeToString(config))
-        this.config = config
+    private fun save(configMap: ConfigMap) {
+        Files.writeString(configFile, json.encodeToString(configMap))
+        this.configMap = configMap
     }
 }
 

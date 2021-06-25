@@ -9,7 +9,7 @@ import io.ktor.client.features.json.serializer.KotlinxSerializer
 import kotlinx.browser.window
 import uk.dioxic.muon.audio.AudioFileImport
 import uk.dioxic.muon.config.AudioImportConfig
-import uk.dioxic.muon.Config
+import uk.dioxic.muon.ConfigMap
 import uk.dioxic.muon.ShoppingListItem
 
 val endpoint = window.location.origin // only needed until https://github.com/ktorio/ktor/issues/1695 is resolved
@@ -34,8 +34,8 @@ suspend fun getAudioImportConfig(): AudioImportConfig {
     return jsonClient.get(endpoint + AudioImportConfig.path)
 }
 
-suspend fun fetchFullConfig(): Config {
-    return jsonClient.get(endpoint + Config.path)
+suspend fun fetchFullConfig(): ConfigMap {
+    return jsonClient.get(endpoint + ConfigMap.path)
 }
 
 suspend fun saveAudioImportConfig(config: AudioImportConfig) {

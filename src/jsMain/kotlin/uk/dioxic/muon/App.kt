@@ -11,14 +11,13 @@ import kotlinext.js.*
 import kotlinx.coroutines.*
 import uk.dioxic.muon.api.fetchFullConfig
 import uk.dioxic.muon.component.MainFrame
-import uk.dioxic.muon.component.MainFrameProps
 
 private val scope = MainScope()
 
 val App = functionalComponent<RProps> {
     val (isLoading, setLoading) = useState(true)
     val (themeColor, setThemeColor) = useState("light")
-    val (config, setConfig) = useState(Config.Default)
+    val (config, setConfig) = useState(ConfigMap.Default)
 //    val (searchText, setSearchText) = useState("")
     mCssBaseline()
 
@@ -34,7 +33,7 @@ val App = functionalComponent<RProps> {
     if (isLoading) {
         mCircularProgress()
         scope.launch {
-            if (config == Config.Default) {
+            if (config == ConfigMap.Default) {
                 setConfig(fetchFullConfig())
             }
         }.invokeOnCompletion {

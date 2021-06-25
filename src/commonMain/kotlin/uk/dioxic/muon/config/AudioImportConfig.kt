@@ -1,18 +1,20 @@
 package uk.dioxic.muon.config
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import uk.dioxic.muon.audio.AudioImportFieldKey
 import uk.dioxic.muon.audio.AudioImportFieldKey.*
 import uk.dioxic.muon.Column
-import uk.dioxic.muon.Config
+import uk.dioxic.muon.ConfigMap
 import uk.dioxic.muon.ConfigKey
 
 @Serializable
-data class AudioImportConfig(
+@SerialName("import")
+data class AudioImportConfig (
     val columns: Map<AudioImportFieldKey, Column>
-) {
+): Config {
     companion object {
-        val path = "${Config.path}/${ConfigKey.AudioImport.name}"
+        val path = "${ConfigMap.path}/${ConfigKey.AudioImport.name}"
         val Default = AudioImportConfig(
             linkedMapOf(
                 OriginalArtist to Column(
@@ -46,4 +48,6 @@ data class AudioImportConfig(
             )
         )
     }
+
+    override fun key(): ConfigKey = ConfigKey.AudioImport
 }
