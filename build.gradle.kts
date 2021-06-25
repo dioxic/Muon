@@ -4,16 +4,16 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val spekVersion = "2.0.16"
 val ktorVersion = "1.6.0"
-val kotlinVersion = "1.5.10"
+val kotlinVersion = "1.5.20"
 val serializationVersion = "1.2.1"
 val log4jVersion = "2.14.1"
 val muirwikComponentVersion = "0.6.7-IR"
 val reactVersion = "17.0.2"
-val kotlinJsWrapperVersion = "pre.207-kotlin-1.5.10"
+val kotlinJsWrapperVersion = "pre.213-kotlin-1.5.20"
 
 plugins {
-    kotlin("multiplatform") version "1.5.10"
-    kotlin("plugin.serialization") version "1.5.10"
+    kotlin("multiplatform") version "1.5.20"
+    kotlin("plugin.serialization") version "1.5.20"
     application
     id("pl.allegro.tech.build.axion-release") version "1.13.2"
 //    id("com.github.johnrengelman.shadow") version "7.0.0"
@@ -100,7 +100,7 @@ kotlin {
 //            dependsOn(commonTest)
             dependencies {
 //                implementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
-                implementation("org.assertj:assertj-core:3.19.0")
+                implementation("org.assertj:assertj-core:3.20.2")
 //                runtimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
 //                runtimeOnly("org.spekframework.spek2:spek-runtime-jvm:$spekVersion")
             }
@@ -157,7 +157,7 @@ tasks.getByName<Jar>("jvmJar") {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
 
 //tasks.withType<Test> {
