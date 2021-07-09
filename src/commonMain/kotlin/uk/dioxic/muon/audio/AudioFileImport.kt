@@ -2,6 +2,7 @@ package uk.dioxic.muon.audio
 
 import kotlinx.serialization.Serializable
 import uk.dioxic.muon.audio.AudioImportFieldKey.*
+import uk.dioxic.muon.coalesce
 import uk.dioxic.muon.toTimeString
 
 @Serializable
@@ -66,6 +67,26 @@ data class AudioFileImport(
             Bitrate -> header.bitrate.toString()
         }
 
+    fun merge(other: AudioFileImport) = AudioFileImport(
+        id = id,
+        originalTags = originalTags,
+        standardizedTags = Tags(
+            album = coalesce(other.standardizedTags.album, standardizedTags.album),
+            artist = coalesce(other.standardizedTags.artist, standardizedTags.artist),
+            title = coalesce(other.standardizedTags.title, standardizedTags.title),
+            genre = coalesce(other.standardizedTags.genre, standardizedTags.genre),
+            comment = coalesce(other.standardizedTags.comment, standardizedTags.comment),
+            year = coalesce(other.standardizedTags.year, standardizedTags.year),
+            lyricist = coalesce(other.standardizedTags.lyricist, standardizedTags.lyricist),
+        ),
+        originalLocation = originalLocation,
+        standardizedLocation = Location(
+            path = coalesce(other.standardizedLocation.path, standardizedLocation.path),
+            filename = coalesce(other.standardizedLocation.filename, standardizedLocation.filename),
+        ),
+        header = header
+    )
+
     fun matches(text: String) =
         originalTags.artist.contains(text, ignoreCase = true)
                 || originalTags.title.contains(text, ignoreCase = true)
@@ -80,6 +101,18 @@ data class AudioFileImport(
 
     companion object {
         const val path = "/import"
+        val BLANK = build("")
+
+        fun build(defaultText: String) =
+            AudioFileImport(
+                id = defaultText,
+                originalTags = Tags(defaultText),
+                standardizedTags = Tags(defaultText),
+                originalLocation = Location(),
+                standardizedLocation = Location(),
+                header = Header()
+            )
+
         fun comparator(a: AudioFileImport, b: AudioFileImport, orderBy: AudioImportFieldKey) =
             when (orderBy) {
                 VBR -> a.header.vbr.compareTo(b.header.vbr)

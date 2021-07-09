@@ -13,6 +13,19 @@ fun <t> List<t>.swap(a: Int, b: Int): List<t> = this
         it[b] = this[a]
     }
 
+fun <T> coalesce(vararg items: T): T {
+    items.forEach {
+        if (it != null) {
+            if (it is String && it.isEmpty()) {
+                // goto next item
+            } else {
+                return it
+            }
+        }
+    }
+    return items.first()
+}
+
 //fun <t> MutableList<t>.swap(a: Int, b: Int): List<t> = this
 //    .also {
 //        it[a] = this[b]

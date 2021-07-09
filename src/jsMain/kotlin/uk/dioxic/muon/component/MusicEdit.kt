@@ -6,6 +6,7 @@ import com.ccfraser.muirwik.components.button.mButton
 import com.ccfraser.muirwik.components.dialog.*
 import com.ccfraser.muirwik.components.form.MFormControlMargin
 import com.ccfraser.muirwik.components.mTextField
+import kotlinx.css.Contain
 import kotlinx.html.InputType
 import org.w3c.dom.HTMLInputElement
 import react.RProps
@@ -13,17 +14,19 @@ import react.functionalComponent
 import uk.dioxic.muon.audio.AudioFileImport
 
 external interface MusicEditProps : RProps {
-    var audioFile: AudioFileImport?
+    var initialState: AudioFileImport
+    var title: String
     var onChange: (AudioFileImport) -> Unit
     var onClose: () -> Unit
     var onSave: () -> Unit
     var open: Boolean
+    var showFilename: Boolean
 }
 
 val MusicEdit = functionalComponent<MusicEditProps> { props ->
 
     mDialog(props.open, onClose = { _, _ -> props.onClose() }) {
-        mDialogTitle("Edit")
+        mDialogTitle(props.title)
         mDialogContent {
 //            mDialogContentText("To edit this audio file, change stuff here.")
             mTextField(
@@ -32,10 +35,12 @@ val MusicEdit = functionalComponent<MusicEditProps> { props ->
                 margin = MFormControlMargin.dense,
                 type = InputType.text,
                 fullWidth = true,
-                value = props.audioFile?.standardizedTags?.artist,
+                value = props.initialState.standardizedTags.artist,
                 onChange = {
-                    props.onChange(props.audioFile!!.copy(
-                        standardizedTags = props.audioFile!!.standardizedTags.copy(artist = (it.target as HTMLInputElement).value))
+                    props.onChange(
+                        props.initialState.copy(
+                            standardizedTags = props.initialState.standardizedTags.copy(artist = (it.target as HTMLInputElement).value)
+                        )
                     )
                 }
             )
@@ -45,10 +50,12 @@ val MusicEdit = functionalComponent<MusicEditProps> { props ->
                 margin = MFormControlMargin.normal,
                 type = InputType.text,
                 fullWidth = true,
-                value = props.audioFile?.standardizedTags?.title,
+                value = props.initialState.standardizedTags.title,
                 onChange = {
-                    props.onChange(props.audioFile!!.copy(
-                        standardizedTags = props.audioFile!!.standardizedTags.copy(title = (it.target as HTMLInputElement).value))
+                    props.onChange(
+                        props.initialState.copy(
+                            standardizedTags = props.initialState.standardizedTags.copy(title = (it.target as HTMLInputElement).value)
+                        )
                     )
                 }
             )
@@ -58,10 +65,12 @@ val MusicEdit = functionalComponent<MusicEditProps> { props ->
                 margin = MFormControlMargin.normal,
                 type = InputType.text,
                 fullWidth = true,
-                value = props.audioFile?.standardizedTags?.album,
+                value = props.initialState.standardizedTags.album,
                 onChange = {
-                    props.onChange(props.audioFile!!.copy(
-                        standardizedTags = props.audioFile!!.standardizedTags.copy(album = (it.target as HTMLInputElement).value))
+                    props.onChange(
+                        props.initialState.copy(
+                            standardizedTags = props.initialState.standardizedTags.copy(album = (it.target as HTMLInputElement).value)
+                        )
                     )
                 }
             )
@@ -71,10 +80,12 @@ val MusicEdit = functionalComponent<MusicEditProps> { props ->
                 margin = MFormControlMargin.normal,
                 type = InputType.text,
                 fullWidth = true,
-                value = props.audioFile?.standardizedTags?.lyricist,
+                value = props.initialState.standardizedTags.lyricist,
                 onChange = {
-                    props.onChange(props.audioFile!!.copy(
-                        standardizedTags = props.audioFile!!.standardizedTags.copy(lyricist = (it.target as HTMLInputElement).value))
+                    props.onChange(
+                        props.initialState.copy(
+                            standardizedTags = props.initialState.standardizedTags.copy(lyricist = (it.target as HTMLInputElement).value)
+                        )
                     )
                 }
             )
@@ -84,45 +95,53 @@ val MusicEdit = functionalComponent<MusicEditProps> { props ->
                 margin = MFormControlMargin.normal,
                 type = InputType.text,
                 fullWidth = true,
-                value = props.audioFile?.standardizedTags?.year,
+                value = props.initialState.standardizedTags.year,
                 onChange = {
-                    props.onChange(props.audioFile!!.copy(
-                        standardizedTags = props.audioFile!!.standardizedTags.copy(year = (it.target as HTMLInputElement).value))
+                    props.onChange(
+                        props.initialState.copy(
+                            standardizedTags = props.initialState.standardizedTags.copy(year = (it.target as HTMLInputElement).value)
+                        )
                     )
                 }
             )
-            mTextField(
-                label = "Original Filename",
-                autoFocus = true,
-                disabled = true,
-                margin = MFormControlMargin.normal,
-                type = InputType.text,
-                fullWidth = true,
-                value = props.audioFile?.originalLocation?.filename
-            )
-            mTextField(
-                label = "New Filename",
-                autoFocus = true,
-                margin = MFormControlMargin.normal,
-                type = InputType.text,
-                fullWidth = true,
-                value = props.audioFile?.standardizedLocation?.filename,
-                onChange = {
-                    props.onChange(props.audioFile!!.copy(
-                        standardizedLocation = props.audioFile!!.standardizedLocation.copy(filename = (it.target as HTMLInputElement).value))
-                    )
-                }
-            )
+            if (props.showFilename) {
+                mTextField(
+                    label = "Original Filename",
+                    autoFocus = true,
+                    disabled = true,
+                    margin = MFormControlMargin.normal,
+                    type = InputType.text,
+                    fullWidth = true,
+                    value = props.initialState.originalLocation?.filename
+                )
+                mTextField(
+                    label = "New Filename",
+                    autoFocus = true,
+                    margin = MFormControlMargin.normal,
+                    type = InputType.text,
+                    fullWidth = true,
+                    value = props.initialState.standardizedLocation.filename,
+                    onChange = {
+                        props.onChange(
+                            props.initialState.copy(
+                                standardizedLocation = props.initialState.standardizedLocation.copy(filename = (it.target as HTMLInputElement).value)
+                            )
+                        )
+                    }
+                )
+            }
             mTextField(
                 label = "Comment",
                 autoFocus = true,
                 margin = MFormControlMargin.normal,
                 type = InputType.text,
                 fullWidth = true,
-                value = props.audioFile?.standardizedTags?.comment,
+                value = props.initialState.standardizedTags.comment,
                 onChange = {
-                    props.onChange(props.audioFile!!.copy(
-                        standardizedTags = props.audioFile!!.standardizedTags.copy(comment = (it.target as HTMLInputElement).value))
+                    props.onChange(
+                        props.initialState.copy(
+                            standardizedTags = props.initialState.standardizedTags.copy(comment = (it.target as HTMLInputElement).value)
+                        )
                     )
                 }
             )

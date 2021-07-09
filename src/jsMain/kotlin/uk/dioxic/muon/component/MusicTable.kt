@@ -74,11 +74,14 @@ external interface MusicTableProps : RProps {
     var filter: String
 }
 
+val AudioFileImport.Companion.MULTI: AudioFileImport
+    get() = build("Multiple")
+
 val MusicTable = functionalComponent<MusicTableProps> { props ->
     val (config, setConfig) = useState(AudioImportConfig.Default)
     val (musicList, setMusicList) = useState(emptyList<AudioFileImport>())
     val (selected, setSelected) = useState(emptyList<String>())
-    val (editing, setEditing) = useState<AudioFileImport?>(null)
+    val (editing, setEditing) = useState(AudioFileImport.BLANK)
     val (order, setOrder) = useState(MTableCellSortDirection.asc)
     val (orderBy, setOrderByColumn) = useState(StandardizedArtist)
     val (page, setPage) = useState(0)
@@ -150,6 +153,12 @@ val MusicTable = functionalComponent<MusicTableProps> { props ->
         }.toList())
     }
 
+    fun handleEditMultiple() {
+//        setEditing(musicList.filter { selected.contains(it.id) }) // get common
+        setEditing(AudioFileImport.BLANK)
+        setEditDialogOpen(true)
+    }
+
     fun handleClearComments() {
         setMusicList(musicList.map {
             if (selected.contains(it.id))
@@ -201,6 +210,7 @@ val MusicTable = functionalComponent<MusicTableProps> { props ->
             numSelected = selected.size,
             onGenreClick = ::handleGenreButtonClick,
             onClearCommentsClick = ::handleClearComments,
+            onEditMultipleClick = ::handleEditMultiple,
             onRefreshClick = ::handleRefresh,
             onFilterClick = { setColumnDialogOpen(true) }
         )
@@ -281,10 +291,22 @@ val MusicTable = functionalComponent<MusicTableProps> { props ->
     backdrop(backdropOpen)
     child(MusicEdit, props = jsObject {
         open = editDialogOpen
-        audioFile = editing
+        initialState = editing
+        showFilename = true
+        title = "Edit"
         onChange = { musicFile -> setEditing(musicFile) }
         onSave = {
-            setMusicList(musicList.map { if (editing?.id == it.id) editing else it }.toList())
+            if (editing.id.isEmpty()) {
+                setMusicList(musicList.map {
+                    if (selected.contains(it.id)) {
+                        it.merge(editing)
+                    } else {
+                        it
+                    }
+                }.toList())
+            } else {
+                setMusicList(musicList.map { if (editing.id == it.id) editing else it }.toList())
+            }
             setEditDialogOpen(false)
         }
         onClose = { setEditDialogOpen(false) }
@@ -313,6 +335,7 @@ private fun RBuilder.enhancedTableToolbar(
     numSelected: Int,
     onGenreClick: () -> Unit,
     onClearCommentsClick: () -> Unit,
+    onEditMultipleClick: () -> Unit,
     onRefreshClick: () -> Unit,
     onFilterClick: () -> Unit,
 ) {
@@ -349,6 +372,9 @@ private fun RBuilder.enhancedTableToolbar(
             styledDiv {
                 css(styles.actions)
                 if (numSelected > 0) {
+                    mTooltip("Edit") {
+                        mIconButton("edit_rounded", onClick = { onEditMultipleClick() })
+                    }
                     mTooltip("Clear Comments") {
                         mIconButton("comment_rounded", onClick = { onClearCommentsClick() })
                     }
