@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Location(
-    val path: String,
-    val filename: String
+    val path: String = "",
+    val filename: String = ""
 )
