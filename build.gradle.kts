@@ -3,11 +3,12 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val spekVersion = "2.0.16"
-val ktorVersion = "1.6.0"
+val ktorVersion = "1.6.1"
 val kotlinVersion = "1.5.20"
-val serializationVersion = "1.2.1"
+val serializationVersion = "1.2.2"
 val log4jVersion = "2.14.1"
-val muirwikComponentVersion = "0.6.7-IR"
+//val muirwikComponentVersion = "0.6.7-IR"
+val muirwikComponentVersion = "0.8.2"
 val reactVersion = "17.0.2"
 val kotlinJsWrapperVersion = "pre.213-kotlin-1.5.20"
 
@@ -15,7 +16,7 @@ plugins {
     kotlin("multiplatform") version "1.5.20"
     kotlin("plugin.serialization") version "1.5.20"
     application
-    id("pl.allegro.tech.build.axion-release") version "1.13.2"
+    id("pl.allegro.tech.build.axion-release") version "1.13.3"
 //    id("com.github.johnrengelman.shadow") version "7.0.0"
     id("com.github.ben-manes.versions") version "0.39.0"
 }
@@ -26,12 +27,6 @@ version = scmVersion.version
 repositories {
     mavenCentral()
     mavenLocal()
-//    maven("https://jitpack.io")
-    //jcenter()
-//    maven("https://dl.bintray.com/kotlin/kotlin-eap")
-    //maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
-    //maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-js-wrappers")
-    //maven("https://dl.bintray.com/cfraser/muirwik")
     flatDir {
         dirs("libs")
     }
