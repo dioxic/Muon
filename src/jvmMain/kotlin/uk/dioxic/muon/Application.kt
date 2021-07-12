@@ -9,17 +9,15 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
 import org.jaudiotagger.audio.AudioFileIO
-import java.io.File
-import java.util.*
-import java.util.logging.Level
-import kotlin.io.path.ExperimentalPathApi
-import uk.dioxic.muon.config.ConfigDal
-import uk.dioxic.muon.ConfigKey.*
-import uk.dioxic.muon.config.AudioImportConfig
 import uk.dioxic.muon.audio.AudioFile
 import uk.dioxic.muon.audio.AudioFileImport
+import uk.dioxic.muon.config.AudioImportConfig
 import uk.dioxic.muon.config.Config
+import uk.dioxic.muon.config.ConfigDal
 import uk.dioxic.muon.config.LibraryConfig
+import java.io.File
+import java.util.logging.Level
+import kotlin.io.path.ExperimentalPathApi
 
 val shoppingList = mutableListOf(
     ShoppingListItem("Cucumbers 🥒", 1),
@@ -83,7 +81,7 @@ fun Routing.shoppingList() {
 fun Routing.import(configDal: ConfigDal) {
     route(AudioFileImport.path) {
         get {
-            call.respond(readAudioFiles(File(configDal.getLibraryConfig().importPath)).map { it.format() })
+            call.respond(readAudioFiles(File(configDal.getAll().libraryConfig.importPath)).map { it.format() })
         }
     }
 }
@@ -92,40 +90,25 @@ fun Routing.import(configDal: ConfigDal) {
 fun Routing.audioFile(configDal: ConfigDal) {
     route(AudioFile.path) {
         get {
-            call.respond(readAudioFiles(File(configDal.getLibraryConfig().importPath)))
+            call.respond(readAudioFiles(File(configDal.getAll().libraryConfig.libraryPath)))
         }
     }
 }
 
 @ExperimentalPathApi
 fun Routing.config(configDal: ConfigDal) {
-    route("/config") {
+    route(ConfigMap.path) {
         subconfig(
             key = AudioImportConfig.path,
-            getFn = { configDal.getAudioImportConfig() },
-            setFn = { v -> configDal[AudioImport] = v }
+            getFn = { configDal.getAll().importConfig },
+            setFn = { configDal.save(it) }
         )
         subconfig(
             key = LibraryConfig.path,
-            getFn = { configDal.getLibraryConfig() },
-            setFn = { v -> configDal[Library] = v }
+            getFn = { configDal.getAll().libraryConfig },
+            setFn = { configDal.save(it) }
         )
 
-//        route("/{key}") {
-//            get {
-//                val key = call.parameters["key"] ?: error("Invalid config get request")
-//                val configKey = ConfigKey.valueOf(key)
-//                call.respond(configDal[configKey])
-//            }
-//            post {
-//                requireNotNull(call.parameters["key"]) { "Config key required" }
-//                when (val configKey = ConfigKey.valueOf(call.parameters["key"]!!)) {
-//                    AudioImport -> configDal[configKey] = call.receive<AudioImportConfig>()
-//                    Library -> configDal[configKey] = call.receive<LibraryConfig>()
-//                }
-//                call.respond(HttpStatusCode.OK)
-//            }
-//        }
         get {
             call.respond(configDal.getAll())
         }
@@ -140,7 +123,7 @@ inline fun <reified T : Config> Route.subconfig(
 ) {
     route("/$key") {
         get {
-            call.respond { getFn }
+            call.respond(getFn.invoke())
         }
         post {
             setFn(call.receive())

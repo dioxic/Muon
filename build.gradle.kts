@@ -123,7 +123,6 @@ kotlin {
 
                 // material ui
                 implementation("com.ccfraser.muirwik:muirwik-components:$muirwikComponentVersion")
-//                implementation("com.github.cfnz:muirwik:IR-Compiler-SNAPSHOT")
             }
         }
     }

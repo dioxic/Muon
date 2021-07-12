@@ -13,6 +13,7 @@ import uk.dioxic.muon.ConfigMap
 import uk.dioxic.muon.ShoppingListItem
 
 val endpoint = window.location.origin // only needed until https://github.com/ktorio/ktor/issues/1695 is resolved
+val configEndpoint = endpoint + ConfigMap.path
 
 val jsonClient = HttpClient {
     install(JsonFeature) { serializer = KotlinxSerializer() }
@@ -31,15 +32,15 @@ suspend fun getAudioImportList(): List<AudioFileImport> {
 }
 
 suspend fun getAudioImportConfig(): AudioImportConfig {
-    return jsonClient.get(endpoint + AudioImportConfig.path)
+    return jsonClient.get(configEndpoint + AudioImportConfig.path)
 }
 
 suspend fun fetchFullConfig(): ConfigMap {
-    return jsonClient.get(endpoint + ConfigMap.path)
+    return jsonClient.get(configEndpoint)
 }
 
 suspend fun saveAudioImportConfig(config: AudioImportConfig) {
-    return jsonClient.post(endpoint + AudioImportConfig.path) {
+    return jsonClient.post(configEndpoint + AudioImportConfig.path) {
         contentType(ContentType.Application.Json)
         body = config
     }

@@ -8,7 +8,6 @@ import kotlinx.serialization.modules.polymorphic
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import uk.dioxic.muon.ConfigMap
-import uk.dioxic.muon.ConfigKey
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.*
@@ -58,15 +57,15 @@ class ConfigDal(configDir: String) {
         return ConfigMap.Default
     }
 
-    fun getLibraryConfig() = configMap.getLibraryConfig()
-    fun getAudioImportConfig() = configMap.getAudioImportConfig()
+//    fun getLibraryConfig() = configMap.getLibraryConfig()
+//    fun getAudioImportConfig() = configMap.getAudioImportConfig()
 
     fun getAll() = configMap
 
-    operator fun get(key: ConfigKey) = configMap.getValue(key)
+//    operator fun get(key: ConfigKey) = configMap.getValue(key)
 
-    operator fun set(key: ConfigKey, value: Config) {
-        configMap = configMap.copy(key, value)
+//    operator fun set(key: ConfigKey, value: Config) {
+//        configMap = configMap.copy(key, value)
 //        configMap = when (key) {
 //            ConfigKey.AudioImport -> {
 //                require(value is AudioImportConfig) { "Invalid audio import config" }
@@ -77,8 +76,15 @@ class ConfigDal(configDir: String) {
 //                configMap.copy(libraryConfig = value)
 //            }
 //        }
-        save(configMap)
-    }
+//        save(configMap)
+//    }
+
+    fun save(config: Config) = save(
+        when (config) {
+            is LibraryConfig -> configMap.copy(libraryConfig = config)
+            is AudioImportConfig -> configMap.copy(importConfig = config)
+        }
+    )
 
     private fun save(configMap: ConfigMap) {
         Files.writeString(configFile, json.encodeToString(configMap))

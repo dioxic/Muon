@@ -13,10 +13,10 @@ fun <t> List<t>.swap(a: Int, b: Int): List<t> = this
         it[b] = this[a]
     }
 
-fun <T> coalesce(vararg items: T): T {
+fun <T> coalesce(ignore: String, vararg items: T): T {
     items.forEach {
         if (it != null) {
-            if (it is String && it.isEmpty()) {
+            if (ignore == it) {
                 // goto next item
             } else {
                 return it
@@ -25,6 +25,8 @@ fun <T> coalesce(vararg items: T): T {
     }
     return items.first()
 }
+
+fun <T> coalesce(vararg items: T) = coalesce("", items)
 
 //fun <t> MutableList<t>.swap(a: Int, b: Int): List<t> = this
 //    .also {

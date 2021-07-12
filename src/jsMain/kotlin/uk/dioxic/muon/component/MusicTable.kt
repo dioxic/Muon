@@ -23,6 +23,7 @@ import uk.dioxic.muon.api.getAudioImportList
 import uk.dioxic.muon.api.saveAudioImportConfig
 import uk.dioxic.muon.audio.AudioFileImport
 import uk.dioxic.muon.audio.AudioImportFieldKey
+import uk.dioxic.muon.audio.findCommonFields
 import uk.dioxic.muon.config.AudioImportConfig
 import kotlin.math.min
 
@@ -74,8 +75,10 @@ external interface MusicTableProps : RProps {
     var filter: String
 }
 
+const val MULTIPLE = "Multiple"
+
 val AudioFileImport.Companion.MULTI: AudioFileImport
-    get() = build("Multiple")
+    get() = build(MULTIPLE)
 
 val MusicTable = functionalComponent<MusicTableProps> { props ->
     val (config, setConfig) = useState(AudioImportConfig.Default)
@@ -154,8 +157,16 @@ val MusicTable = functionalComponent<MusicTableProps> { props ->
     }
 
     fun handleEditMultiple() {
-//        setEditing(musicList.filter { selected.contains(it.id) }) // get common
-        setEditing(AudioFileImport.BLANK)
+        setEditing(AudioFileImport.MULTI.copy(
+            originalTags = findCommonFields(
+                MULTIPLE,
+                musicList.filter { selected.contains(it.id) }.map { it.originalTags }),
+            standardizedTags = findCommonFields(
+                MULTIPLE,
+                musicList.filter { selected.contains(it.id) }.map { it.standardizedTags }),
+            header = findCommonFields(musicList.filter { selected.contains(it.id) }.map { it.header }),
+        )
+        )
         setEditDialogOpen(true)
     }
 
@@ -292,14 +303,14 @@ val MusicTable = functionalComponent<MusicTableProps> { props ->
     child(MusicEdit, props = jsObject {
         open = editDialogOpen
         initialState = editing
-        showFilename = true
-        title = "Edit"
-        onChange = { musicFile -> setEditing(musicFile) }
+        showFilename = (editing.id != MULTIPLE)
+        title = if (editing.id == MULTIPLE) "Edit Multiple" else "Edit"
+        onChange = { audioState -> setEditing(audioState) }
         onSave = {
-            if (editing.id.isEmpty()) {
+            if (editing.id == MULTIPLE) {
                 setMusicList(musicList.map {
                     if (selected.contains(it.id)) {
-                        it.merge(editing)
+                        it.merge(editing, ignoreText = MULTIPLE, ignoreLocation = true)
                     } else {
                         it
                     }

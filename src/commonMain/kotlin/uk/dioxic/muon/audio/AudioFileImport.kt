@@ -67,22 +67,22 @@ data class AudioFileImport(
             Bitrate -> header.bitrate.toString()
         }
 
-    fun merge(other: AudioFileImport) = AudioFileImport(
+    fun merge(other: AudioFileImport, ignoreText: String, ignoreLocation: Boolean = true) = AudioFileImport(
         id = id,
         originalTags = originalTags,
         standardizedTags = Tags(
-            album = coalesce(other.standardizedTags.album, standardizedTags.album),
-            artist = coalesce(other.standardizedTags.artist, standardizedTags.artist),
-            title = coalesce(other.standardizedTags.title, standardizedTags.title),
-            genre = coalesce(other.standardizedTags.genre, standardizedTags.genre),
-            comment = coalesce(other.standardizedTags.comment, standardizedTags.comment),
-            year = coalesce(other.standardizedTags.year, standardizedTags.year),
-            lyricist = coalesce(other.standardizedTags.lyricist, standardizedTags.lyricist),
+            album = coalesce(ignoreText, other.standardizedTags.album, standardizedTags.album),
+            artist = coalesce(ignoreText, other.standardizedTags.artist, standardizedTags.artist),
+            title = coalesce(ignoreText, other.standardizedTags.title, standardizedTags.title),
+            genre = coalesce(ignoreText, other.standardizedTags.genre, standardizedTags.genre),
+            comment = coalesce(ignoreText, other.standardizedTags.comment, standardizedTags.comment),
+            year = coalesce(ignoreText, other.standardizedTags.year, standardizedTags.year),
+            lyricist = coalesce(ignoreText, other.standardizedTags.lyricist, standardizedTags.lyricist),
         ),
         originalLocation = originalLocation,
-        standardizedLocation = Location(
-            path = coalesce(other.standardizedLocation.path, standardizedLocation.path),
-            filename = coalesce(other.standardizedLocation.filename, standardizedLocation.filename),
+        standardizedLocation = if (ignoreLocation) standardizedLocation else Location(
+            path = coalesce(ignoreText, other.standardizedLocation.path, standardizedLocation.path),
+            filename = coalesce(ignoreText, other.standardizedLocation.filename, standardizedLocation.filename),
         ),
         header = header
     )
