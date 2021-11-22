@@ -71,7 +71,7 @@ private fun comparator(
         else -> AudioFileImport.comparator(b, a, orderBy)
     }
 
-external interface MusicTableProps : RProps {
+external interface MusicTableProps : Props {
     var filter: String
 }
 
@@ -80,7 +80,7 @@ const val MULTIPLE = "Multiple"
 val AudioFileImport.Companion.MULTI: AudioFileImport
     get() = build(MULTIPLE)
 
-val MusicTable = functionalComponent<MusicTableProps> { props ->
+val MusicTable = fc<MusicTableProps> { props ->
     val (config, setConfig) = useState(AudioImportConfig.Default)
     val (musicList, setMusicList) = useState(emptyList<AudioFileImport>())
     val (selected, setSelected) = useState(emptyList<String>())
@@ -94,11 +94,12 @@ val MusicTable = functionalComponent<MusicTableProps> { props ->
     val (editDialogOpen, setEditDialogOpen) = useState(false)
     val (backdropOpen, setBackdropOpen) = useState(false)
 
-    useEffect(dependencies = listOf()) {
+    useEffectOnce {
         setBackdropOpen(true)
         scope.launch {
 //            setMusicList(getAudioImportList())
             setConfig(getAudioImportConfig())
+            console.log("doing something in effect")
         }.invokeOnCompletion {
             setBackdropOpen(false)
         }

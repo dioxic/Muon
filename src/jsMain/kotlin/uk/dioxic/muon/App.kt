@@ -1,20 +1,23 @@
 package uk.dioxic.muon
 
+import com.ccfraser.muirwik.components.Colors
 import com.ccfraser.muirwik.components.mCircularProgress
 import com.ccfraser.muirwik.components.mCssBaseline
 import com.ccfraser.muirwik.components.mThemeProvider
 import com.ccfraser.muirwik.components.styles.ThemeOptions
 import com.ccfraser.muirwik.components.styles.createMuiTheme
-import com.ccfraser.muirwik.components.Colors
-import react.*
-import kotlinext.js.*
-import kotlinx.coroutines.*
+import kotlinext.js.jsObject
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import react.Props
+import react.fc
+import react.useState
 import uk.dioxic.muon.api.fetchFullConfig
 import uk.dioxic.muon.component.MainFrame
 
 private val scope = MainScope()
 
-val App = functionalComponent<RProps> {
+val App = fc<Props> {
     val (isLoading, setLoading) = useState(true)
     val (themeColor, setThemeColor) = useState("light")
     val (config, setConfig) = useState(ConfigMap.Default)
@@ -35,6 +38,7 @@ val App = functionalComponent<RProps> {
         scope.launch {
             if (config == ConfigMap.Default) {
                 setConfig(fetchFullConfig())
+                console.log("fetching initial config")
             }
         }.invokeOnCompletion {
             setLoading(false)
@@ -49,6 +53,7 @@ val App = functionalComponent<RProps> {
                 }
             })
         }
+
 //        mThemeProvider(createMuiTheme(themeOptions)) {
 //            mainFrame(Page.Intro) { setThemeColor(if (themeColor == "dark") "light" else "dark") }
 //        }

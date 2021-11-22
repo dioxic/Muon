@@ -3,20 +3,21 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val spekVersion = "2.0.16"
-val ktorVersion = "1.6.1"
-val kotlinVersion = "1.5.20"
-val serializationVersion = "1.2.2"
+val ktorVersion = "1.6.5"
+val kotlinVersion = "1.5.30"
+val serializationVersion = "1.3.1"
 val log4jVersion = "2.14.1"
 //val muirwikComponentVersion = "0.6.7-IR"
-val muirwikComponentVersion = "0.8.2"
+val muirwikComponentVersion = "0.9.1"
 val reactVersion = "17.0.2"
-val kotlinJsWrapperVersion = "pre.213-kotlin-1.5.20"
+val kotlinJsVersion = "pre.236-kotlin-1.5.30"
+val koinVersion = "3.1.3"
 
 plugins {
-    kotlin("multiplatform") version "1.5.20"
-    kotlin("plugin.serialization") version "1.5.20"
+    kotlin("multiplatform") version "1.5.30"
+    kotlin("plugin.serialization") version "1.5.30"
     application
-    id("pl.allegro.tech.build.axion-release") version "1.13.3"
+    id("pl.allegro.tech.build.axion-release") version "1.13.6"
 //    id("com.github.johnrengelman.shadow") version "7.0.0"
     id("com.github.ben-manes.versions") version "0.39.0"
 }
@@ -72,12 +73,16 @@ kotlin {
         val jvmMain by getting {
 //            dependsOn(commonMain)
             dependencies {
+                implementation("io.insert-koin:koin-ktor:$koinVersion")
+                implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
+
                 implementation("io.ktor:ktor-serialization:$ktorVersion")
                 implementation("io.ktor:ktor-server-core:$ktorVersion")
                 implementation("io.ktor:ktor-server-netty:$ktorVersion")
                 implementation("io.ktor:ktor-websockets:$ktorVersion")
 //                implementation("org.litote.kmongo:kmongo-coroutine-serialization:4.2.5")
                 implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+
                 // logging
 //                implementation(platform("org.apache.logging.log4j:log4j-bom:2.14.1"))
                 implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
@@ -95,7 +100,7 @@ kotlin {
 //            dependsOn(commonTest)
             dependencies {
 //                implementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
-                implementation("org.assertj:assertj-core:3.20.2")
+                implementation("org.assertj:assertj-core:3.21.0")
 //                runtimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
 //                runtimeOnly("org.spekframework.spek2:spek-runtime-jvm:$spekVersion")
             }
@@ -114,12 +119,12 @@ kotlin {
                 //React, React DOM + Wrappers
                 implementation(npm("react", reactVersion))
                 implementation(npm("react-dom", reactVersion))
-                implementation("org.jetbrains.kotlin-wrappers:kotlin-react:$reactVersion-$kotlinJsWrapperVersion")
-                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom:$reactVersion-$kotlinJsWrapperVersion")
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-react:$reactVersion-$kotlinJsVersion")
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom:$reactVersion-$kotlinJsVersion")
 
                 //styled components
                 implementation(npm("styled-components", "~5.3.0"))
-                implementation("org.jetbrains.kotlin-wrappers:kotlin-styled:5.3.0-$kotlinJsWrapperVersion")
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-styled:5.3.0-$kotlinJsVersion")
 
                 // material ui
                 implementation("com.ccfraser.muirwik:muirwik-components:$muirwikComponentVersion")

@@ -3,17 +3,19 @@ package uk.dioxic.muon.component
 import com.ccfraser.muirwik.components.MColor
 import com.ccfraser.muirwik.components.button.MButtonVariant
 import com.ccfraser.muirwik.components.button.mButton
-import com.ccfraser.muirwik.components.dialog.*
+import com.ccfraser.muirwik.components.dialog.mDialog
+import com.ccfraser.muirwik.components.dialog.mDialogActions
+import com.ccfraser.muirwik.components.dialog.mDialogContent
+import com.ccfraser.muirwik.components.dialog.mDialogTitle
 import com.ccfraser.muirwik.components.form.MFormControlMargin
 import com.ccfraser.muirwik.components.mTextField
-import kotlinx.css.Contain
 import kotlinx.html.InputType
 import org.w3c.dom.HTMLInputElement
-import react.RProps
-import react.functionalComponent
+import react.Props
+import react.fc
 import uk.dioxic.muon.audio.AudioFileImport
 
-external interface MusicEditProps : RProps {
+external interface MusicEditProps : Props {
     var initialState: AudioFileImport
     var title: String
     var onChange: (AudioFileImport) -> Unit
@@ -23,7 +25,7 @@ external interface MusicEditProps : RProps {
     var showFilename: Boolean
 }
 
-val MusicEdit = functionalComponent<MusicEditProps> { props ->
+val MusicEdit = fc<MusicEditProps> { props ->
 
     mDialog(props.open, onClose = { _, _ -> props.onClose() }) {
         mDialogTitle(props.title)
@@ -112,7 +114,7 @@ val MusicEdit = functionalComponent<MusicEditProps> { props ->
                     margin = MFormControlMargin.normal,
                     type = InputType.text,
                     fullWidth = true,
-                    value = props.initialState.originalLocation?.filename
+                    value = props.initialState.originalLocation.filename
                 )
                 mTextField(
                     label = "New Filename",

@@ -19,12 +19,15 @@ import kotlinx.css.properties.Transition
 import kotlinx.css.properties.ms
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.events.Event
-import react.*
+import react.Props
+import react.RBuilder
+import react.fc
+import react.useState
 import styled.StyleSheet
 import styled.css
 import styled.styledDiv
 
-external interface MainFrameProps : RProps {
+external interface MainFrameProps : Props {
     var onThemeSwitch: () -> Unit
     var initialView: String
 }
@@ -41,7 +44,7 @@ private val styles = object : StyleSheet("ComponentStyles", isStatic = true) {
     }
 }
 
-val MainFrame = functionalComponent<MainFrameProps> { props ->
+val MainFrame = fc<MainFrameProps> { props ->
     val (view, setView) = useState(props.initialView)
     val (responsiveDrawerOpen, setResponsiveDrawerOpen) = useState(false)
     val (searchText, setSearchText) = useState("")
@@ -134,7 +137,7 @@ val MainFrame = functionalComponent<MainFrameProps> { props ->
                                 css(styles.searchIcon)
                                 mIcon("search")
                             }
-                            val inputProps = object : RProps {
+                            val inputProps = object : Props {
                                 val className = "${styles.name}-inputInput"
                             }
                             mInput(

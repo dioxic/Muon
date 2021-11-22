@@ -9,8 +9,8 @@ import com.ccfraser.muirwik.components.styles.up
 import kotlinx.css.*
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.events.Event
-import react.RProps
-import react.functionalComponent
+import react.Props
+import react.fc
 import styled.StyleSheet
 import styled.css
 import styled.styledDiv
@@ -27,11 +27,11 @@ private val styles = object : StyleSheet("ComponentStyles", isStatic = true) {
     }
 }
 
-external interface AppBarProps : RProps {
+external interface AppBarProps : Props {
     var onSearchSubmit: (String) -> Unit
 }
 
-val AppBar = functionalComponent<AppBarProps> { props ->
+val AppBar = fc<AppBarProps> { props ->
 
     fun changeHandler(event: Event) {
         val value = (event.target as HTMLInputElement).value
@@ -67,7 +67,8 @@ val AppBar = functionalComponent<AppBarProps> { props ->
                         css(styles.searchIcon)
                         mIcon("search")
                     }
-                    val inputProps = object : RProps {
+
+                    val inputProps = object : Props {
                         val className = "${styles.name}-inputInput"
                     }
                     mInput(placeholder = "Search...", disableUnderline = true, onChange = ::changeHandler) {
