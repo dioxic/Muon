@@ -7,6 +7,9 @@ import com.ccfraser.muirwik.components.styles.Breakpoint
 import com.ccfraser.muirwik.components.styles.fade
 import com.ccfraser.muirwik.components.styles.up
 import kotlinx.css.*
+import kotlinx.css.properties.Timing
+import kotlinx.css.properties.Transition
+import kotlinx.css.properties.ms
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.events.Event
 import react.Props
@@ -54,6 +57,20 @@ val AppBar = fc<AppBarProps> { props ->
                 media(theme.breakpoints.up(Breakpoint.sm)) {
                     marginLeft = 1.spacingUnits
                     width = LinearDimension.auto
+                }
+            }
+            val inputInput by css {
+                paddingTop = 1.spacingUnits
+                paddingRight = 1.spacingUnits
+                paddingBottom = 1.spacingUnits
+                paddingLeft = 10.spacingUnits
+                transition += Transition("width", theme.transitions.duration.standard.ms, Timing.easeInOut, 0.ms)
+                width = 100.pct
+                media(theme.breakpoints.up(Breakpoint.sm)) {
+                    width = 120.px
+                    focus {
+                        width = 200.px
+                    }
                 }
             }
         }

@@ -14,24 +14,29 @@ import org.jaudiotagger.audio.AudioFileIO
 import org.koin.dsl.module
 import org.koin.ktor.ext.Koin
 import org.koin.logger.slf4jLogger
-import uk.dioxic.muon.repository.ConfigRepository
-import uk.dioxic.muon.repository.ConfigRepositoryImpl
-import uk.dioxic.muon.repository.ShoppingRepository
+import uk.dioxic.muon.repository.*
+import uk.dioxic.muon.service.ImportService
+import uk.dioxic.muon.service.ImportServiceImpl
 import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.io.path.ExperimentalPathApi
 
 val appModule = module {
     single<ConfigRepository> { ConfigRepositoryImpl(configDirectory = "${System.getenv("HOMEPATH")}/.muon") }
+    single<LibraryRepository> { LibraryRepositoryImpl(get()) }
+    single<ImportService> { ImportServiceImpl(get()) }
     single { ShoppingRepository() }
 }
 
 fun main(args: Array<String>) {
+    System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
     AudioFileIO.logger.level = Level.OFF
     embeddedServer(Netty, commandLineEnvironment(args)).start()
 }
 
 @ExperimentalPathApi
 fun Application.main() {
+    install(CallLogging)
     install(ContentNegotiation) {
         json()
     }
@@ -51,7 +56,6 @@ fun Application.main() {
 
     routing {
         shoppingList()
-        audioFile()
         import()
         config()
         index()

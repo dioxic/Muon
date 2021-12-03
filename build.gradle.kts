@@ -91,7 +91,8 @@ kotlin {
                 implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
 
                 implementation("com.github.ajalt:clikt:2.8.0")
-                implementation("net.jthink:jaudiotagger:2.2.6-SNAPSHOT")
+//                implementation("net.jthink:jaudiotagger:2.2.6-SNAPSHOT")
+                implementation("net.jthink:jaudiotagger:3.0.1")
 
             }
         }

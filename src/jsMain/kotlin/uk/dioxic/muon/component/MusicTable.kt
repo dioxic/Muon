@@ -3,7 +3,8 @@ package uk.dioxic.muon.component
 import com.ccfraser.muirwik.components.*
 import com.ccfraser.muirwik.components.button.MIconButtonSize
 import com.ccfraser.muirwik.components.button.mIconButton
-import com.ccfraser.muirwik.components.dialog.*
+import com.ccfraser.muirwik.components.dialog.mDialog
+import com.ccfraser.muirwik.components.dialog.mDialogTitle
 import com.ccfraser.muirwik.components.list.*
 import com.ccfraser.muirwik.components.styles.lighten
 import com.ccfraser.muirwik.components.table.*
@@ -16,21 +17,23 @@ import react.dom.div
 import styled.StyleSheet
 import styled.css
 import styled.styledDiv
-import uk.dioxic.muon.*
-import uk.dioxic.muon.audio.AudioImportFieldKey.*
+import uk.dioxic.muon.Column
 import uk.dioxic.muon.api.getAudioImportConfig
 import uk.dioxic.muon.api.getAudioImportList
+import uk.dioxic.muon.api.saveAudioFile
 import uk.dioxic.muon.api.saveAudioImportConfig
-import uk.dioxic.muon.audio.AudioFileImport
-import uk.dioxic.muon.audio.AudioImportFieldKey
+import uk.dioxic.muon.audio.AudioFile
+import uk.dioxic.muon.audio.AudioFile.Keys.*
 import uk.dioxic.muon.audio.findCommonFields
 import uk.dioxic.muon.config.AudioImportConfig
+import uk.dioxic.muon.orderDown
+import uk.dioxic.muon.orderUp
 import kotlin.math.min
 
 private val scope = MainScope()
 
 //private data class Column(
-//    val id: AudioFileImportFieldKey,
+//    val id: AudioFileFieldKey,
 //    val rightAligned: Boolean = false,
 //    val disablePadding: Boolean = false,
 //    val label: String,
@@ -61,14 +64,14 @@ private val scope = MainScope()
 //)
 
 private fun comparator(
-    a: AudioFileImport,
-    b: AudioFileImport,
+    a: AudioFile,
+    b: AudioFile,
     order: MTableCellSortDirection,
-    orderBy: AudioImportFieldKey
+    orderBy: AudioFile.Keys
 ) =
     when (order) {
-        MTableCellSortDirection.asc -> AudioFileImport.comparator(a, b, orderBy)
-        else -> AudioFileImport.comparator(b, a, orderBy)
+        MTableCellSortDirection.asc -> AudioFile.comparator(a, b, orderBy)
+        else -> AudioFile.comparator(b, a, orderBy)
     }
 
 external interface MusicTableProps : Props {
@@ -77,16 +80,16 @@ external interface MusicTableProps : Props {
 
 const val MULTIPLE = "Multiple"
 
-val AudioFileImport.Companion.MULTI: AudioFileImport
+val AudioFile.Companion.MULTI: AudioFile
     get() = build(MULTIPLE)
 
 val MusicTable = fc<MusicTableProps> { props ->
     val (config, setConfig) = useState(AudioImportConfig.Default)
-    val (musicList, setMusicList) = useState(emptyList<AudioFileImport>())
+    val (musicList, setMusicList) = useState(emptyList<AudioFile>())
     val (selected, setSelected) = useState(emptyList<String>())
-    val (editing, setEditing) = useState(AudioFileImport.BLANK)
+    val (editing, setEditing) = useState(AudioFile.BLANK)
     val (order, setOrder) = useState(MTableCellSortDirection.asc)
-    val (orderBy, setOrderByColumn) = useState(StandardizedArtist)
+    val (orderBy, setOrderByColumn) = useState(Artist)
     val (page, setPage) = useState(0)
     val (rowsPerPage, setRowsPerPage) = useState(25)
     val (genreDialogOpen, setGenreDialogOpen) = useState(false)
@@ -121,7 +124,7 @@ val MusicTable = fc<MusicTableProps> { props ->
         }
     }
 
-    fun handleRequestSort(field: AudioImportFieldKey) {
+    fun handleRequestSort(field: AudioFile.Keys) {
         val isAsc = orderBy == field && order == MTableCellSortDirection.asc
         setOrder(if (isAsc) MTableCellSortDirection.desc else MTableCellSortDirection.asc)
         setOrderByColumn(field)
@@ -143,7 +146,7 @@ val MusicTable = fc<MusicTableProps> { props ->
         setGenreDialogOpen(false)
     }
 
-    fun handleEditButtonClick(audioFile: AudioFileImport) {
+    fun handleEditButtonClick(audioFile: AudioFile) {
         setEditing(audioFile)
         setEditDialogOpen(true)
     }
@@ -152,19 +155,20 @@ val MusicTable = fc<MusicTableProps> { props ->
         setGenreDialogOpen(false)
         setMusicList(musicList.map {
             if (selected.contains(it.id))
-                it.copy(standardizedTags = it.standardizedTags.copy(genre = genre))
+                it.copy(tags = it.tags.copy(genre = genre)).also {
+                    scope.launch {
+                        saveAudioFile(it)
+                    }
+                }
             else it
         }.toList())
     }
 
     fun handleEditMultiple() {
-        setEditing(AudioFileImport.MULTI.copy(
-            originalTags = findCommonFields(
+        setEditing(AudioFile.MULTI.copy(
+            tags = findCommonFields(
                 MULTIPLE,
-                musicList.filter { selected.contains(it.id) }.map { it.originalTags }),
-            standardizedTags = findCommonFields(
-                MULTIPLE,
-                musicList.filter { selected.contains(it.id) }.map { it.standardizedTags }),
+                musicList.filter { selected.contains(it.id) }.map { it.tags }),
             header = findCommonFields(musicList.filter { selected.contains(it.id) }.map { it.header }),
         )
         )
@@ -173,9 +177,13 @@ val MusicTable = fc<MusicTableProps> { props ->
 
     fun handleClearComments() {
         setMusicList(musicList.map {
-            if (selected.contains(it.id))
-                it.copy(standardizedTags = it.standardizedTags.copy(comment = ""))
-            else it
+            if (selected.contains(it.id) && it.tags.comment.isNotEmpty()) {
+                it.copy(tags = it.tags.copy(comment = "")).also {
+                    scope.launch {
+                        saveAudioFile(it)
+                    }
+                }
+            } else it
         }.toList())
     }
 
@@ -188,7 +196,7 @@ val MusicTable = fc<MusicTableProps> { props ->
         }
     }
 
-    fun handleColumnVisibilityChange(key: AudioImportFieldKey, visible: Boolean) {
+    fun handleColumnVisibilityChange(key: AudioFile.Keys, visible: Boolean) {
         saveConfig(config.copy(
             columns = config.columns.toMutableMap().apply {
                 this[key] = this[key]!!.copy(visible = visible)
@@ -196,7 +204,7 @@ val MusicTable = fc<MusicTableProps> { props ->
         ))
     }
 
-    fun handleColumnReorderUp(key: AudioImportFieldKey) {
+    fun handleColumnReorderUp(key: AudioFile.Keys) {
         saveConfig(
             config.copy(
                 columns = config.columns.orderUp(key)
@@ -204,7 +212,7 @@ val MusicTable = fc<MusicTableProps> { props ->
         )
     }
 
-    fun handleColumnReorderDown(key: AudioImportFieldKey) {
+    fun handleColumnReorderDown(key: AudioFile.Keys) {
         saveConfig(
             config.copy(
                 columns = config.columns.orderDown(key)
@@ -311,13 +319,25 @@ val MusicTable = fc<MusicTableProps> { props ->
             if (editing.id == MULTIPLE) {
                 setMusicList(musicList.map {
                     if (selected.contains(it.id)) {
-                        it.merge(editing, ignoreText = MULTIPLE, ignoreLocation = true)
+                        it.merge(editing, ignoreText = MULTIPLE).also {
+                            scope.launch {
+                                saveAudioFile(it)
+                            }
+                        }
                     } else {
                         it
                     }
                 }.toList())
             } else {
-                setMusicList(musicList.map { if (editing.id == it.id) editing else it }.toList())
+                setMusicList(musicList.map {
+                    if (editing.id == it.id) {
+                        editing.also {
+                            scope.launch {
+                                saveAudioFile(it)
+                            }
+                        }
+                    } else it
+                }.toList())
             }
             setEditDialogOpen(false)
         }
@@ -415,11 +435,11 @@ private fun RBuilder.enhancedTableToolbar(
 private fun RBuilder.enhancedTableHead(
     numSelected: Int,
     order: MTableCellSortDirection,
-    orderBy: AudioImportFieldKey,
+    orderBy: AudioFile.Keys,
     rowCount: Int,
-    columns: Map<AudioImportFieldKey, Column>,
+    columns: Map<AudioFile.Keys, Column>,
     onSelectAllClick: (checked: Boolean) -> Unit,
-    onRequestSort: (id: AudioImportFieldKey) -> Unit
+    onRequestSort: (id: AudioFile.Keys) -> Unit
 ) {
     mTableHead {
         mTableRow {
@@ -459,10 +479,10 @@ private fun RBuilder.enhancedTableHead(
 private fun RBuilder.columnDialog(
     dialogOpen: Boolean,
     onDialogClose: () -> Unit,
-    columns: Map<AudioImportFieldKey, Column>,
-    onVisibilityChange: (AudioImportFieldKey, Boolean) -> Unit,
-    onMoveUp: (AudioImportFieldKey) -> Unit,
-    onMoveDown: (AudioImportFieldKey) -> Unit,
+    columns: Map<AudioFile.Keys, Column>,
+    onVisibilityChange: (AudioFile.Keys, Boolean) -> Unit,
+    onMoveUp: (AudioFile.Keys) -> Unit,
+    onMoveDown: (AudioFile.Keys) -> Unit,
 ) {
     themeContext.Consumer { theme ->
         val styles = object : StyleSheet("ComponentStyles", isStatic = true) {

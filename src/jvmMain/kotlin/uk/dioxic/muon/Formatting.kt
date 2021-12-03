@@ -1,9 +1,6 @@
 package uk.dioxic.muon
 
-import uk.dioxic.muon.audio.AudioFile
-import uk.dioxic.muon.audio.AudioFileImport
 import uk.dioxic.muon.audio.Tags
-import uk.dioxic.muon.audio.Location
 
 fun formatFilename(originalFilename: String, tags: Tags): String {
 
@@ -25,18 +22,6 @@ fun formatFilename(originalFilename: String, tags: Tags): String {
         .originalMix()
 
 }
-
-fun AudioFile.format() = AudioFileImport(
-    id = this.location.path,
-    originalTags = this.tags,
-    originalLocation = this.location,
-    standardizedTags = this.tags,
-    standardizedLocation = Location(
-        path = this.location.path,
-        filename = formatFilename(this.location.filename, this.tags)
-    ),
-    header = this.header
-)
 
 val rippers = listOf("mkd", "a0ebaebc", "oma")
 

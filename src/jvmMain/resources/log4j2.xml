@@ -12,5 +12,6 @@
         <Logger name="io.ktor" level="TRACE"/>
         <Logger name="org.jaudiotagger" level="WARN"/>
         <Logger name="org.jaudiotagger.audio.wav" level="FATAL"/>
+        <Logger name="uk.dioxic.muon" level="DEBUG"/>
     </Loggers>
 </Configuration>

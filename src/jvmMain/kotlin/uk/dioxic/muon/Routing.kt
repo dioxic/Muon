@@ -7,12 +7,13 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import org.koin.ktor.ext.inject
 import uk.dioxic.muon.audio.AudioFile
-import uk.dioxic.muon.audio.AudioFileImport
 import uk.dioxic.muon.config.AudioImportConfig
 import uk.dioxic.muon.config.Config
 import uk.dioxic.muon.config.LibraryConfig
 import uk.dioxic.muon.repository.ConfigRepository
+import uk.dioxic.muon.repository.LibraryRepository
 import uk.dioxic.muon.repository.ShoppingRepository
+import uk.dioxic.muon.service.ImportService
 import java.io.File
 import kotlin.io.path.ExperimentalPathApi
 
@@ -25,7 +26,7 @@ fun Routing.shoppingList() {
             call.respond(shoppingRepo.get())
         }
         post {
-            shoppingRepo.add(call.receive<ShoppingListItem>())
+            shoppingRepo.add(call.receive())
             call.respond(HttpStatusCode.OK)
         }
         delete("/{id}") {
@@ -37,24 +38,33 @@ fun Routing.shoppingList() {
 }
 
 fun Routing.import() {
-    val configRepository by inject<ConfigRepository>()
+    val importService by inject<ImportService>()
 
-    route(AudioFileImport.path) {
+    route(importPath) {
         get {
-            call.respond(readAudioFiles(File(configRepository.getLibraryConfig().importPath)).map { it.format() })
+            call.respond(importService.getImportFiles())
+        }
+        post {
+            importService.save(call.receive())
+            call.respond(HttpStatusCode.OK)
+        }
+        delete("/{id}") {
+            val id = call.parameters["id"] ?: error("Invalid delete request")
+            importService.delete(id)
+            call.respond(HttpStatusCode.OK)
         }
     }
 }
 
-fun Routing.audioFile() {
-    val configRepository by inject<ConfigRepository>()
-
-    route(AudioFile.path) {
-        get {
-            call.respond(readAudioFiles(File(configRepository.getLibraryConfig().libraryPath)))
-        }
-    }
-}
+//fun Routing.audioFile() {
+//    val configRepository by inject<ConfigRepository>()
+//
+//    route(AudioFile.path) {
+//        get {
+//            call.respond(readAudioFiles(File(configRepository.getLibraryConfig().libraryPath)))
+//        }
+//    }
+//}
 
 @ExperimentalPathApi
 fun Routing.config() {
