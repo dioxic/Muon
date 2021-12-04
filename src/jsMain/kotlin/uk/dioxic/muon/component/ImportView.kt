@@ -162,7 +162,7 @@ val MusicTable = fc<MusicTableProps> { props ->
     fun handleRefresh() {
         setBackdropOpen(true)
         scope.launch {
-            setMusicList(getAudioImportList())
+            setMusicList(getAudioImportList(reload = true))
         }.invokeOnCompletion {
             setBackdropOpen(false)
         }
