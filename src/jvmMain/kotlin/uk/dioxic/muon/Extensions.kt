@@ -39,7 +39,7 @@ var Tag.year: String
 
 var Tag.genre: String
     get() = getFirst(FieldKey.GENRE)
-    set(value) = setOrRemoveField(FieldKey.GENRE, value)
+    set(value) = setField(FieldKey.GENRE, value)
 
 private fun Tag.setOrRemoveField(fieldKey: FieldKey, value: String) {
     if (value.isEmpty()) {
