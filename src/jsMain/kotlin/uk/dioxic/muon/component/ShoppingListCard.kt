@@ -12,10 +12,7 @@ import com.ccfraser.muirwik.components.spacingUnits
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.css.*
-import react.Props
-import react.fc
-import react.useEffect
-import react.useState
+import react.*
 import styled.StyleSheet
 import styled.css
 import styled.styledDiv
@@ -38,7 +35,7 @@ private val scope = MainScope()
 val ShoppingList = fc<Props> {
     val (shoppingList, setShoppingList) = useState(emptyList<ShoppingListItem>())
 
-    useEffect {
+    useEffectOnce {
         scope.launch {
             setShoppingList(getShoppingList())
         }
