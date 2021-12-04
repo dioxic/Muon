@@ -69,7 +69,7 @@ val MusicTable = fc<MusicTableProps> { props ->
     useEffectOnce {
         setBackdropOpen(true)
         scope.launch {
-//            setMusicList(getAudioImportList())
+            setMusicList(getAudioImportList())
             setConfig(getAudioImportConfig())
         }.invokeOnCompletion {
             setBackdropOpen(false)
