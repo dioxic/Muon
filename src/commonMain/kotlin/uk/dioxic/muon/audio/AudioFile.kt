@@ -65,7 +65,7 @@ data class AudioFile(
             AudioFile(
                 id = defaultText,
                 tags = Tags(defaultText),
-                location = Location(),
+                location = Location(defaultText),
                 header = Header()
             )
 

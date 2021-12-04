@@ -170,6 +170,10 @@ val MusicTable = fc<MusicTableProps> { props ->
                 MULTIPLE,
                 musicList.filter { selected.contains(it.id) }.map { it.tags }),
             header = findCommonFields(musicList.filter { selected.contains(it.id) }.map { it.header }),
+            location = findCommonFields(
+                MULTIPLE,
+                musicList.filter { selected.contains(it.id) }.map { it.location }
+            )
         )
         )
         setEditDialogOpen(true)
