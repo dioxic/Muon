@@ -19,9 +19,9 @@ import kotlin.io.path.ExperimentalPathApi
 
 fun Routing.shoppingList() {
 
-    val shoppingRepo by inject<ShoppingRepository> ()
+    val shoppingRepo by inject<ShoppingRepository>()
 
-    route(ShoppingListItem.path) {
+    route(shoppingListPath) {
         get {
             call.respond(shoppingRepo.get())
         }
@@ -42,6 +42,9 @@ fun Routing.import() {
 
     route(importPath) {
         get {
+            if (call.parameters["reload"]?.toBoolean() == true) {
+                importService.reload()
+            }
             call.respond(importService.getImportFiles())
         }
         post {

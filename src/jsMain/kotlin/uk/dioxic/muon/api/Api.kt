@@ -6,6 +6,7 @@ import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.browser.window
+import kotlinx.html.MetaHttpEquiv.refresh
 import uk.dioxic.muon.*
 import uk.dioxic.muon.audio.AudioFile
 import uk.dioxic.muon.config.AudioImportConfig
@@ -25,8 +26,10 @@ suspend fun getShoppingList(): List<ShoppingListItem> {
 //    return jsonClient.get(endpoint + AudioFile.path)
 //}
 
-suspend fun getAudioImportList(): List<AudioFile> {
-    return jsonClient.get(endpoint + importPath)
+suspend fun getAudioImportList(reload: Boolean = false): List<AudioFile> {
+    return jsonClient.get(endpoint + importPath) {
+        parameter("reload", reload)
+    }
 }
 
 suspend fun getAudioImportConfig(): AudioImportConfig {

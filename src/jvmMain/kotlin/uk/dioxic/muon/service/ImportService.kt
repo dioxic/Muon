@@ -1,9 +1,10 @@
 package uk.dioxic.muon.service
 
 import uk.dioxic.muon.audio.AudioFile
-import java.nio.file.Path
 
 interface ImportService {
+
+    fun reload()
 
     fun getImportFiles(): List<AudioFile>
 

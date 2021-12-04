@@ -10,8 +10,15 @@ class ImportServiceImpl(private val libraryRepository: LibraryRepository) : Impo
 
     private val logger = LogManager.getLogger()
 
-    private val fileCache: MutableMap<String, AudioFile> =
-        libraryRepository.getImportFiles().associateBy { it.id }.toMutableMap()
+    private lateinit var fileCache: MutableMap<String, AudioFile>
+
+    init {
+        reload()
+    }
+
+    override fun reload() {
+        fileCache = libraryRepository.getImportFiles().associateBy { it.id }.toMutableMap()
+    }
 
     override fun getImportFiles() = fileCache.values.toList()
 
