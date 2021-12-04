@@ -43,7 +43,7 @@ private fun comparator(
         else -> AudioFile.comparator(b, a, orderBy)
     }
 
-external interface MusicTableProps : Props {
+external interface ImportViewProps : Props {
     var filter: String
 }
 
@@ -52,7 +52,7 @@ const val MULTIPLE = "Multiple"
 val AudioFile.Companion.MULTI: AudioFile
     get() = build(MULTIPLE)
 
-val MusicTable = fc<MusicTableProps> { props ->
+val ImportView = fc<ImportViewProps> { props ->
     val (config, setConfig) = useState(AudioImportConfig.Default)
     val (musicList, setMusicList) = useState(emptyList<AudioFile>())
     val (selected, setSelected) = useState(emptyList<String>())
