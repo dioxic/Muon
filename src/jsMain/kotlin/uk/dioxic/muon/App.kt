@@ -38,7 +38,6 @@ val App = fc<Props> {
         scope.launch {
             if (config == ConfigMap.Default) {
                 setConfig(fetchFullConfig())
-                console.log("fetching initial config")
             }
         }.invokeOnCompletion {
             setLoading(false)

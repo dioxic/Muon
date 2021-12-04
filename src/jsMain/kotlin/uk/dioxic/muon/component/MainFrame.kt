@@ -75,7 +75,7 @@ val MainFrame = fc<MainFrameProps> { props ->
                 hover {
                     backgroundColor = Color(fade(theme.palette.common.white, 0.25))
                 }
-                marginRight = 6.px
+//                marginRight = 6.px
                 marginLeft = 0.px
                 width = 100.pct
                 media(theme.breakpoints.up(Breakpoint.sm)) {

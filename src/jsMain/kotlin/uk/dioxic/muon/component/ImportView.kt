@@ -32,37 +32,6 @@ import kotlin.math.min
 
 private val scope = MainScope()
 
-//private data class Column(
-//    val id: AudioFileFieldKey,
-//    val rightAligned: Boolean = false,
-//    val disablePadding: Boolean = false,
-//    val label: String,
-//    val visible: Boolean = true
-//)
-//
-//private val defaultColumns = listOf(
-//    Column(OriginalArtist, disablePadding = true, label = "Original Artist", visible = false),
-//    Column(OriginalTitle, label = "Original Title", visible = false),
-//    Column(OriginalGenre, label = "Original Genre", visible = false),
-//    Column(OriginalComment, label = "Original Comment", visible = false),
-//    Column(OriginalLyricist, label = "Original Lyricist", visible = false),
-//    Column(OriginalYear, rightAligned = true, label = "Original Year", visible = false),
-//    Column(OriginalFilename, label = "Original Filename", visible = false),
-//    Column(OriginalAlbum, label = "Original Album", visible = false),
-//    Column(StandardizedArtist, disablePadding = true, label = "Artist"),
-//    Column(StandardizedTitle, label = "Title"),
-//    Column(StandardizedGenre, label = "Genre"),
-//    Column(StandardizedComment, label = "Comment"),
-//    Column(StandardizedLyricist, label = "Lyricist"),
-//    Column(StandardizedYear, rightAligned = true, label = "Year"),
-//    Column(StandardizedFilename, label = "Filename"),
-//    Column(StandardizedAlbum, label = "Album", visible = false),
-//    Column(Length, rightAligned = true, label = "Length"),
-//    Column(Bitrate, rightAligned = true, label = "Bitrate"),
-//    Column(VBR, rightAligned = true, label = "VBR", visible = false),
-//    Column(Type, label = "Type"),
-//)
-
 private fun comparator(
     a: AudioFile,
     b: AudioFile,
@@ -102,7 +71,6 @@ val MusicTable = fc<MusicTableProps> { props ->
         scope.launch {
 //            setMusicList(getAudioImportList())
             setConfig(getAudioImportConfig())
-            console.log("doing something in effect")
         }.invokeOnCompletion {
             setBackdropOpen(false)
         }
@@ -508,7 +476,6 @@ private fun RBuilder.columnDialog(
 //                css(styles.listDiv)
                 mList(dense = true) {
                     css(styles.list)
-//                    mListSubheader("\"Full\" ListItemAvatar (more code)", disableSticky = true)
                     columns.toList()
                         .forEachIndexed { idx, (id, column) ->
                             mListItem(button = false) {
