@@ -106,6 +106,21 @@ val MusicEdit = fc<MusicEditProps> { props ->
                     )
                 }
             )
+            mTextField(
+                label = "Genre",
+                autoFocus = true,
+                margin = MFormControlMargin.normal,
+                type = InputType.text,
+                fullWidth = true,
+                value = props.initialState.tags.genre,
+                onChange = {
+                    props.onChange(
+                        props.initialState.copy(
+                            tags = props.initialState.tags.copy(genre = (it.target as HTMLInputElement).value)
+                        )
+                    )
+                }
+            )
             if (props.showFilename) {
                 mTextField(
                     label = "Filename",
