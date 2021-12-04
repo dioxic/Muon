@@ -137,9 +137,9 @@ val MainFrame = fc<MainFrameProps> { props ->
                                 css(styles.searchIcon)
                                 mIcon("search")
                             }
-                            val inputProps = object : Props {
-                                val className = "${styles.name}-inputInput"
-                            }
+                            val inputProps = js("({})")
+                            inputProps.className = "${styles.name}-inputInput"
+
                             mInput(
                                 placeholder = "Search...",
                                 disableUnderline = true,
@@ -213,7 +213,7 @@ val MainFrame = fc<MainFrameProps> { props ->
                             backgroundColor = Color(theme.palette.background.default)
                         }
                         when (view) {
-                            "Import" -> child(MusicTable, props = jsObject {
+                            "Import" -> child(ImportView, props = jsObject {
                                 filter = searchText
                             })
                             "Shopping" -> child(ShoppingList)
