@@ -54,9 +54,20 @@ data class AudioFile(
         location = Location(
             path = coalesce(ignoreText, other.location.path, location.path),
             filename = coalesce(ignoreText, other.location.filename, location.filename),
+            extension = coalesce(ignoreText, other.location.extension, location.extension),
         ),
         header = header
     )
+
+    fun normalizedFilename(): String {
+        if (tags.artist.isNotBlank() && tags.title.isNotBlank()) {
+            val normalizedFilename = "${tags.artist.trim()} - ${tags.title.trim()}.${location.extension}"
+            if (normalizedFilename != location.filename) {
+                return normalizedFilename
+            }
+        }
+        return this.location.filename
+    }
 
     companion object {
         val BLANK = build("")

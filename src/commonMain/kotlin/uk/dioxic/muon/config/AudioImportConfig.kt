@@ -12,7 +12,7 @@ data class AudioImportConfig (
     val columns: Map<AudioFile.Keys, Column>
 ): Config {
     companion object {
-        const val path = "/import"
+        const val path = "import"
         val Default = AudioImportConfig(
             linkedMapOf(
                 Artist to Column(label = "Artist", visible = true),

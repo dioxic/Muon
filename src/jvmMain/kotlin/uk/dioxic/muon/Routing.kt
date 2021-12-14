@@ -6,15 +6,12 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import org.koin.ktor.ext.inject
-import uk.dioxic.muon.audio.AudioFile
 import uk.dioxic.muon.config.AudioImportConfig
 import uk.dioxic.muon.config.Config
 import uk.dioxic.muon.config.LibraryConfig
 import uk.dioxic.muon.repository.ConfigRepository
-import uk.dioxic.muon.repository.LibraryRepository
 import uk.dioxic.muon.repository.ShoppingRepository
-import uk.dioxic.muon.service.ImportService
-import java.io.File
+import uk.dioxic.muon.service.LibraryService
 import kotlin.io.path.ExperimentalPathApi
 
 fun Routing.shoppingList() {
@@ -37,23 +34,23 @@ fun Routing.shoppingList() {
     }
 }
 
-fun Routing.import() {
-    val importService by inject<ImportService>()
+fun Routing.library() {
+    val libraryService by inject<LibraryService>()
 
-    route(importPath) {
-        get {
+    route(libraryPath) {
+        get("/{library}") {
+            val library = call.parameters["library"] ?: error("Invalid request - library missing")
             if (call.parameters["reload"]?.toBoolean() == true) {
-                importService.reload()
+                libraryService.reload(library)
             }
-            call.respond(importService.getImportFiles())
+            call.respond(libraryService.getFiles(library))
         }
         post {
-            importService.save(call.receive())
-            call.respond(HttpStatusCode.OK)
+            call.respond(libraryService.saveFiles(call.receive()))
         }
         delete("/{id}") {
             val id = call.parameters["id"] ?: error("Invalid delete request")
-            importService.delete(id)
+            libraryService.deleteFile(id)
             call.respond(HttpStatusCode.OK)
         }
     }
@@ -73,7 +70,7 @@ fun Routing.import() {
 fun Routing.config() {
     val configRepository by inject<ConfigRepository>()
 
-    route(ConfigMap.path) {
+    route(configPath) {
         subconfig(
             key = AudioImportConfig.path,
             getFn = { configRepository.getImportConfig() },

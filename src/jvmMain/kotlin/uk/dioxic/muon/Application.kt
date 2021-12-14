@@ -15,16 +15,15 @@ import org.koin.dsl.module
 import org.koin.ktor.ext.Koin
 import org.koin.logger.slf4jLogger
 import uk.dioxic.muon.repository.*
-import uk.dioxic.muon.service.ImportService
-import uk.dioxic.muon.service.ImportServiceImpl
+import uk.dioxic.muon.service.LibraryService
+import uk.dioxic.muon.service.LibraryServiceImpl
 import java.util.logging.Level
-import java.util.logging.Logger
 import kotlin.io.path.ExperimentalPathApi
 
 val appModule = module {
     single<ConfigRepository> { ConfigRepositoryImpl(configDirectory = "${System.getenv("HOMEPATH")}/.muon") }
-    single<LibraryRepository> { LibraryRepositoryImpl(get()) }
-    single<ImportService> { ImportServiceImpl(get()) }
+    single<LibraryRepository> { LibraryRepositoryImpl() }
+    single<LibraryService> { LibraryServiceImpl(get(), get()) }
     single { ShoppingRepository() }
 }
 
@@ -56,7 +55,7 @@ fun Application.main() {
 
     routing {
         shoppingList()
-        import()
+        library()
         config()
         index()
 

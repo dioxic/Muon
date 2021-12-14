@@ -7,16 +7,14 @@ import uk.dioxic.muon.audio.AudioFile
 import uk.dioxic.muon.audio.Header
 import uk.dioxic.muon.audio.Location
 import uk.dioxic.muon.audio.Tags
+import uk.dioxic.muon.config.Library
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
 import java.util.*
-import kotlin.io.path.name
 
-class LibraryRepositoryImpl(private val configRepository: ConfigRepository) : LibraryRepository {
+class LibraryRepositoryImpl : LibraryRepository {
 
-    override fun getImportFiles(): List<AudioFile> {
-        val dir = File(configRepository.getLibraryConfig().importPath)
+    override fun getFiles(library: Library): List<AudioFile> {
+        val dir = File(library.path)
         require(dir.isDirectory) { "${dir.name} is not a directory!" }
 
         return dir.walk()
@@ -70,6 +68,7 @@ class LibraryRepositoryImpl(private val configRepository: ConfigRepository) : Li
             location = Location(
                 path = f.parent,
                 filename = f.name,
+                extension = f.extension
             ),
             header = Header(
                 length = audioFile.audioHeader.trackLength,

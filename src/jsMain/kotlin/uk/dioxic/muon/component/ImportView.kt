@@ -5,6 +5,8 @@ import com.ccfraser.muirwik.components.button.MIconButtonSize
 import com.ccfraser.muirwik.components.button.mIconButton
 import com.ccfraser.muirwik.components.dialog.mDialog
 import com.ccfraser.muirwik.components.dialog.mDialogTitle
+import com.ccfraser.muirwik.components.lab.alert.MAlertSeverity
+import com.ccfraser.muirwik.components.lab.alert.mAlert
 import com.ccfraser.muirwik.components.list.*
 import com.ccfraser.muirwik.components.styles.lighten
 import com.ccfraser.muirwik.components.table.*
@@ -17,17 +19,14 @@ import react.dom.div
 import styled.StyleSheet
 import styled.css
 import styled.styledDiv
-import uk.dioxic.muon.Column
-import uk.dioxic.muon.api.getAudioImportConfig
-import uk.dioxic.muon.api.getAudioImportList
-import uk.dioxic.muon.api.saveAudioFile
-import uk.dioxic.muon.api.saveAudioImportConfig
+import uk.dioxic.muon.*
+import uk.dioxic.muon.api.*
 import uk.dioxic.muon.audio.AudioFile
 import uk.dioxic.muon.audio.AudioFile.Keys.*
 import uk.dioxic.muon.audio.findCommonFields
 import uk.dioxic.muon.config.AudioImportConfig
-import uk.dioxic.muon.orderDown
-import uk.dioxic.muon.orderUp
+import uk.dioxic.muon.config.Library
+import uk.dioxic.muon.config.LibraryConfig
 import kotlin.math.min
 
 private val scope = MainScope()
@@ -53,36 +52,57 @@ val AudioFile.Companion.MULTI: AudioFile
     get() = build(MULTIPLE)
 
 val ImportView = fc<ImportViewProps> { props ->
-    val (config, setConfig) = useState(AudioImportConfig.Default)
+    val (importConfig, setImportConfig) = useState(AudioImportConfig.Default)
+    val (libraryConfig, setLibraryConfig) = useState(LibraryConfig.Default)
     val (musicList, setMusicList) = useState(emptyList<AudioFile>())
     val (selected, setSelected) = useState(emptyList<String>())
+    val (importList, setImportList) = useState(emptyList<AudioFile>())
     val (editing, setEditing) = useState(AudioFile.BLANK)
     val (order, setOrder) = useState(MTableCellSortDirection.asc)
     val (orderBy, setOrderByColumn) = useState(Artist)
     val (page, setPage) = useState(0)
     val (rowsPerPage, setRowsPerPage) = useState(25)
-    val (genreDialogOpen, setGenreDialogOpen) = useState(false)
     val (columnDialogOpen, setColumnDialogOpen) = useState(false)
     val (editDialogOpen, setEditDialogOpen) = useState(false)
+    val (importDialogOpen, setImportDialogOpen) = useState(false)
     val (backdropOpen, setBackdropOpen) = useState(false)
+    val (alertOpen, setAlertOpen) = useState(false)
+    val (alertText, setAlertText) = useState("")
+    val (alertTitle, setAlertTitle) = useState("")
 
     useEffectOnce {
         setBackdropOpen(true)
         scope.launch {
-            setMusicList(getAudioImportList())
-            setConfig(getAudioImportConfig())
+            setImportConfig(getImportConfig())
+            getLibraryConfig().also { config ->
+                setLibraryConfig(config)
+                config.source?.also { setMusicList(getAudioFiles(it)) }
+            }
         }.invokeOnCompletion {
             setBackdropOpen(false)
         }
     }
 
+    fun alert(title: String, message: String) {
+        setAlertOpen(true)
+        setAlertText(message)
+        setAlertTitle(title)
+    }
+
     fun saveConfig(config: AudioImportConfig) {
         println(config)
-        setConfig(config)
+        setImportConfig(config)
         scope.launch {
-            saveAudioImportConfig(config)
+            saveLibraryConfig(config)
         }
     }
+
+    fun openImportDialog(files: List<AudioFile>) {
+        setImportList(files)
+        setImportDialogOpen(true)
+    }
+
+    fun getSelectedAudioFiles(): List<AudioFile> = musicList.filter { selected.contains(it.id) }
 
     fun handleSelectAll(selectAll: Boolean) {
         if (selectAll) {
@@ -99,19 +119,13 @@ val ImportView = fc<ImportViewProps> { props ->
     }
 
     fun handleRowClick(field: String) {
-        if (selected.contains(field)) {
-            setSelected(selected.filterNot { it == field })
-        } else {
-            setSelected(selected + field)
-        }
-    }
-
-    fun handleGenreButtonClick() {
-        setGenreDialogOpen(true)
-    }
-
-    fun handleGenreDialogClose() {
-        setGenreDialogOpen(false)
+        setSelected(
+            if (selected.contains(field)) {
+                selected.filterNot { it == field }
+            } else {
+                selected + field
+            }
+        )
     }
 
     fun handleEditButtonClick(audioFile: AudioFile) {
@@ -119,28 +133,23 @@ val ImportView = fc<ImportViewProps> { props ->
         setEditDialogOpen(true)
     }
 
-    fun handleGenreSelect(genre: String) {
-        setGenreDialogOpen(false)
-        setMusicList(musicList.map {
-            if (selected.contains(it.id))
-                it.copy(tags = it.tags.copy(genre = genre)).also {
-                    scope.launch {
-                        saveAudioFile(it)
-                    }
-                }
-            else it
-        }.toList())
+    fun handleDeleteButtonClick(audioFile: AudioFile) {
+        scope.launch {
+            deleteAudioFile(audioFile)
+        }.invokeOnCompletion {
+            setMusicList(musicList.filterNot { it == audioFile })
+        }
     }
 
     fun handleEditMultiple() {
         setEditing(AudioFile.MULTI.copy(
             tags = findCommonFields(
                 MULTIPLE,
-                musicList.filter { selected.contains(it.id) }.map { it.tags }),
-            header = findCommonFields(musicList.filter { selected.contains(it.id) }.map { it.header }),
+                getSelectedAudioFiles().map { it.tags }),
+            header = findCommonFields(getSelectedAudioFiles().map { it.header }),
             location = findCommonFields(
                 MULTIPLE,
-                musicList.filter { selected.contains(it.id) }.map { it.location }
+                getSelectedAudioFiles().map { it.location }
             )
         )
         )
@@ -148,29 +157,80 @@ val ImportView = fc<ImportViewProps> { props ->
     }
 
     fun handleClearComments() {
-        setMusicList(musicList.map {
-            if (selected.contains(it.id) && it.tags.comment.isNotEmpty()) {
-                it.copy(tags = it.tags.copy(comment = "")).also {
-                    scope.launch {
-                        saveAudioFile(it)
-                    }
-                }
-            } else it
-        }.toList())
+        val modified = musicList
+            .filter { selected.contains(it.id) && it.tags.comment.isNotEmpty() }
+            .map { it.copy(tags = it.tags.copy(comment = "")) }
+
+        scope.launch {
+            saveAudioFiles(modified)
+        }.invokeOnCompletion {
+            setMusicList(musicList.merge(modified))
+        }
     }
 
     fun handleRefresh() {
         setBackdropOpen(true)
         scope.launch {
-            setMusicList(getAudioImportList(reload = true))
+            libraryConfig.source?.also {
+                setMusicList(getAudioFiles(library = it, reload = true))
+            }
         }.invokeOnCompletion {
             setBackdropOpen(false)
         }
     }
 
+    fun handleRename(files: List<AudioFile>) {
+        setBackdropOpen(true)
+        var normalizedList = files
+            .mapNotNull {
+                val normalizedFilename = it.normalizedFilename()
+                if (normalizedFilename != it.location.filename) {
+                    it.copy(location = it.location.copy(filename = normalizedFilename))
+                } else {
+                    null
+                }
+            }
+
+        scope.launch {
+            val failures = saveAudioFiles(normalizedList)
+            normalizedList = normalizedList.filterFailures(failures)
+            if (failures.isNotEmpty()) {
+                alert(
+                    title = "Rename fail",
+                    message = failures.alertMessage()
+                )
+            }
+        }.invokeOnCompletion {
+            setMusicList(musicList.merge(normalizedList))
+            setBackdropOpen(false)
+        }
+    }
+
+    fun handleImport(library: Library, files: List<AudioFile>) {
+        setImportDialogOpen(false)
+        setBackdropOpen(true)
+        var modified = files
+            .map { it.copy(location = it.location.copy(path = library.path)) }
+
+        scope.launch {
+            val failures = saveAudioFiles(modified)
+            modified = modified.filterFailures(failures)
+            if (failures.isNotEmpty()) {
+                alert(
+                    title = "Import fail",
+                    message = failures.alertMessage()
+                )
+            }
+        }.invokeOnCompletion {
+            setMusicList(musicList.filterFiles(modified))
+            setBackdropOpen(false)
+            setSelected(emptyList())
+        }
+    }
+
     fun handleColumnVisibilityChange(key: AudioFile.Keys, visible: Boolean) {
-        saveConfig(config.copy(
-            columns = config.columns.toMutableMap().apply {
+        saveConfig(importConfig.copy(
+            columns = importConfig.columns.toMutableMap().apply {
                 this[key] = this[key]!!.copy(visible = visible)
             }
         ))
@@ -178,16 +238,16 @@ val ImportView = fc<ImportViewProps> { props ->
 
     fun handleColumnReorderUp(key: AudioFile.Keys) {
         saveConfig(
-            config.copy(
-                columns = config.columns.orderUp(key)
+            importConfig.copy(
+                columns = importConfig.columns.orderUp(key)
             )
         )
     }
 
     fun handleColumnReorderDown(key: AudioFile.Keys) {
         saveConfig(
-            config.copy(
-                columns = config.columns.orderDown(key)
+            importConfig.copy(
+                columns = importConfig.columns.orderDown(key)
             )
         )
     }
@@ -200,11 +260,12 @@ val ImportView = fc<ImportViewProps> { props ->
 
         enhancedTableToolbar(
             numSelected = selected.size,
-            onGenreClick = ::handleGenreButtonClick,
             onClearCommentsClick = ::handleClearComments,
             onEditMultipleClick = ::handleEditMultiple,
             onRefreshClick = ::handleRefresh,
-            onFilterClick = { setColumnDialogOpen(true) }
+            onFilterClick = { setColumnDialogOpen(true) },
+            onRenameClick = { handleRename(getSelectedAudioFiles()) },
+            onImportClick = { openImportDialog(getSelectedAudioFiles()) },
         )
         styledDiv {
             css { overflowX = Overflow.auto }
@@ -216,7 +277,7 @@ val ImportView = fc<ImportViewProps> { props ->
                     order = order,
                     orderBy = orderBy,
                     rowCount = musicList.size,
-                    columns = config.columns,
+                    columns = importConfig.columns,
                     onSelectAllClick = ::handleSelectAll,
                     onRequestSort = ::handleRequestSort,
                 )
@@ -232,14 +293,20 @@ val ImportView = fc<ImportViewProps> { props ->
                         .forEach { music ->
                             val isSelected = selected.contains(music.id)
                             mTableRow(music.id, isSelected, true, onClick = { event ->
-                                if (!listOf("edit").contains(event.target.asDynamic().innerText as String)) {
+                                if (!listOf(
+                                        "edit",
+                                        "delete",
+                                        "spellcheck",
+                                        "get_app"
+                                    ).contains(event.target.asDynamic().innerText as String)
+                                ) {
                                     handleRowClick(music.id)
                                 }
                             }) {
                                 mTableCell(padding = MTableCellPadding.checkbox) {
                                     mCheckbox(isSelected)
                                 }
-                                config.columns.filter { (_, column) -> column.visible }
+                                importConfig.columns.filter { (_, column) -> column.visible }
                                     .forEach { (id, column) ->
                                         mTableCell(
                                             key = id,
@@ -249,11 +316,28 @@ val ImportView = fc<ImportViewProps> { props ->
                                     }
                                 mTableCell(
                                     padding = MTableCellPadding.default,
-                                    align = MTableCellAlign.center
+                                    align = MTableCellAlign.center,
+                                    size = MTableCellSize.small,
                                 ) {
-                                    mIconButton("edit", size = MIconButtonSize.small, onClick = {
-                                        handleEditButtonClick(music)
-                                    })
+                                    styledDiv {
+                                        css { display = Display.flex }
+                                        mIconButton("edit", size = MIconButtonSize.small, onClick = {
+                                            handleEditButtonClick(music)
+                                        })
+                                        mIconButton("spellcheck", size = MIconButtonSize.small, onClick = {
+                                            handleRename(listOf(music))
+                                        })
+                                        mIconButton("get_app", size = MIconButtonSize.small, onClick = {
+                                            openImportDialog(listOf(music))
+                                        })
+                                        mIconButton(
+                                            "delete",
+                                            color = MColor.secondary,
+                                            size = MIconButtonSize.small,
+                                            onClick = {
+                                                handleDeleteButtonClick(music)
+                                            })
+                                    }
                                 }
                             }
                         }
@@ -271,15 +355,28 @@ val ImportView = fc<ImportViewProps> { props ->
             }
         )
     }
-    genreDialog(genreDialogOpen, ::handleGenreDialogClose, ::handleGenreSelect)
     columnDialog(
         columnDialogOpen,
         { setColumnDialogOpen(false) },
-        config.columns,
+        importConfig.columns,
         ::handleColumnVisibilityChange,
         ::handleColumnReorderUp,
         ::handleColumnReorderDown
     )
+    importDialog(
+        importDialogOpen,
+        { setImportDialogOpen(false) },
+        ::handleImport,
+        libraryConfig.libraries,
+        importList
+    )
+    mSnackbar(
+        open = alertOpen,
+//        autoHideDuration = 8000,
+//        onClose = { _, _: MSnackbarOnCloseReason -> setAlertOpen(false) }
+    ) {
+        mAlert(title = alertTitle, message = alertText, severity = MAlertSeverity.error, onClose = { setAlertOpen(false)})
+    }
     backdrop(backdropOpen)
     child(MusicEdit, props = jsObject {
         open = editDialogOpen
@@ -288,30 +385,29 @@ val ImportView = fc<ImportViewProps> { props ->
         title = if (editing.id == MULTIPLE) "Edit Multiple" else "Edit"
         onChange = { audioState -> setEditing(audioState) }
         onSave = {
-            if (editing.id == MULTIPLE) {
-                setMusicList(musicList.map {
-                    if (selected.contains(it.id)) {
-                        it.merge(editing, ignoreText = MULTIPLE).also {
-                            scope.launch {
-                                saveAudioFile(it)
-                            }
-                        }
-                    } else {
-                        it
-                    }
-                }.toList())
-            } else {
-                setMusicList(musicList.map {
-                    if (editing.id == it.id) {
-                        editing.also {
-                            scope.launch {
-                                saveAudioFile(it)
-                            }
-                        }
-                    } else it
-                }.toList())
-            }
             setEditDialogOpen(false)
+            setBackdropOpen(true)
+
+            var modified =
+                if (editing.id == MULTIPLE) {
+                    getSelectedAudioFiles().map { it.merge(editing, ignoreText = MULTIPLE) }
+                } else {
+                    listOf(editing)
+                }
+
+            scope.launch {
+                val failures = saveAudioFiles(modified)
+                modified = modified.filterFailures(failures)
+                if (failures.isNotEmpty()) {
+                    alert(
+                        title = "Edit fail",
+                        message = failures.alertMessage()
+                    )
+                }
+            }.invokeOnCompletion {
+                setMusicList(musicList.merge(modified))
+                setBackdropOpen(false)
+            }
         }
         onClose = { setEditDialogOpen(false) }
     })
@@ -337,11 +433,12 @@ private fun RBuilder.backdrop(
 
 private fun RBuilder.enhancedTableToolbar(
     numSelected: Int,
-    onGenreClick: () -> Unit,
     onClearCommentsClick: () -> Unit,
     onEditMultipleClick: () -> Unit,
     onRefreshClick: () -> Unit,
     onFilterClick: () -> Unit,
+    onRenameClick: () -> Unit,
+    onImportClick: () -> Unit,
 ) {
     themeContext.Consumer { theme ->
         val styles = object : StyleSheet("ToolbarStyles", isStatic = true) {
@@ -359,6 +456,8 @@ private fun RBuilder.enhancedTableToolbar(
             }
             val actions by css {
                 color = Color(theme.palette.text.secondary)
+                width = 280.px
+                textAlign = TextAlign.end
             }
         }
 
@@ -382,14 +481,11 @@ private fun RBuilder.enhancedTableToolbar(
                     mTooltip("Clear Comments") {
                         mIconButton("comment_rounded", onClick = { onClearCommentsClick() })
                     }
-                    mTooltip("Set Genre") {
-                        mIconButton("music_note_rounded", onClick = { onGenreClick() })
-                    }
-                    mTooltip("Rename") {
-                        mIconButton("spellcheck_rounded")
+                    mTooltip("Normalize Filename") {
+                        mIconButton("spellcheck_rounded", onClick = { onRenameClick() })
                     }
                     mTooltip("Import") {
-                        mIconButton("get_app_rounded")
+                        mIconButton("get_app_rounded", onClick = { onImportClick() })
                     }
                 } else {
                     mTooltip("Filter") {
@@ -505,10 +601,52 @@ private fun RBuilder.columnDialog(
     }
 }
 
-private fun RBuilder.genreDialog(
+//private fun RBuilder.genreDialog(
+//    dialogOpen: Boolean,
+//    onDialogClose: () -> Unit,
+//    onGenreSelect: (genre: String) -> Unit,
+//) {
+//    themeContext.Consumer { theme ->
+//        val styles = object : StyleSheet("ComponentStyles", isStatic = true) {
+//            val avatarStyle by css {
+//                backgroundColor = Color(lighten(theme.palette.secondary.light, 0.85))
+//                color = Color(theme.palette.text.secondary)
+//            }
+//        }
+//        val genres = listOf("Drum & Bass", "Trance", "Dubstep")
+//        mDialog(dialogOpen, onClose = { _, _ -> onDialogClose() }) {
+//            mDialogTitle("Set Genre")
+//            div {
+//                mList {
+//                    genres.forEach { genre ->
+//                        mListItem(button = true, onClick = { onGenreSelect(genre) }) {
+//                            mListItemAvatar {
+//                                mAvatar {
+//                                    css(styles.avatarStyle)
+//                                    mIcon("person")
+//                                }
+//                            }
+//                            mListItemText(primary = genre)
+//                        }
+//                    }
+//                    mListItemWithIcon(
+//                        iconName = "add",
+//                        primaryText = "add genre",
+//                        divider = false,
+//                        useAvatar = true,
+//                        onClick = { onGenreSelect("add genre") })
+//                }
+//            }
+//        }
+//    }
+//}
+
+private fun RBuilder.importDialog(
     dialogOpen: Boolean,
     onDialogClose: () -> Unit,
-    onGenreSelect: (genre: String) -> Unit
+    handleImport: (library: Library, files: List<AudioFile>) -> Unit,
+    libraries: List<Library>,
+    files: List<AudioFile>,
 ) {
     themeContext.Consumer { theme ->
         val styles = object : StyleSheet("ComponentStyles", isStatic = true) {
@@ -517,28 +655,21 @@ private fun RBuilder.genreDialog(
                 color = Color(theme.palette.text.secondary)
             }
         }
-        val genres = listOf("Drum & Bass", "Trance", "Dubstep")
         mDialog(dialogOpen, onClose = { _, _ -> onDialogClose() }) {
-            mDialogTitle("Set Genre")
+            mDialogTitle("Import")
             div {
                 mList {
-                    genres.forEach { genre ->
-                        mListItem(button = true, onClick = { onGenreSelect(genre) }) {
+                    libraries.forEach { library ->
+                        mListItem(button = true, onClick = { handleImport(library, files) }) {
                             mListItemAvatar {
                                 mAvatar {
                                     css(styles.avatarStyle)
                                     mIcon("person")
                                 }
                             }
-                            mListItemText(primary = genre)
+                            mListItemText(primary = library.name)
                         }
                     }
-                    mListItemWithIcon(
-                        iconName = "add",
-                        primaryText = "add genre",
-                        divider = false,
-                        useAvatar = true,
-                        onClick = { onGenreSelect("add genre") })
                 }
             }
         }

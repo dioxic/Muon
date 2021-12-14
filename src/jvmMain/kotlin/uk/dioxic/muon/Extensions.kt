@@ -57,6 +57,10 @@ fun AudioFile.getPath(): Path = this.location.getPath()
 fun Location.getPath(): Path = Path(this.path).resolve(this.filename)
 
 fun org.jaudiotagger.audio.AudioFile.merge(audioFile: AudioFile) {
+    if (this.tag == null) {
+        this.tag = this.createDefaultTag()
+    }
+
     this.tag.artist = audioFile.tags.artist
     this.tag.title = audioFile.tags.title
     this.tag.comment = audioFile.tags.comment

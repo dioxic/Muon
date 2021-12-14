@@ -67,7 +67,7 @@ val ShoppingList = fc<Props> {
                         shoppingList.sortedByDescending(ShoppingListItem::priority).forEach { item ->
                             mListItem(
                                 primaryText = item.desc,
-                                key = i.toString(),
+                                key = item.desc,
                             )
                         }
 
@@ -93,9 +93,9 @@ val ShoppingList = fc<Props> {
                     mIconButton("skip_next")
                 }
             }
-            mCardMedia("/images/cards/live-from-space.jpg", "Live from space album cover") {
-                css { css { height = 151.px; width = 151.px } }
-            }
+//            mCardMedia("/images/cards/live-from-space.jpg", "Live from space album cover") {
+//                css { css { height = 151.px; width = 151.px } }
+//            }
         }
     }
 }

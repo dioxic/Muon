@@ -6,15 +6,21 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("library")
 data class LibraryConfig(
-    val importPath: String,
-    val libraryPath: String
-): Config {
+    val libraries: List<Library>,
+    val source: String?,
+) : Config {
     companion object {
-        const val path = "/library"
+        const val path = "library"
         val Default = LibraryConfig(
-            importPath = "J:\\import\\complete",
-            libraryPath = "J:\\music\\Drum & Bass"
+            libraries = listOf(),
+            source = null
         )
     }
-
 }
+
+@Serializable
+data class Library(
+    val name: String,
+    val path: String,
+    val genre: String?,
+)
