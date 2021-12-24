@@ -2,8 +2,6 @@ package uk.dioxic.muon
 
 import com.ccfraser.muirwik.components.styles.mStylesProvider
 import kotlinx.browser.document
-
-import react.child
 import react.dom.render
 
 fun main() {

@@ -14,6 +14,7 @@ import react.fc
 import react.useState
 import uk.dioxic.muon.api.fetchFullConfig
 import uk.dioxic.muon.component.MainFrame
+import uk.dioxic.muon.model.ConfigMap
 
 private val scope = MainScope()
 

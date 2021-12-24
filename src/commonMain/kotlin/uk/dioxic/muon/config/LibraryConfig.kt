@@ -1,10 +1,9 @@
 package uk.dioxic.muon.config
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import uk.dioxic.muon.model.Library
 
 @Serializable
-@SerialName("library")
 data class LibraryConfig(
     val libraries: List<Library>,
     val source: String?,
@@ -17,10 +16,3 @@ data class LibraryConfig(
         )
     }
 }
-
-@Serializable
-data class Library(
-    val name: String,
-    val path: String,
-    val genre: String?,
-)

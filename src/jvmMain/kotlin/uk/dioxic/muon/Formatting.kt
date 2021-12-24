@@ -2,9 +2,9 @@ package uk.dioxic.muon
 
 import uk.dioxic.muon.audio.Tags
 
-fun formatFilename(originalFilename: String, tags: Tags): String {
+fun formatFilename(filename: String, tags: Tags): String {
 
-    val extension = originalFilename.extension()
+    val extension = filename.fileExtension()
 
     val artist = tags.artist.trim()
     val title = tags.title.originalMix().trim()
@@ -13,7 +13,7 @@ fun formatFilename(originalFilename: String, tags: Tags): String {
         return "$artist - $title.$extension"
     }
 
-    return originalFilename
+    return filename
         .spacing()
         .numericPrefix()
         .rippers()
@@ -32,8 +32,6 @@ private fun String.parse(): Pair<String, String>? {
 
     return null
 }
-
-private fun String.extension() = Regex(""".(\w{3,4})$""").find(this)?.groupValues?.get(1)
 
 private fun String.spacing() = this.replace("_", " ")
 

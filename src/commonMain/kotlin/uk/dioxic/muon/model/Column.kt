@@ -1,6 +1,7 @@
-package uk.dioxic.muon
+package uk.dioxic.muon.model
 
 import kotlinx.serialization.Serializable
+import uk.dioxic.muon.swap
 
 @Serializable
 data class Column(

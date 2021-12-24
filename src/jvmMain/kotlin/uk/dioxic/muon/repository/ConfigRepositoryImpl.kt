@@ -7,7 +7,7 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import uk.dioxic.muon.ConfigMap
+import uk.dioxic.muon.model.ConfigMap
 import uk.dioxic.muon.config.AudioImportConfig
 import uk.dioxic.muon.config.Config
 import uk.dioxic.muon.config.LibraryConfig

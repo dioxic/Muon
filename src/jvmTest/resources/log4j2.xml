@@ -9,7 +9,9 @@
         <Root level="INFO">
             <AppenderRef ref="Console" />
         </Root>
-        <Logger name="org.jaudiotagger" level="WARN"/>
+        <Logger name="org.jaudiotagger" level="ERROR"/>
         <Logger name="org.jaudiotagger.audio.wav" level="FATAL"/>
+        <Logger name="org.jaudiotagger.audio.flac" level="FATAL"/>
+        <Logger name="uk.dioxic.muon" level="DEBUG"/>
     </Loggers>
 </Configuration>

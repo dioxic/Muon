@@ -1,13 +1,17 @@
 package uk.dioxic.muon.repository
 
-import uk.dioxic.muon.audio.AudioFile
-import uk.dioxic.muon.config.Library
-import java.nio.file.Path
+import uk.dioxic.muon.model.Library
 
 interface LibraryRepository {
 
-    fun getFiles(library: Library): List<AudioFile>
+    fun getLibraryById(libraryId: String): Library
 
-    fun saveTags(audioFile: AudioFile)
+    fun getLibraryByPath(path: String): Library
+
+    fun getLibraries(): List<Library>
+
+    fun saveLibrary(library: Library)
+
+    fun deleteLibrary(libraryId: String)
 
 }

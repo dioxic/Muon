@@ -19,14 +19,20 @@ import react.dom.div
 import styled.StyleSheet
 import styled.css
 import styled.styledDiv
-import uk.dioxic.muon.*
+import uk.dioxic.muon.alertMessage
 import uk.dioxic.muon.api.*
 import uk.dioxic.muon.audio.AudioFile
-import uk.dioxic.muon.audio.AudioFile.Keys.*
+import uk.dioxic.muon.audio.AudioFile.Keys.Artist
 import uk.dioxic.muon.audio.findCommonFields
 import uk.dioxic.muon.config.AudioImportConfig
-import uk.dioxic.muon.config.Library
 import uk.dioxic.muon.config.LibraryConfig
+import uk.dioxic.muon.filterFailures
+import uk.dioxic.muon.filterFiles
+import uk.dioxic.muon.merge
+import uk.dioxic.muon.model.Column
+import uk.dioxic.muon.model.Library
+import uk.dioxic.muon.model.orderDown
+import uk.dioxic.muon.model.orderUp
 import kotlin.math.min
 
 private val scope = MainScope()
@@ -162,7 +168,7 @@ val ImportView = fc<ImportViewProps> { props ->
             .map { it.copy(tags = it.tags.copy(comment = "")) }
 
         scope.launch {
-            saveAudioFiles(modified)
+            saveAudioFiles(files = modified)
         }.invokeOnCompletion {
             setMusicList(musicList.merge(modified))
         }
@@ -172,7 +178,7 @@ val ImportView = fc<ImportViewProps> { props ->
         setBackdropOpen(true)
         scope.launch {
             libraryConfig.source?.also {
-                setMusicList(getAudioFiles(library = it, reload = true))
+                setMusicList(getAudioFiles(libraryId = it, refresh = true))
             }
         }.invokeOnCompletion {
             setBackdropOpen(false)
@@ -192,7 +198,7 @@ val ImportView = fc<ImportViewProps> { props ->
             }
 
         scope.launch {
-            val failures = saveAudioFiles(normalizedList)
+            val failures = saveAudioFiles(files = normalizedList)
             normalizedList = normalizedList.filterFailures(failures)
             if (failures.isNotEmpty()) {
                 alert(
@@ -213,7 +219,7 @@ val ImportView = fc<ImportViewProps> { props ->
             .map { it.copy(location = it.location.copy(path = library.path)) }
 
         scope.launch {
-            val failures = saveAudioFiles(modified)
+            val failures = saveAudioFiles(library.id, modified)
             modified = modified.filterFailures(failures)
             if (failures.isNotEmpty()) {
                 alert(
@@ -396,7 +402,7 @@ val ImportView = fc<ImportViewProps> { props ->
                 }
 
             scope.launch {
-                val failures = saveAudioFiles(modified)
+                val failures = saveAudioFiles(files = modified)
                 modified = modified.filterFailures(failures)
                 if (failures.isNotEmpty()) {
                     alert(

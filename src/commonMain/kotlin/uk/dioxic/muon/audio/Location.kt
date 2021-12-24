@@ -1,12 +1,13 @@
 package uk.dioxic.muon.audio
 
 import kotlinx.serialization.Serializable
+import uk.dioxic.muon.fileExtension
 
 @Serializable
 data class Location(
     val path: String = "",
     val filename: String = "",
-    val extension: String = "",
+    val extension: String = filename.fileExtension() ?: "",
 ) {
     constructor(defaultText: String) : this(
         path = defaultText,
@@ -24,7 +25,6 @@ fun findCommonFields(defaultText: String = "", locations: List<Location>): Locat
             filename = if (common.filename == it.filename) common.filename else defaultText,
             extension = if (common.extension == it.extension) common.extension else defaultText,
         )
-        println("common: $common")
     }
     return common
 }
