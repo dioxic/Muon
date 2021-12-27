@@ -12,7 +12,7 @@ import io.ktor.serialization.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.serialization.json.Json
-import org.jaudiotagger.audio.AudioFileIO
+import org.koin.core.logger.Level.ERROR
 import org.koin.dsl.module
 import org.koin.ktor.ext.Koin
 import org.koin.logger.slf4jLogger
@@ -21,7 +21,6 @@ import uk.dioxic.muon.exceptions.MusicImportException
 import uk.dioxic.muon.repository.*
 import uk.dioxic.muon.service.MusicService
 import uk.dioxic.muon.service.MusicServiceImpl
-import java.util.logging.Level
 import kotlin.io.path.ExperimentalPathApi
 
 val muonHome = "${System.getenv("HOMEPATH")}/.muon"
@@ -36,7 +35,6 @@ private val appModule = module {
 
 fun main(args: Array<String>) {
     System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
-    AudioFileIO.logger.level = Level.OFF
     embeddedServer(Netty, commandLineEnvironment(args)).start()
 }
 
@@ -59,7 +57,7 @@ fun Application.main() {
         gzip()
     }
     install(Koin) {
-        slf4jLogger()
+        slf4jLogger(level = ERROR)
         modules(appModule)
     }
     install(StatusPages) {

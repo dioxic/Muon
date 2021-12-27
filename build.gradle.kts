@@ -4,22 +4,21 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val spekVersion = "2.0.16"
 val ktorVersion = "1.6.5"
-val kotlinVersion = "1.5.30"
+val kotlinVersion = "1.6.10"
 val serializationVersion = "1.3.1"
 val log4jVersion = "2.16.0"
-//val muirwikComponentVersion = "0.6.7-IR"
 val muirwikComponentVersion = "0.9.1"
 val reactVersion = "17.0.2"
-val kotlinJsVersion = "pre.236-kotlin-$kotlinVersion"
-//val kotlinJsVersion = "pre.265-kotlin-$kotlinVersion"
+val styledVersion = "5.3.0"
+val kotlinJsVersion = "pre.236-kotlin-1.5.30"
 val koinVersion = "3.1.4"
 val luceneVersion = "9.0.0"
 val assertjVersion = "3.21.0"
 val mockkVersion = "1.12.1"
 
 plugins {
-    kotlin("multiplatform") version "1.5.30"
-    kotlin("plugin.serialization") version "1.5.30"
+    kotlin("multiplatform") version "1.6.10"
+    kotlin("plugin.serialization") version "1.6.10"
     application
     id("pl.allegro.tech.build.axion-release") version "1.13.6"
 //    id("com.github.johnrengelman.shadow") version "7.0.0"
@@ -40,7 +39,7 @@ application {
 kotlin {
     jvm {
         compilations.all {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.jvmTarget = "17"
         }
         withJava()
         testRuns["test"].executionTask.configure {
@@ -137,8 +136,8 @@ kotlin {
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom:$reactVersion-$kotlinJsVersion")
 
                 //styled components
-                implementation(npm("styled-components", "~5.3.0"))
-                implementation("org.jetbrains.kotlin-wrappers:kotlin-styled:5.3.0-$kotlinJsVersion")
+                implementation(npm("styled-components", "~$styledVersion"))
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-styled:$styledVersion-$kotlinJsVersion")
 
                 // material ui
                 implementation("com.ccfraser.muirwik:muirwik-components:$muirwikComponentVersion")
@@ -170,9 +169,9 @@ tasks.getByName<Jar>("jvmJar") {
     from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) // bring output file along into the JAR
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
-}
+//tasks.withType<KotlinCompile> {
+//    kotlinOptions.jvmTarget = "17"
+//}
 
 //tasks.withType<Test> {
 //    useJUnitPlatform {
