@@ -23,12 +23,15 @@ class MusicServiceImpl(private val musicRepository: MusicRepository) : MusicRepo
         val overwrite = false
 
         if (audioFile.location != cachedFile.location) {
-            logger.debug("Importing file ${audioFile.location.filename}")
+            logger.debug("Moving/renaming file ${audioFile.location.filename}")
 
             require(audioFile.getPath().extension.isNotEmpty()) { "Missing file extension" }
 
             if (overwrite) {
                 Files.move(cachedFile.getPath(), audioFile.getPath(), StandardCopyOption.REPLACE_EXISTING)
+            } else if (cachedFile.location.path == audioFile.location.path) {
+                // hack to deal with file rename where the case-insensitive filename doesn't change
+                Files.move(cachedFile.getPath(), audioFile.getPath(), StandardCopyOption.ATOMIC_MOVE)
             } else {
                 Files.move(cachedFile.getPath(), audioFile.getPath())
             }
