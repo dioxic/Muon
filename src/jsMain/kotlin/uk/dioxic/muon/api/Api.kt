@@ -8,6 +8,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.browser.window
 import uk.dioxic.muon.*
+import uk.dioxic.muon.audio.AudioDetails
 import uk.dioxic.muon.audio.AudioFile
 import uk.dioxic.muon.audio.ImportError
 import uk.dioxic.muon.config.AudioImportConfig
@@ -24,10 +25,33 @@ val client = HttpClient {
     }
 }
 
-suspend fun getAudioFiles(libraryId: String, refresh: Boolean = false): List<AudioFile> =
+//suspend fun getImportFiles(libraryId: String, refresh: Boolean = false): List<AudioDetails> =
+//    client.get(path = importPath) {
+//        parameter("refresh", refresh)
+//        parameter("library", libraryId)
+//    }
+//
+//suspend fun getAudioDetails(libraryId: String, refresh: Boolean = false): List<AudioFile> =
+//    client.get<List<AudioFileMatch>>(path = musicPath) {
+//        parameter("refresh", refresh)
+//        parameter("library", libraryId)
+//    }.map { it.audioFile }
+
+suspend fun searchAudio(
+    libraryId: String? = null,
+    text: String? = null,
+    includeDuplicates: Boolean = false,
+    refresh: Boolean = false,
+    sortField: String? = null,
+    sortReverse: Boolean? = null
+): List<AudioDetails> =
     client.get(path = musicPath) {
+        text.nullIfBlank()?.also { parameter("q", it) }
+        libraryId?.also { parameter("library", it) }
+        sortField?.also { parameter("sort", it.lowercase()) }
+        sortReverse?.also { parameter("sortReverse", it) }
+        parameter("includeDuplicates", includeDuplicates)
         parameter("refresh", refresh)
-        parameter("library", libraryId)
     }
 
 suspend fun getImportConfig(): AudioImportConfig =
@@ -70,6 +94,13 @@ suspend fun saveLibraryConfig(config: AudioImportConfig) {
         url {
             path(configPath, AudioImportConfig.path)
         }
+        contentType(ContentType.Application.Json)
+        body = config
+    }
+}
+
+suspend fun saveConfigMap(config: ConfigMap) {
+    return client.post(path = configPath) {
         contentType(ContentType.Application.Json)
         body = config
     }

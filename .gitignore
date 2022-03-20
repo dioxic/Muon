@@ -1,4 +1,17 @@
-# Project exclude paths
-/.gradle/
-/.idea/
-/build/
+# IntelliJ IDEA
+.idea
+!.idea/icon.png
+*.iml
+
+# Gradle
+.gradle
+build/
+webpack.config.d/
+
+# NPM
+*.tgz
+package-lock.json
+node_modules/
+
+# Kotlin/JS
+kotlin-js-store/

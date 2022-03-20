@@ -1,12 +1,19 @@
 package uk.dioxic.muon.service
 
 import org.apache.logging.log4j.LogManager
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.index.Term
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser
+import org.apache.lucene.queryparser.classic.QueryParser
+import org.apache.lucene.search.*
 import org.jaudiotagger.audio.AudioFileIO
 import uk.dioxic.muon.audio.AudioFile
 import uk.dioxic.muon.audio.ImportError
+import uk.dioxic.muon.audio.AudioDetails
 import uk.dioxic.muon.exceptions.MusicImportException
 import uk.dioxic.muon.getPath
 import uk.dioxic.muon.merge
+import uk.dioxic.muon.nullIfBlank
 import uk.dioxic.muon.repository.MusicRepository
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
@@ -17,6 +24,40 @@ class MusicServiceImpl(private val musicRepository: MusicRepository) : MusicRepo
     MusicService {
 
     private val logger = LogManager.getLogger()
+
+    override fun attachDuplicates(audioList: List<AudioDetails>): List<AudioDetails> =
+        getDuplicates(audioList.map { it.audioFile })
+            .mapIndexed { index, audioFiles ->
+                audioList[index].copy(
+                    duplicates = audioFiles
+                )
+            }
+
+    override fun search(
+        libraryId: String?,
+        text: String?,
+        searchFields: Array<String>,
+        maxResults: Int,
+        after: Int?,
+        sortField: String?,
+        sortReverse: Boolean
+    ): List<AudioDetails> {
+        val query = query(libraryId, text, searchFields)
+
+        return if (sortField != null) {
+            if (after != null) {
+                searchAfter(query, maxResults, after, sortField, sortReverse)
+            } else {
+                search(query, maxResults, sortField, sortReverse)
+            }
+        } else {
+            if (after != null) {
+                searchAfter(query, maxResults, after)
+            } else {
+                search(query, maxResults)
+            }
+        }
+    }
 
     override fun update(libraryId: String?, audioFile: AudioFile) {
         val cachedFile = musicRepository.getById(audioFile.id)
@@ -85,5 +126,24 @@ class MusicServiceImpl(private val musicRepository: MusicRepository) : MusicRepo
 
         musicRepository.deleteById(id)
     }
+
+    private fun query(
+        libraryId: String? = null,
+        text: String? = null,
+        fields: Array<String>
+    ): Query =
+        if (libraryId == null && text == null) {
+            MatchAllDocsQuery()
+        } else {
+            BooleanQuery.Builder().let { builder ->
+                libraryId?.let { builder.add(TermQuery(Term("library", libraryId)), BooleanClause.Occur.FILTER) }
+                text.nullIfBlank()?.let {
+                    val queryParser = MultiFieldQueryParser(fields, StandardAnalyzer())
+                    queryParser.defaultOperator = QueryParser.Operator.AND
+                    builder.add(queryParser.parse(it), BooleanClause.Occur.MUST)
+                }
+                builder.build()
+            }
+        }
 
 }

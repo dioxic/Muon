@@ -5,12 +5,14 @@ package uk.dioxic.muon
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
+import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.content.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import kotlinx.coroutines.FlowPreview
 import kotlinx.serialization.json.Json
 import org.koin.core.logger.Level.ERROR
 import org.koin.dsl.module
@@ -22,6 +24,7 @@ import uk.dioxic.muon.repository.*
 import uk.dioxic.muon.service.MusicService
 import uk.dioxic.muon.service.MusicServiceImpl
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.time.ExperimentalTime
 
 val muonHome = "${System.getenv("HOMEPATH")}/.muon"
 
@@ -38,6 +41,8 @@ fun main(args: Array<String>) {
     embeddedServer(Netty, commandLineEnvironment(args)).start()
 }
 
+@FlowPreview
+@ExperimentalTime
 @ExperimentalPathApi
 fun Application.main() {
     val env = environment.config.property("ktor.environment").getString()
@@ -45,6 +50,7 @@ fun Application.main() {
     install(ContentNegotiation) {
         json(Json {
             prettyPrint = env == "dev"
+            encodeDefaults = false
         })
     }
     install(CORS) {

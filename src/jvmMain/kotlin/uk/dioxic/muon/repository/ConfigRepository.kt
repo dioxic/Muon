@@ -13,4 +13,6 @@ interface ConfigRepository {
     fun getImportConfig(): AudioImportConfig
 
     fun save(config: Config)
+
+    fun save(configMap: ConfigMap)
 }

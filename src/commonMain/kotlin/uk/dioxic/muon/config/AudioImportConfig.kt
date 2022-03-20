@@ -1,13 +1,13 @@
 package uk.dioxic.muon.config
 
 import kotlinx.serialization.Serializable
-import uk.dioxic.muon.audio.AudioFile
-import uk.dioxic.muon.audio.AudioFile.Keys.*
 import uk.dioxic.muon.model.Column
+import uk.dioxic.muon.model.ColumnKeys
+import uk.dioxic.muon.model.ColumnKeys.*
 
 @Serializable
 data class AudioImportConfig (
-    val columns: Map<AudioFile.Keys, Column>
+    val columns: Map<ColumnKeys, Column>
 ): Config {
     companion object {
         const val path = "import"

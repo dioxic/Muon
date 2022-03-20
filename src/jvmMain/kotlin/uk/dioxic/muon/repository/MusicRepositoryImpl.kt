@@ -1,6 +1,7 @@
 package uk.dioxic.muon.repository
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import org.apache.logging.log4j.LogManager
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -11,20 +12,21 @@ import org.apache.lucene.index.IndexWriterConfig
 import org.apache.lucene.index.Term
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser
 import org.apache.lucene.search.*
-import org.apache.lucene.search.BooleanClause.Occur.FILTER
+import org.apache.lucene.search.BooleanClause.Occur.*
 import org.apache.lucene.store.FSDirectory
+import uk.dioxic.muon.*
+import uk.dioxic.muon.audio.AudioDetails
 import uk.dioxic.muon.audio.AudioFile
 import uk.dioxic.muon.exceptions.IdNotFoundException
-import uk.dioxic.muon.isAudioFile
 import uk.dioxic.muon.model.Library
-import uk.dioxic.muon.muonHome
-import uk.dioxic.muon.toAudioFile
-import uk.dioxic.muon.toDocument
 import java.io.Closeable
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 
 class MusicRepositoryImpl(indexPath: String) : MusicRepository, Closeable {
@@ -65,20 +67,6 @@ class MusicRepositoryImpl(indexPath: String) : MusicRepository, Closeable {
 
     private fun queryById(id: String): Query = TermQuery(Term("id", id))
 
-    private fun search(query: Query, maxResults: Int): List<AudioFile> {
-        val searcher = searcherManager.acquire()
-        try {
-            return searcher.search(query, maxResults).scoreDocs
-                .map {
-                    searcher
-                        .doc(it.doc)
-                        .toAudioFile()
-                }
-        } finally {
-            searcherManager.release(searcher)
-        }
-    }
-
     fun dropIndex() {
         indexDirectory.deletePendingFiles()
         indexDirectory.listAll()
@@ -89,25 +77,61 @@ class MusicRepositoryImpl(indexPath: String) : MusicRepository, Closeable {
 
     @Throws(IdNotFoundException::class)
     override fun getById(id: String) =
-        search(queryById(id), maxResults = 1).firstOrNull() ?: throw IdNotFoundException(id)
+        withSearcher {
+            search(queryById(id), 1).scoreDocs.getAudioFile(this).firstOrNull() ?: throw IdNotFoundException(id)
+        }
 
     override fun search(
-        libraryId: String?,
-        text: String?,
+        query: Query,
         maxResults: Int,
-        fields: Array<String>
-    ): List<AudioFile> = search(
-        query(
-            libraryId = libraryId,
-            text = text,
-            fields = fields
-        ), maxResults
-    )
+        sortField: String,
+        sortReverse: Boolean
+    ) = withSearcher {
+        search(
+            query,
+            maxResults,
+            Sort(SortField("${sortField}_sort", SortField.Type.STRING, sortReverse))
+        ).scoreDocs.getAudioDetails(this)
+    }
+
+    override fun search(query: Query, maxResults: Int) = withSearcher {
+        search(query, maxResults).scoreDocs.getAudioDetails(this)
+    }
+
+    override fun searchAfter(query: Query, maxResults: Int, after: Int) = withSearcher {
+        searchAfter(FieldDoc(after, 0.0f), query, maxResults).scoreDocs.getAudioDetails(this)
+    }
+
+    override fun searchAfter(
+        query: Query,
+        maxResults: Int,
+        after: Int,
+        sortField: String,
+        sortReverse: Boolean
+    ) = withSearcher {
+        searchAfter(
+            FieldDoc(after, 0.0f),
+            query,
+            maxResults,
+            Sort(SortField("${sortField}_sort", SortField.Type.STRING, sortReverse))
+        ).scoreDocs.getAudioDetails(this)
+    }
+
+    override fun getDuplicates(audioFiles: List<AudioFile>) = withSearcher {
+        audioFiles.map { audioFile ->
+            search(audioFile.duplicateQuery, 5)
+                .scoreDocs
+                .filter { it.score > 10f }
+                .getAudioDetails(this)
+        }
+    }
 
     override fun deleteById(id: String) {
         indexWriter.deleteDocuments(Term("id", id))
     }
 
+    @FlowPreview
+    @ExperimentalTime
     override suspend fun refreshIndex(library: Library): Int {
         val dir = File(library.path)
         require(dir.isDirectory) { "${dir.name} is not a directory!" }
@@ -116,11 +140,14 @@ class MusicRepositoryImpl(indexPath: String) : MusicRepository, Closeable {
 
         val added: Int
         val deleted: Int
+        val elapsed: Duration
         val searcher: IndexSearcher = searcherManager.acquire()
 
         try {
-            added = addToIndex(library, searcher)
-            deleted = pruneIndex(library, searcher)
+            elapsed = measureTime {
+                added = addToIndex(library, searcher)
+                deleted = pruneIndex(library, searcher)
+            }
         } finally {
             searcherManager.release(searcher)
         }
@@ -128,11 +155,12 @@ class MusicRepositoryImpl(indexPath: String) : MusicRepository, Closeable {
         indexWriter.commit()
         searcherManager.maybeRefreshBlocking()
 
-        logger.info("Completed index refresh for library [${library.name}] - $added files added, $deleted files removed")
+        logger.info("Completed index refresh for library [${library.name}] in $elapsed - $added files added, $deleted files removed")
 
         return added + deleted
     }
 
+    @FlowPreview
     private suspend fun addToIndex(library: Library, searcher: IndexSearcher): Int {
         val dir = File(library.path)
         require(dir.isDirectory) { "${dir.name} is not a directory!" }
@@ -145,8 +173,14 @@ class MusicRepositoryImpl(indexPath: String) : MusicRepository, Closeable {
             .map {
                 FileAndSize(it, Files.size(it.toPath()))
             }
+//            .flatMapMerge(8) {
+//                flow {
+//                    if (searcher.search(it.query, 1).totalHits.value == 0)
+//                        emit(it)
+//                }
+//            }
             .filterNot {
-                searcher.search(it.query, 2).totalHits.value > 0
+                searcher.search(it.query, 1).totalHits.value > 0
             }
             .map { it.file.toAudioFile() }
             .flowOn(Dispatchers.IO)
@@ -163,13 +197,17 @@ class MusicRepositoryImpl(indexPath: String) : MusicRepository, Closeable {
         return count
     }
 
+    @FlowPreview
     private suspend fun pruneIndex(library: Library, searcher: IndexSearcher): Int {
         var count = 0
-        searcher.search(query(libraryId = library.id), Int.MAX_VALUE).scoreDocs
+        searcher.search(TermQuery(Term("library", library.id)), Int.MAX_VALUE).scoreDocs
             .asFlow()
             .map { searcher.doc(it.doc) }
-            .filter {
-                Files.notExists(Path.of(it.get("path")).resolve(it.get("filename")))
+            .flatMapMerge(50) {
+                flow {
+                    if (Files.notExists(Path.of(it.get("path")).resolve(it.get("filename"))))
+                        emit(it)
+                }
             }
             .flowOn(Dispatchers.IO)
             .onEach {
@@ -184,28 +222,13 @@ class MusicRepositoryImpl(indexPath: String) : MusicRepository, Closeable {
         return count
     }
 
-    private fun query(
-        libraryId: String? = null,
-        text: String? = null,
-        fields: Array<String> = emptyArray()
-    ): Query =
-        if (libraryId == null && text == null) {
-            MatchAllDocsQuery()
-        } else {
-            BooleanQuery.Builder().let { builder ->
-                libraryId?.let { builder.add(TermQuery(Term("library", libraryId)), FILTER) }
-                text?.let { builder.add(MultiFieldQueryParser(fields, StandardAnalyzer()).parse(text), FILTER) }
-                builder.build()
-            }
-        }
-
     override fun close() {
         searcherManager.close()
         indexWriter.close()
         indexDirectory.close()
     }
 
-    data class FileAndSize(
+    private data class FileAndSize(
         val file: File,
         val size: Long
     ) {
@@ -236,5 +259,63 @@ class MusicRepositoryImpl(indexPath: String) : MusicRepository, Closeable {
             .add(TermQuery(Term("path", this.location.path)), FILTER)
             .add(TermQuery(Term("filename", this.location.filename)), FILTER)
             .build()
+
+    private val AudioFile.duplicateQuery: Query
+        get() = BooleanQuery.Builder()
+            .add(
+                MultiFieldQueryParser(arrayOf("title", "artist", "lyricist"), StandardAnalyzer())
+                    .parse("${this.tags.title} ${this.tags.artist} ${this.tags.lyricist}".removeProblemCharacters()),
+                MUST
+            )
+            .add(queryById(this.id), MUST_NOT)
+            .build()
+
+//    private fun IndexSearcher.searchAudio(query: Query, maxResults: Int): List<AudioFileMatch> =
+//        this.search(query, maxResults).scoreDocs.map {
+//            AudioFileMatch(
+//                audioFile = this.doc(it.doc).toAudioFile(),
+//                matchScore = it.score
+//            )
+//        }
+//
+//    private fun Array<ScoreDoc>.getAudioMatches(searcher: IndexSearcher) =
+//        map {
+//            AudioFileMatch(
+//                audioFile = searcher.doc(it.doc).toAudioFile(),
+//                matchScore = it.score
+//            )
+//        }
+
+    private fun Array<ScoreDoc>.getAudioDetails(searcher: IndexSearcher) =
+        map { it.toAudioDetails(searcher) }
+
+    private fun List<ScoreDoc>.getAudioDetails(searcher: IndexSearcher) =
+        map { it.toAudioDetails(searcher) }
+
+    private fun ScoreDoc.toAudioDetails(searcher: IndexSearcher) =
+        AudioDetails(
+            audioFile = searcher.doc(doc).toAudioFile(),
+            score = if (score.isNaN()) null else score,
+            docId = doc,
+        )
+
+    private fun Array<ScoreDoc>.getAudioFile(searcher: IndexSearcher) =
+        map {
+            searcher.doc(it.doc).toAudioFile()
+        }
+
+    private fun List<ScoreDoc>.getAudioFile(searcher: IndexSearcher) =
+        map {
+            searcher.doc(it.doc).toAudioFile()
+        }
+
+    private fun <T> withSearcher(block: IndexSearcher.() -> T): T {
+        val searcher = searcherManager.acquire()
+        try {
+            return block.invoke(searcher)
+        } finally {
+            searcherManager.release(searcher)
+        }
+    }
 
 }

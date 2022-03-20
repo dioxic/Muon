@@ -1,11 +1,10 @@
 package uk.dioxic.muon.audio
 
 import kotlinx.serialization.Serializable
-import uk.dioxic.muon.audio.AudioFile.Keys.*
+import uk.dioxic.muon.model.ColumnKeys.*
 import uk.dioxic.muon.coalesce
+import uk.dioxic.muon.model.ColumnKeys
 import uk.dioxic.muon.toTimeString
-
-//enum class AudioFileFieldKey { Artist, Title, Genre, Comment, Bitrate, VBR, Type, Path, Filename, Length, Lyricist, Year, Album }
 
 @Serializable
 data class AudioFile(
@@ -14,9 +13,8 @@ data class AudioFile(
     val tags: Tags,
     val header: Header
 ) {
-    enum class Keys { Artist, Title, Genre, Comment, Bitrate, VBR, Type, Path, Filename, Length, Lyricist, Year, Album }
 
-    fun get(field: Keys): String =
+    fun get(field: ColumnKeys): String =
         when (field) {
             Artist -> tags.artist
             Title -> tags.title
@@ -31,6 +29,7 @@ data class AudioFile(
             Lyricist -> tags.lyricist
             Year -> tags.year
             Album -> tags.album
+            else -> ""
         }
 
     fun matches(text: String) =
@@ -80,7 +79,7 @@ data class AudioFile(
                 header = Header()
             )
 
-        fun comparator(a: AudioFile, b: AudioFile, orderBy: Keys) =
+        fun comparator(a: AudioFile, b: AudioFile, orderBy: ColumnKeys) =
             when (orderBy) {
                 Bitrate -> a.header.bitrate.compareTo(b.header.bitrate)
                 VBR -> a.header.vbr.compareTo(b.header.vbr)

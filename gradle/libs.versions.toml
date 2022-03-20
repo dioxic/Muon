@@ -4,8 +4,10 @@ ksp = "1.6.10-1.0.4"
 kotlinCoroutines = "1.6.0"
 kotlinSerialization = "1.3.2"
 kotlinDatetime = "0.3.2"
-kotlinWrapperReact = "17.0.2-pre.321-kotlin-1.6.10"
-kotlinWrapperMui = "5.5.1-pre.321-kotlin-1.6.10"
+kotlinWrapper = "pre.314-kotlin-1.6.10"
+#kotlinWrapperReact = "17.0.2-pre.321-kotlin-1.6.10"
+#kotlinWrapperReactRouter = "6.2.1-pre.321-kotlin-1.6.10"
+#kotlinWrapperMui = "5.5.1-pre.321-kotlin-1.6.10"
 mui = "5.5.1"
 mongodb = "4.5.0"
 clikt = "2.8.0"
@@ -32,8 +34,7 @@ lucene = "9.0.0"
 mockk = "1.12.3"
 spek = "2.0.16"
 react = "17.0.2"
-emotionStyled = "11.6.0"
-emotionReact = "11.7.1"
+emotion = "11.8.1"
 
 [libraries]
 bson = { module = "org.mongodb:bson", version.ref = "mongodb" }
@@ -51,11 +52,12 @@ kotlin-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-te
 kotlin-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinSerialization" }
 kotlin-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinSerialization" }
 kotlin-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinDatetime" }
-kotlin-wrappers-react = { module = "org.jetbrains.kotlin-wrappers:kotlin-react", version.ref = "kotlinWrapperReact"}
-kotlin-wrappers-react-dom = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-dom", version.ref = "kotlinWrapperReact"}
-kotlin-wrappers-react-css = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-css", version.ref = "kotlinWrapperReact"}
-kotlin-wrappers-mui = { module = "org.jetbrains.kotlin-wrappers:kotlin-mui", version.ref = "kotlinWrapperMui"}
-kotlin-wrappers-mui-icons = { module = "org.jetbrains.kotlin-wrappers:kotlin-mui-icons", version.ref = "kotlinWrapperMui"}
+#kotlin-wrappers-react = { module = "org.jetbrains.kotlin-wrappers:kotlin-react", version.ref = "kotlinWrapperReact"}
+#kotlin-wrappers-react-dom = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-dom", version.ref = "kotlinWrapperReact"}
+#kotlin-wrappers-react-router-dom = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-router-dom", version.ref = "kotlinWrapperReactRouter"}
+#kotlin-wrappers-react-css = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-css", version.ref = "kotlinWrapperReact"}
+#kotlin-wrappers-mui = { module = "org.jetbrains.kotlin-wrappers:kotlin-mui", version.ref = "kotlinWrapperMui"}
+#kotlin-wrappers-mui-icons = { module = "org.jetbrains.kotlin-wrappers:kotlin-mui-icons", version.ref = "kotlinWrapperMui"}
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 ktor-client-json-js = { module = "io.ktor:ktor-client-json-js", version.ref = "ktor" }
@@ -95,8 +97,8 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk"}
 logging = ["log4j-core", "log4j-api", "log4j-slf4j", "log4j-jul"]
 ktorServer = ["ktor-serialization", "ktor-server-core", "ktor-server-netty", "ktor-websockets"]
 ktorClient = ["ktor-client-js", "ktor-client-json-js", "ktor-client-serialization-js"]
-mui = ["kotlin-wrappers-mui", "kotlin-wrappers-mui-icons"]
-react = ["kotlin-wrappers-react", "kotlin-wrappers-react-dom", "kotlin-wrappers-react-css"]
+#mui = ["kotlin-wrappers-mui", "kotlin-wrappers-mui-icons"]
+#react = ["kotlin-wrappers-react", "kotlin-wrappers-react-dom", "kotlin-wrappers-react-css", "kotlin-wrappers-react-router-dom"]
 
 [plugins]
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

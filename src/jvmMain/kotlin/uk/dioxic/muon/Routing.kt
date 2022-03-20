@@ -5,16 +5,19 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import kotlinx.coroutines.FlowPreview
 import org.koin.ktor.ext.inject
 import uk.dioxic.muon.config.AudioImportConfig
 import uk.dioxic.muon.config.Config
 import uk.dioxic.muon.config.LibraryConfig
+import uk.dioxic.muon.model.ConfigMap
 import uk.dioxic.muon.repository.ConfigRepository
 import uk.dioxic.muon.repository.LibraryRepository
-import uk.dioxic.muon.repository.MusicRepository
 import uk.dioxic.muon.repository.ShoppingRepository
 import uk.dioxic.muon.service.MusicService
+import java.awt.SystemColor.text
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.time.ExperimentalTime
 
 fun Routing.shoppingList() {
 
@@ -36,6 +39,32 @@ fun Routing.shoppingList() {
     }
 }
 
+//@FlowPreview
+//@ExperimentalTime
+//fun Routing.import() {
+//    val musicService by inject<MusicService>()
+//    val libraryRepository by inject<LibraryRepository>()
+//
+//    route(importPath) {
+//        get {
+//            val libraryId = call.parameters["library"] ?: error("Invalid request - library not specified")
+//            val maxResults = call.parameters["maxResults"]?.toIntOrNull() ?: 500
+//            if (call.parameters["refresh"].toBoolean()) {
+//                musicService.refreshIndex(libraryRepository.getLibraryById(libraryId))
+//            }
+//
+//            call.respond(
+//                musicService.getAudioDetails(
+//                    libraryId = libraryId,
+//                    maxResults = maxResults
+//                )
+//            )
+//        }
+//    }
+//}
+
+@FlowPreview
+@ExperimentalTime
 fun Routing.music() {
     val musicService by inject<MusicService>()
     val libraryRepository by inject<LibraryRepository>()
@@ -44,7 +73,11 @@ fun Routing.music() {
         get {
             val libraryId = call.parameters["library"]
             val maxResults = call.parameters["maxResults"]?.toIntOrNull() ?: 500
+            val includeDuplicates = call.parameters["includeDuplicates"].toBoolean()
             val query = call.parameters["q"]
+            val sort = call.parameters["sort"]
+            val sortReverse = call.parameters["sortReverse"].toBoolean()
+            val after = call.parameters["after"]?.toIntOrNull()
 
             if (call.parameters["refresh"]?.toBoolean() == true) {
                 if (libraryId == null) {
@@ -52,13 +85,21 @@ fun Routing.music() {
                 }
                 musicService.refreshIndex(libraryRepository.getLibraryById(libraryId))
             }
-            call.respond(
-                musicService.search(
-                    libraryId = libraryId,
-                    text = query,
-                    maxResults = maxResults
-                )
+
+            val details = musicService.search(
+                libraryId = libraryId,
+                text = query,
+                maxResults = maxResults,
+                sortField = sort,
+                sortReverse = sortReverse,
+                after = after
             )
+
+            if (includeDuplicates) {
+                call.respond(musicService.attachDuplicates(details))
+            } else {
+                call.respond(details)
+            }
         }
         get("/{id}") {
             call.respond(musicService.getById(call.parameters["id"]!!))
@@ -77,36 +118,35 @@ fun Routing.music() {
     }
 }
 
+@FlowPreview
+@ExperimentalTime
 fun Routing.library() {
     val libraryRepository by inject<LibraryRepository>()
+    val musicService by inject<MusicService>()
 
     route(libraryPath) {
         get {
             call.respond(libraryRepository.getLibraries())
         }
-        get("/{id}") {
-            call.respond(libraryRepository.getLibraryById(call.parameters["id"]!!))
-        }
         post {
             libraryRepository.saveLibrary(call.receive())
             call.respond(HttpStatusCode.OK)
         }
-        delete("/{id}") {
-            libraryRepository.deleteLibrary(call.parameters["id"]!!)
-            call.respond(HttpStatusCode.OK)
+        route("/{id}") {
+            get("/refresh") {
+                val library = libraryRepository.getLibraryById(call.parameters["id"]!!)
+                call.respond(musicService.refreshIndex(library))
+            }
+            get {
+                call.respond(libraryRepository.getLibraryById(call.parameters["id"]!!))
+            }
+            delete {
+                libraryRepository.deleteLibrary(call.parameters["id"]!!)
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 }
-
-//fun Routing.audioFile() {
-//    val configRepository by inject<ConfigRepository>()
-//
-//    route(AudioFile.path) {
-//        get {
-//            call.respond(readAudioFiles(File(configRepository.getLibraryConfig().libraryPath)))
-//        }
-//    }
-//}
 
 @ExperimentalPathApi
 fun Routing.config() {
@@ -126,6 +166,10 @@ fun Routing.config() {
 
         get {
             call.respond(configRepository.getFullConfig())
+        }
+        post {
+            configRepository.save(call.receive() as ConfigMap)
+            call.respond(HttpStatusCode.OK)
         }
     }
 }

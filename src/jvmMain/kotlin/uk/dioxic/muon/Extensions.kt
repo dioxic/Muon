@@ -1,9 +1,7 @@
 package uk.dioxic.muon
 
-import org.apache.lucene.document.Document
-import org.apache.lucene.document.Field
-import org.apache.lucene.document.StringField
-import org.apache.lucene.document.TextField
+import org.apache.lucene.document.*
+import org.apache.lucene.util.BytesRef
 import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.audio.SupportedFileFormat
 import org.jaudiotagger.tag.FieldKey
@@ -134,26 +132,28 @@ fun File.toAudioFile(): AudioFile {
     )
 }
 
-fun AudioFile.toDocument(libraryId: String): Document {
-    val document = Document()
-    document.add(StringField("id", this.id, Field.Store.YES))
-    document.add(TextField("artist", this.tags.artist, Field.Store.YES))
-    document.add(TextField("title", this.tags.title, Field.Store.YES))
-    document.add(TextField("lyricist", this.tags.lyricist, Field.Store.YES))
-    document.add(TextField("album", this.tags.album, Field.Store.YES))
-    document.add(StringField("comment", this.tags.comment, Field.Store.YES))
-    document.add(StringField("genre", this.tags.genre, Field.Store.YES))
-    document.add(StringField("year", this.tags.year, Field.Store.YES))
-    document.add(StringField("fileType", this.header.fileType, Field.Store.YES))
-    document.add(StringField("bitrate", this.header.bitrate.toString(), Field.Store.YES))
-    document.add(StringField("vbr", this.header.vbr.toString(), Field.Store.YES))
-    document.add(StringField("length", this.header.length.toString(), Field.Store.YES))
-    document.add(StringField("path", this.location.path, Field.Store.YES))
-    document.add(StringField("filename", this.location.filename, Field.Store.YES))
-    document.add(StringField("filesize", Files.size(this.getPath()).toString(), Field.Store.NO))
-    document.add(StringField("library", libraryId, Field.Store.YES))
+fun AudioFile.toDocument(libraryId: String): Document = Document().also {
+    it.add(StringField("id", id, Field.Store.YES))
+    it.add(TextField("artist", tags.artist, Field.Store.YES))
+    it.add(TextField("title", tags.title, Field.Store.YES))
+    it.add(TextField("lyricist", tags.lyricist, Field.Store.YES))
+    it.add(TextField("album", tags.album, Field.Store.YES))
+    it.add(StringField("comment", tags.comment, Field.Store.YES))
+    it.add(StringField("genre", tags.genre, Field.Store.YES))
+    it.add(StringField("year", tags.year, Field.Store.YES))
+    it.add(StringField("fileType", header.fileType, Field.Store.YES))
+    it.add(StringField("bitrate", header.bitrate.toString(), Field.Store.YES))
+    it.add(StringField("vbr", header.vbr.toString(), Field.Store.YES))
+    it.add(StringField("length", header.length.toString(), Field.Store.YES))
+    it.add(StringField("path", location.path, Field.Store.YES))
+    it.add(StringField("filename", location.filename, Field.Store.YES))
+    it.add(StringField("filesize", Files.size(getPath()).toString(), Field.Store.NO))
+    it.add(StringField("library", libraryId, Field.Store.YES))
 
-    return document
+    it.add(SortedDocValuesField("artist_sort", BytesRef(tags.artist)))
+    it.add(SortedDocValuesField("title_sort", BytesRef(tags.title)))
+    it.add(SortedDocValuesField("lyricist_sort", BytesRef(tags.lyricist)))
+    it.add(SortedDocValuesField("album_sort", BytesRef(tags.album)))
 }
 
 fun Document.toAudioFile() = AudioFile(

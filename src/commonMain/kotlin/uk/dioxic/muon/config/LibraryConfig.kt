@@ -6,13 +6,15 @@ import uk.dioxic.muon.model.Library
 @Serializable
 data class LibraryConfig(
     val libraries: List<Library>,
-    val source: String?,
+    val importLibrary: String?,
+    val selectedlibrary: String?
 ) : Config {
     companion object {
         const val path = "library"
         val Default = LibraryConfig(
             libraries = listOf(),
-            source = null
+            importLibrary = null,
+            selectedlibrary = null,
         )
     }
 }

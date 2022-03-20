@@ -18,7 +18,7 @@ import kotlin.io.path.*
 class ConfigRepositoryImpl(configDirectory: String) : ConfigRepository {
     private val log: Logger = LogManager.getLogger()
     private val configFile = Paths.get(configDirectory, "config.json")
-    private var configMap: ConfigMap
+    private var configMap: ConfigMap = ConfigMap.Default
     private val json = Json {
         prettyPrint = true
         serializersModule = SerializersModule {
@@ -41,9 +41,9 @@ class ConfigRepositoryImpl(configDirectory: String) : ConfigRepository {
         require(configPath.isDirectory()) { "config dir must be a directory" }
         require(configPath.isReadable()) { "config dir must be readable" }
         require(configPath.isWritable()) { "config dir must be writable" }
-        configMap = if (configFile.exists()) {
+        if (configFile.exists()) {
             try {
-                json.decodeFromString(Files.readString(configFile))
+                configMap = json.decodeFromString(Files.readString(configFile))
             } catch (e: Exception) {
                 log.error("Config file corrupt - saving default")
                 save(ConfigMap.Default)
@@ -61,17 +61,17 @@ class ConfigRepositoryImpl(configDirectory: String) : ConfigRepository {
     override fun getImportConfig(): AudioImportConfig = configMap.importConfig
 
     override fun save(config: Config) {
-        save(
+        configMap =
             when (config) {
                 is LibraryConfig -> configMap.copy(libraryConfig = config)
                 is AudioImportConfig -> configMap.copy(importConfig = config)
             }
-        )
+        save(configMap)
     }
 
-    private fun save(configMap: ConfigMap): ConfigMap {
+    override fun save(configMap: ConfigMap) {
+        log.debug("Saving config")
         Files.writeString(configFile, json.encodeToString(configMap))
-        return configMap
     }
 
 }

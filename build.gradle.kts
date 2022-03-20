@@ -15,7 +15,6 @@ plugins {
 //    id("com.github.turansky.kfc.webpack") version "4.61.0"
 }
 
-group = "uk.dioxic.muon"
 version = scmVersion.version
 
 repositories {
@@ -25,6 +24,9 @@ repositories {
 application {
     mainClass.set("uk.dioxic.muon.ApplicationKt")
 }
+
+fun kotlinw(target: String): String =
+    "org.jetbrains.kotlin-wrappers:kotlin-$target"
 
 kotlin {
     jvm {
@@ -45,8 +47,8 @@ kotlin {
 //            dceTask {
 //                dceOptions.devMode = true
 //            }
-            binaries.executable()
         }
+        binaries.executable()
     }
     sourceSets {
         commonMain {
@@ -101,10 +103,25 @@ kotlin {
 //                implementation(libs.kotlin.stdlib.js)
                 implementation(kotlin("stdlib-js"))
                 implementation(libs.bundles.ktorClient)
-                implementation(libs.bundles.react)
-                implementation(libs.bundles.mui)
-                implementation(npm("@emotion/react", libs.versions.emotionReact.get()))
-                implementation(npm("@emotion/styled", libs.versions.emotionStyled.get()))
+//                implementation(libs.bundles.react)
+//                implementation(libs.bundles.mui)
+
+                implementation(
+                    project.dependencies.enforcedPlatform(
+                        kotlinw("wrappers-bom:0.0.1-${libs.versions.kotlinWrapper.get()}")
+                    )
+                )
+
+                implementation(kotlinw("react"))
+                implementation(kotlinw("react-dom"))
+                implementation(kotlinw("react-css"))
+                implementation(kotlinw("react-router-dom"))
+
+                implementation(kotlinw("mui"))
+                implementation(kotlinw("mui-icons"))
+
+                implementation(npm("@emotion/react", libs.versions.emotion.get()))
+                implementation(npm("@emotion/styled", libs.versions.emotion.get()))
             }
         }
         val jsTest by getting
