@@ -1,14 +1,10 @@
 package uk.dioxic.muon.component
 
-import csstype.Color
-import csstype.Display
-import csstype.number
-import csstype.px
+import csstype.*
 import kotlinx.js.jso
-import mui.icons.material.Alarm
-import mui.icons.material.Delete
 import mui.icons.material.SvgIconComponent
 import mui.material.*
+import mui.material.Size
 import mui.system.sx
 import react.*
 import react.dom.aria.*
@@ -22,6 +18,7 @@ external interface EnhancedTableProps : Props {
     var rows: List<TableRow>
     var columns: List<TableColumn>
     var rowActions: List<RowAction>
+    var toolbarActions: List<ToolbarAction>
     var selectable: Boolean
     var sortable: Boolean
 }
@@ -63,7 +60,8 @@ val EnhancedTable = FC<EnhancedTableProps> { props ->
         Paper {
             TableToolbar {
                 title = props.title
-                numSelected = selected.size
+                actions = props.toolbarActions
+                this.selected = selected
             }
 
             TableContainer {
@@ -87,10 +85,10 @@ val EnhancedTable = FC<EnhancedTableProps> { props ->
                         columns = props.columns
                         rows = props.rows
                         selectable = props.selectable
+                        actions = props.rowActions
                         this.selected = selected
                         this.order = order
                         this.orderBy = orderBy
-                        this.rowActions = props.rowActions
                         onRowClick = ::handleRowClick
                     }
                 }
@@ -101,7 +99,8 @@ val EnhancedTable = FC<EnhancedTableProps> { props ->
 
 external interface ToolbarProps : Props {
     var title: String
-    var numSelected: Int
+    var selected: List<String>
+    var actions: List<ToolbarAction>
 }
 
 val TableToolbar = FC<ToolbarProps> { props ->
@@ -109,7 +108,7 @@ val TableToolbar = FC<ToolbarProps> { props ->
 
     Toolbar {
         sx {
-            if (props.numSelected > 0) {
+            if (props.selected.isNotEmpty()) {
                 backgroundColor = Color(theme.palette.secondary.main)
                 color = Color(theme.palette.secondary.contrastText)
             }
@@ -120,32 +119,24 @@ val TableToolbar = FC<ToolbarProps> { props ->
             component = ReactHTML.div
             variant = "h6"
 
-            if (props.numSelected > 0) {
-                +"${props.numSelected} selected"
+            if (props.selected.isNotEmpty()) {
+                +"${props.selected.size} selected"
             } else {
                 +props.title
             }
         }
 
-        if (props.numSelected > 0) {
-            Tooltip {
-                title = ReactNode("Delete")
+        props.actions.forEach { action ->
+            if (!action.requiresSelection || props.selected.isNotEmpty()) {
+                Tooltip {
+                    title = ReactNode(action.id)
 
-                IconButton {
-                    color = IconButtonColor.inherit
+                    IconButton {
+                        color = action.iconColor
+                        onClick = { _ -> action.onClick(props.selected) }
 
-                    Delete()
-                }
-            }
-        } else {
-            Tooltip {
-                title = ReactNode("Filter")
-
-                IconButton {
-                    color = IconButtonColor.inherit
-
-//                    Filter()
-                    Alarm()
+                        action.icon()
+                    }
                 }
             }
         }
@@ -231,7 +222,7 @@ external interface EnhancedTableBodyProps : Props {
     var orderBy: String
     var selectable: Boolean
     var onRowClick: (String) -> Unit
-    var rowActions: List<RowAction>
+    var actions: List<RowAction>
 }
 
 val EnhancedTableBody = FC<EnhancedTableBodyProps> { props ->
@@ -275,7 +266,7 @@ val EnhancedTableBody = FC<EnhancedTableBodyProps> { props ->
                             }
                         }
 
-                    if (props.rowActions.isNotEmpty()) {
+                    if (props.actions.isNotEmpty()) {
                         TableCell {
                             padding = TableCellPadding.normal
                             align = TableCellAlign.center
@@ -287,9 +278,10 @@ val EnhancedTableBody = FC<EnhancedTableBodyProps> { props ->
                                     display = Display.flex
                                 }
 
-                                props.rowActions.forEach {
+                                props.actions.forEach {
                                     IconButton {
-                                        id = "${it.id}-${row.id}"
+//                                        id = "${it.id}-${row.id}"
+                                        color = it.iconColor
                                         size = it.size
                                         onClick = { event ->
                                             event.stopPropagation()
@@ -311,7 +303,17 @@ data class RowAction(
     val id: String,
     val size: Size = Size.small,
     val icon: SvgIconComponent,
+    val iconColor: IconButtonColor = IconButtonColor.inherit,
     val onClick: (String) -> Unit,
+)
+
+data class ToolbarAction(
+    val id: String,
+    val size: Size = Size.small,
+    val icon: SvgIconComponent,
+    val iconColor: IconButtonColor = IconButtonColor.inherit,
+    val requiresSelection: Boolean = false,
+    val onClick: (List<String>) -> Unit,
 )
 
 private fun comparator(order: SortDirection, orderBy: String) = Comparator { a: TableRow, b: TableRow ->

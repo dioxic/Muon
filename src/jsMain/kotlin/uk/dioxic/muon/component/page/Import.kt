@@ -1,13 +1,13 @@
 package uk.dioxic.muon.component.page
 
-import mui.icons.material.Delete
-import mui.icons.material.Edit
-import mui.icons.material.GetApp
+import csstype.HtmlAttributes
+import mui.icons.material.*
 import react.FC
 import react.Props
 import react.useState
 import uk.dioxic.muon.component.EnhancedTable
 import uk.dioxic.muon.component.RowAction
+import uk.dioxic.muon.component.ToolbarAction
 import uk.dioxic.muon.config.defaultImportTableColumns
 import uk.dioxic.muon.model.ImportTableData
 import uk.dioxic.muon.model.toColumns
@@ -25,8 +25,20 @@ val ImportPage = FC<Props> {
         println("handleDelete for $id")
     }
 
+    fun handleDeleteClick(ids: List<String>) {
+        println("handleDelete for $ids")
+    }
+
     fun handleImportClick(id: String) {
         println("handleImport for $id")
+    }
+
+    fun handleFilterClick(selected: List<String>) {
+        println("handleFilter for $selected")
+    }
+
+    fun handleRefreshClick(selected: List<String>) {
+        println("handleRefresh")
     }
 
     val rowActions = listOf(
@@ -35,15 +47,21 @@ val ImportPage = FC<Props> {
         RowAction(id = "delete", icon = Delete, onClick = ::handleDeleteClick),
     )
 
+    val toolbarActions = listOf(
+        ToolbarAction(id = "import", icon = GetApp, onClick = ::handleFilterClick, requiresSelection = true),
+        ToolbarAction(id = "delete", icon = Delete, onClick = ::handleDeleteClick, requiresSelection = true),
+        ToolbarAction(id = "refresh", icon = Refresh, onClick = ::handleRefreshClick),
+    )
+
     EnhancedTable {
         this.title = "Music Import"
         this.rowActions = rowActions
+        this.toolbarActions = toolbarActions
         this.rows = data.toRows()
         this.columns = columns.toColumns()
         this.selectable = true
         this.sortable = true
     }
-
 }
 
 private val testData = listOf(
