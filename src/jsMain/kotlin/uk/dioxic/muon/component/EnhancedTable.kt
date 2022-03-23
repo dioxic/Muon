@@ -1,15 +1,16 @@
 package uk.dioxic.muon.component
 
-import csstype.*
+import csstype.Color
+import csstype.Display
+import csstype.number
+import csstype.px
 import kotlinx.js.jso
 import mui.icons.material.SvgIconComponent
 import mui.material.*
-import mui.material.Size
 import mui.system.sx
 import react.*
 import react.dom.aria.*
 import react.dom.html.ReactHTML
-import uk.dioxic.muon.common.toTableSortLabel
 import uk.dioxic.muon.model.TableColumn
 import uk.dioxic.muon.model.TableRow
 
@@ -343,3 +344,9 @@ private fun getSortColumn(row: TableRow, column: String): dynamic {
         row.asDynamic()[column]
     }
 }
+
+private fun SortDirection.toTableSortLabel(): TableSortLabelDirection =
+    when (this) {
+        SortDirection.desc -> TableSortLabelDirection.desc
+        else -> TableSortLabelDirection.asc
+    }

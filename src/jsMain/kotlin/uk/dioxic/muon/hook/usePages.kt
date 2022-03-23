@@ -7,12 +7,10 @@ import uk.dioxic.muon.component.page.SettingsPage
 import uk.dioxic.muon.entity.Page
 import uk.dioxic.muon.entity.Pages
 
-fun usePages(): Pages {
-    return useMemo {
-        setOf(
-            Page("settings", "Settings", SettingsPage),
-            Page("library", "Library", LibraryPage),
-            Page("import", "Import", ImportPage),
-        )
-    }
+fun usePages(): Pages = useMemo {
+    setOf(
+        Page("settings", "Settings", SettingsPage),
+        Page("library", "Library", LibraryPage),
+        Page("import", "Import", ImportPage),
+    )
 }
