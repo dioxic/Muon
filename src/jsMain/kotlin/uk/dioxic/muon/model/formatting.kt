@@ -1,5 +1,6 @@
 package uk.dioxic.muon.model
 
+import csstype.HtmlAttributes
 import csstype.Length
 import csstype.px
 import kotlinx.js.jso
@@ -34,8 +35,11 @@ external interface TableColumn {
     var visible: Boolean
 }
 
-external interface ImportTableRow {
+external interface TableRow {
     var id: String
+}
+
+external interface ImportTableRow: TableRow {
     var title: String
     var artist: String
     var lyricist: String
@@ -88,9 +92,3 @@ fun ImportTableData.toRow(): ImportTableRow =
         this.lengthSort = this@toRow.length
         this.year = this@toRow.year
     }
-
-//fun sortAndDisplay(display: String, sort: Any): SortAndDisplay =
-//    jso {
-//        this.display = display
-//        this.sort = sort
-//    }
