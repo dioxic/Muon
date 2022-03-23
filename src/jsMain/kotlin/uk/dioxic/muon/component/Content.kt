@@ -17,7 +17,7 @@ import uk.dioxic.muon.common.Area
 private val DEFAULT_PADDING = 30.px
 
 val Content = FC<Props> {
-    val showcases = useContext(PagesContext)
+    val pages = useContext(PagesContext)
 
     Routes {
         Route {
@@ -37,7 +37,7 @@ val Content = FC<Props> {
                 element = Placeholder.create()
             }
 
-            for ((key, _, Component) in showcases) {
+            for ((key, _, Component) in pages) {
                 Route {
                     path = key
                     element = Component.create()

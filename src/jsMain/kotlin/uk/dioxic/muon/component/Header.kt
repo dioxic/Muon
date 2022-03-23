@@ -36,7 +36,7 @@ val Header = FC<Props> {
                 noWrap = true
                 component = ReactHTML.div
 
-                +"Kotlin MUI Showcase"
+                +"Music Organisation"
             }
 
             Tooltip {

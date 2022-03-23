@@ -1,250 +1,366 @@
 package uk.dioxic.muon.component.page
 
-import csstype.Length
-import csstype.pct
-import csstype.px
+import csstype.*
 import kotlinx.js.jso
+import mui.icons.material.*
 import mui.material.*
+import mui.material.Size
 import mui.system.sx
 import react.*
-import react.dom.aria.AriaRole
-import react.dom.aria.ariaLabel
+import react.dom.aria.*
 import react.dom.html.ReactHTML
+import uk.dioxic.muon.common.toTableSortLabel
+import uk.dioxic.muon.component.ThemeContext
+import uk.dioxic.muon.config.defaultImportTableColumns
+import uk.dioxic.muon.model.*
 
 val ImportPage = FC<Props> {
-    Divider {
-        variant = DividerVariant.fullWidth
+    val (selected, setSelected) = useState(emptyList<String>())
+    val (data, setData) = useState(testData)
+    val (columns, setColumns) = useState(defaultImportTableColumns)
+    val (order, setOrder) = useState(SortDirection.asc)
+    val (orderBy, setOrderBy) = useState("title")
 
-        Chip {
-            label = ReactNode("Basic table")
+    fun handleRowClick(id: String) =
+        setSelected(
+            if (selected.contains(id)) {
+                selected.filterNot { it == id }
+            } else {
+                selected + id
+            }
+        )
+
+    fun handleSelectAllClick(selectAll: Boolean) {
+        if (selectAll) {
+            setSelected(data.map { row -> row.id })
+        } else {
+            setSelected(emptyList())
         }
     }
-    TableContainer {
-        component = Paper.create().type
 
-        Table {
-            sx { minWidth = 650.px }
-            ariaLabel = "simple table"
+    fun handleEditClick(id: String) {
+        println("handleEdit")
+    }
 
-            TableHead {
+    fun handleDeleteClick(id: String) {
+        println("handleDelete")
+    }
+
+    fun handleImportClick(id: String) {
+        println("handleImport")
+    }
+
+    fun handleRequestSort(id: String) {
+        setOrder(
+            if (orderBy == id && order == SortDirection.asc) {
+                SortDirection.desc
+            } else {
+                SortDirection.asc
+            }
+        )
+        setOrderBy(id)
+    }
+
+    val rowActions = listOf(
+        RowAction(id = "edit", icon = Edit, onClick = ::handleEditClick),
+        RowAction(id = "import", icon = GetApp, onClick = ::handleImportClick),
+        RowAction(id = "delete", icon = Delete, onClick = ::handleDeleteClick),
+    )
+
+    Box {
+        Paper {
+            TableToolbar {
+                numSelected = selected.size
+            }
+
+            TableContainer {
+                component = Paper.create().type
+
+                Table {
+                    sx { minWidth = 650.px }
+//            stickyHeader = true
+                    ariaLabel = "music table"
+
+                    EnhancedTableHead {
+                        numSelected = selected.size
+                        rowCount = testData.size
+                        this.columns = columns.toColumns()
+                        this.order = order
+                        this.orderBy = orderBy
+                        hasActions = rowActions.isNotEmpty()
+                        onSelectAllClick = ::handleSelectAllClick
+                        onRequestSort = ::handleRequestSort
+                    }
+
+                    EnhancedTableBody {
+                        this.selected = selected
+                        this.columns = columns.toColumns()
+                        this.rows = data.toRows()
+                        this.order = order
+                        this.orderBy = orderBy
+                        this.rowActions = rowActions
+                        onRowClick = ::handleRowClick
+                    }
+
+                }
+            }
+        }
+    }
+}
+
+external interface ToolbarProps : Props {
+    var numSelected: Int
+}
+
+val TableToolbar = FC<ToolbarProps> { props ->
+    val theme by useContext(ThemeContext)
+
+    Toolbar {
+        sx {
+            if (props.numSelected > 0) {
+                backgroundColor = Color(theme.palette.secondary.main)
+                color = Color(theme.palette.secondary.contrastText)
+            }
+        }
+
+        Typography {
+            sx { flexGrow = number(1.0) }
+            component = ReactHTML.div
+            variant = "h6"
+
+            if (props.numSelected > 0) {
+                +"${props.numSelected} selected"
+            } else {
+                +"Music Import"
+            }
+        }
+
+        if (props.numSelected > 0) {
+            Tooltip {
+                title = ReactNode("Delete")
+
+                IconButton {
+                    color = IconButtonColor.inherit
+
+                    Delete()
+                }
+            }
+        } else {
+            Tooltip {
+                title = ReactNode("Filter")
+
+                IconButton {
+                    color = IconButtonColor.inherit
+
+//                    Filter()
+                    Alarm()
+                }
+            }
+        }
+    }
+}
+
+external interface EnhancedTableHeadProps : Props {
+    var numSelected: Int
+    var rowCount: Int
+    var order: SortDirection
+    var orderBy: String
+    var columns: List<TableColumn>
+    var hasActions: Boolean
+    var onRequestSort: (String) -> Unit
+    var onSelectAllClick: (Boolean) -> Unit
+}
+
+val EnhancedTableHead = FC<EnhancedTableHeadProps> { props ->
+    TableHead {
+        TableRow {
+            TableCell {
+                padding = TableCellPadding.checkbox
+                Checkbox {
+                    color = CheckboxColor.primary
+                    indeterminate = (props.numSelected > 0 && props.numSelected < props.rowCount)
+                    checked = (props.rowCount > 0 && props.numSelected == props.rowCount)
+                    ariaLabel = "select all music"
+                    onChange = { _, checked -> props.onSelectAllClick(checked) }
+                }
+            }
+
+            props.columns
+                .filter { it.visible }
+                .forEach { column ->
+                    val orderedColumn = props.orderBy == column.id
+
+                    TableCell {
+                        key = column.id
+                        align = column.align
+                        style = jso {
+                            top = 57.px
+                            minWidth = column.minWidth
+                        }
+                        sortDirection = if (orderedColumn) props.order else SortDirection.`false`
+
+                        TableSortLabel {
+                            onClick = { _ -> props.onRequestSort(column.id) }
+                            if (orderedColumn) {
+                                active = true
+                                direction = props.order.toTableSortLabel()
+                            }
+
+                            +column.label
+                        }
+                    }
+                }
+            if (props.hasActions) {
+                TableCell {
+                    key = "action"
+                    align = TableCellAlign.center
+                    padding = TableCellPadding.checkbox
+
+                    +"Actions"
+                }
+            }
+        }
+    }
+}
+
+external interface EnhancedTableBodyProps : Props {
+    var selected: List<String>
+    var rows: List<ImportTableRow>
+    var columns: List<TableColumn>
+    var order: SortDirection
+    var orderBy: String
+    var onRowClick: (String) -> Unit
+    var rowActions: List<RowAction>
+}
+
+val EnhancedTableBody = FC<EnhancedTableBodyProps> { props ->
+    TableBody {
+
+        props.rows
+            .sortedWith(comparator(props.order, props.orderBy))
+            .forEach { row ->
+                val isRowSelected = props.selected.contains(row.id)
+
                 TableRow {
+                    key = row.id
+                    hover = true
+                    role = AriaRole.checkbox
+                    ariaChecked = if (isRowSelected) AriaChecked.`true` else AriaChecked.`false`
+                    tabIndex = -1
+                    onClick = { _ -> props.onRowClick(row.id) }
+
                     TableCell {
-                        +"Dessert (100 g serving)"
-                    }
-                    TableCell {
-                        align = TableCellAlign.right
+                        padding = TableCellPadding.checkbox
 
-                        +"Calories"
-                    }
-                    TableCell {
-                        align = TableCellAlign.right
-
-                        +"Fat (g)"
-                    }
-                    TableCell {
-                        align = TableCellAlign.right
-
-                        +"Carbs (g)"
-                    }
-                    TableCell {
-                        align = TableCellAlign.right
-
-                        +"Protein (g)"
-                    }
-                }
-            }
-            TableBody {
-                for (row in basicTableRows) {
-                    TableRow {
-                        key = row.name
-
-                        TableCell {
-                            component = ReactHTML.th
-                            scope = "row"
-
-                            +row.name
-                        }
-                        TableCell {
-                            align = TableCellAlign.right
-
-                            +"${row.calories}"
-                        }
-                        TableCell {
-                            align = TableCellAlign.right
-
-                            +"${row.fat}"
-                        }
-                        TableCell {
-                            align = TableCellAlign.right
-
-                            +"${row.carbs}"
-                        }
-                        TableCell {
-                            align = TableCellAlign.right
-
-                            +"${row.protein}"
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    Divider {
-        variant = DividerVariant.fullWidth
-
-        Chip {
-            label = ReactNode("Column grouping")
-        }
-    }
-    Paper {
-        sx { width = 100.pct }
-
-        TableContainer {
-            sx { maxHeight = 440.px }
-
-            Table {
-                stickyHeader = true
-                ariaLabel = "sticky table"
-
-                TableHead {
-                    TableRow {
-                        TableCell {
-                            align = TableCellAlign.center
-                            colSpan = 2
-
-                            +"Country"
-                        }
-                        TableCell {
-                            align = TableCellAlign.center
-                            colSpan = 3
-
-                            +"Details"
+                        Checkbox {
+                            color = CheckboxColor.primary
+                            checked = isRowSelected
+                            ariaLabelledBy = "enhanced-table-checkbox-${row.id}"
                         }
                     }
 
-                    TableRow {
-                        for (column in columnGroupingColumns) {
+                    props.columns
+                        .filter { it.visible }
+                        .forEach { column ->
+                            val value: String = row.asDynamic()[column.id].unsafeCast<String>()
+
                             TableCell {
-                                key = column.id
                                 align = column.align
-                                style = jso {
-                                    top = 57.px
-                                    minWidth = column.minWidth
-                                }
 
-                                +column.label
+                                +value
                             }
                         }
-                    }
 
-                }
+                    if (props.rowActions.isNotEmpty()) {
+                        TableCell {
+                            padding = TableCellPadding.normal
+                            align = TableCellAlign.center
+                            size = Size.small
 
-                TableBody {
-                    for (row in columnGroupingRows) {
-                        TableRow {
-                            key = row.code
-                            hover = true
-                            role = AriaRole.checkbox
-                            tabIndex = -1
+                            Box {
+                                component = ReactHTML.div
+                                sx {
+                                    display = Display.flex
+                                }
 
-                            for (column in columnGroupingColumns) {
-                                val value: String = row.asDynamic()[column.id]
+                                props.rowActions.forEach {
+                                    IconButton {
+                                        id = "${it.id}-${row.id}"
+                                        size = it.size
+                                        onClick = { event ->
+                                            event.stopPropagation()
+                                            it.onClick(row.id)
+                                        }
 
-                                TableCell {
-                                    key = column.id
-                                    align = column.align
-
-                                    +value
+                                        it.icon()
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
     }
 }
 
-private data class BasicTableData(
-    val name: String,
-    val calories: Int,
-    val fat: Double,
-    val carbs: Int,
-    val protein: Double,
+data class RowAction(
+    val id: String,
+    val size: Size = Size.small,
+    val icon: SvgIconComponent,
+    val onClick: (String) -> Unit,
 )
 
-private val basicTableRows = setOf(
-    BasicTableData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-    BasicTableData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-    BasicTableData("Eclair", 262, 16.0, 24, 6.0),
-    BasicTableData("Cupcake", 305, 3.7, 67, 4.3),
-    BasicTableData("Gingerbread", 356, 16.0, 49, 3.9),
+private fun comparator(order: SortDirection, orderBy: String) = Comparator { a: ImportTableRow, b: ImportTableRow ->
+    val aColumn = getSortColumn(a, orderBy)
+    val bColumn = getSortColumn(b, orderBy)
+
+    val res = when {
+        aColumn < bColumn -> -1
+        aColumn > bColumn -> 1
+        else -> 0
+    }
+
+    if (order == SortDirection.asc) res else -res
+}
+
+private fun getSortColumn(row: ImportTableRow, column: String): dynamic {
+    val sortColumn = row.asDynamic()["${column}Sort"]
+    return if (sortColumn != undefined) {
+        sortColumn
+    } else {
+        row.asDynamic()[column]
+    }
+}
+
+private val testData = listOf(
+    ImportTableData(
+        id = "1",
+        title = "the one",
+        artist = "mampi swift",
+        bitrate = 320,
+        length = 62,
+        path = "c:\\library",
+        filename = "sometrack.mp3",
+        vbr = false
+    ),
+    ImportTableData(
+        id = "2",
+        title = "the nine",
+        artist = "bad company",
+        bitrate = 320,
+        length = 200,
+        path = "c:\\library",
+        filename = "sometrack.mp3",
+        vbr = false
+    ),
+    ImportTableData(
+        id = "3",
+        title = "haywire",
+        artist = "dj bob",
+        bitrate = 320,
+        length = 185,
+        path = "c:\\library",
+        filename = "sometrack.mp3",
+        vbr = false
+    )
 )
-
-private val columnGroupingColumns = setOf(
-    ColumnGroupingColumn("name", "Name", 170.px, TableCellAlign.left),
-    ColumnGroupingColumn("code", "ISO Code", 100.px, TableCellAlign.left),
-    ColumnGroupingColumn("population", "Population", 170.px, TableCellAlign.right),
-    ColumnGroupingColumn("size", "Size (km²)", 170.px, TableCellAlign.right),
-    ColumnGroupingColumn("density", "Density", 170.px, TableCellAlign.right),
-)
-
-private val columnGroupingRows = setOf(
-    ColumnGroupingRow("India", "IN", "1,324,171,354", "3,287,263", "402.82"),
-    ColumnGroupingRow("China", "CN", "1,403,500,365", "9,596,961", "146.24"),
-    ColumnGroupingRow("Italy", "IT", "60,483,973", "301,340", "200.72"),
-    ColumnGroupingRow("United States", "US", "327,167,434", "9,833,520", "33.27"),
-    ColumnGroupingRow("Canada", "CA", "37,602,103", "9,984,670", "3.77"),
-    ColumnGroupingRow("Australia", "AU", "25,475,400", "7,692,024", "3.31"),
-    ColumnGroupingRow("Germany", "DE", "83,019,200", "357,578", "232.17"),
-    ColumnGroupingRow("Ireland", "IE", "4,857,000", "70,273", "69.12"),
-    ColumnGroupingRow("Mexico", "MX", "126,577,691", "1,972,550", "64.17"),
-    ColumnGroupingRow("Japan", "JP", "126,317,000", "377,973", "334.20"),
-    ColumnGroupingRow("France", "FR", "67,022,000", "640,679", "104.61"),
-    ColumnGroupingRow("United Kingdom", "GB", "67,545,757", "242,495", "278.54"),
-    ColumnGroupingRow("Russia", "RU", "146,793,744", "17,098,246", "8.59"),
-    ColumnGroupingRow("Nigeria", "NG", "200,962,417", "923,768", "217.55"),
-    ColumnGroupingRow("Brazil", "BR", "210,147,125", "8,515,767", "24.68"),
-)
-
-private external interface ColumnGroupingColumn {
-    var id: String
-    var label: String
-    var minWidth: Length
-    var align: TableCellAlign
-}
-
-private external interface ColumnGroupingRow {
-    var name: String
-    var code: String
-    var population: String
-    var size: String
-    var density: String
-}
-
-private fun ColumnGroupingColumn(
-    id: String,
-    label: String,
-    minWidth: Length,
-    align: TableCellAlign,
-): ColumnGroupingColumn = jso {
-    this.id = id
-    this.label = label
-    this.minWidth = minWidth
-    this.align = align
-}
-
-private fun ColumnGroupingRow(
-    name: String,
-    code: String,
-    population: String,
-    size: String,
-    density: String,
-): ColumnGroupingRow = jso {
-    this.name = name
-    this.code = code
-    this.population = population
-    this.size = size
-    this.density = density
-}
