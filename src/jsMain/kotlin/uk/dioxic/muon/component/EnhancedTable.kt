@@ -129,10 +129,12 @@ val TableToolbar = FC<ToolbarProps> { props ->
         props.actions.forEach { action ->
             if (!action.requiresSelection || props.selected.isNotEmpty()) {
                 Tooltip {
-                    title = ReactNode(action.id)
+                    title = ReactNode(action.name)
 
                     IconButton {
-                        color = action.iconColor
+                        action.iconColor?.let {
+                            color = it
+                        }
                         onClick = { _ -> action.onClick(props.selected) }
 
                         action.icon()
@@ -278,17 +280,21 @@ val EnhancedTableBody = FC<EnhancedTableBodyProps> { props ->
                                     display = Display.flex
                                 }
 
-                                props.actions.forEach {
-                                    IconButton {
-//                                        id = "${it.id}-${row.id}"
-                                        color = it.iconColor
-                                        size = it.size
-                                        onClick = { event ->
-                                            event.stopPropagation()
-                                            it.onClick(row.id)
-                                        }
+                                props.actions.forEach { action ->
+                                    Tooltip {
+                                        title = ReactNode(action.name)
+                                        IconButton {
+                                            action.iconColor?.let {
+                                                color = it
+                                            }
+                                            size = action.size
+                                            onClick = { event ->
+                                                event.stopPropagation()
+                                                action.onClick(row.id)
+                                            }
 
-                                        it.icon()
+                                            action.icon()
+                                        }
                                     }
                                 }
                             }
@@ -300,18 +306,18 @@ val EnhancedTableBody = FC<EnhancedTableBodyProps> { props ->
 }
 
 data class RowAction(
-    val id: String,
+    val name: String,
     val size: Size = Size.small,
     val icon: SvgIconComponent,
-    val iconColor: IconButtonColor = IconButtonColor.inherit,
+    val iconColor: IconButtonColor? = null,
     val onClick: (String) -> Unit,
 )
 
 data class ToolbarAction(
-    val id: String,
+    val name: String,
     val size: Size = Size.small,
     val icon: SvgIconComponent,
-    val iconColor: IconButtonColor = IconButtonColor.inherit,
+    val iconColor: IconButtonColor? = null,
     val requiresSelection: Boolean = false,
     val onClick: (List<String>) -> Unit,
 )

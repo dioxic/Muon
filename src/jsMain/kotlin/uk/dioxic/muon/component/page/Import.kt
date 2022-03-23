@@ -1,7 +1,9 @@
 package uk.dioxic.muon.component.page
 
-import csstype.HtmlAttributes
-import mui.icons.material.*
+import mui.icons.material.Delete
+import mui.icons.material.Edit
+import mui.icons.material.GetApp
+import mui.icons.material.Refresh
 import react.FC
 import react.Props
 import react.useState
@@ -42,15 +44,15 @@ val ImportPage = FC<Props> {
     }
 
     val rowActions = listOf(
-        RowAction(id = "edit", icon = Edit, onClick = ::handleEditClick),
-        RowAction(id = "import", icon = GetApp, onClick = ::handleImportClick),
-        RowAction(id = "delete", icon = Delete, onClick = ::handleDeleteClick),
+        RowAction(name = "edit", icon = Edit, onClick = ::handleEditClick),
+        RowAction(name = "import", icon = GetApp, onClick = ::handleImportClick),
+        RowAction(name = "delete", icon = Delete, onClick = ::handleDeleteClick),
     )
 
     val toolbarActions = listOf(
-        ToolbarAction(id = "import", icon = GetApp, onClick = ::handleFilterClick, requiresSelection = true),
-        ToolbarAction(id = "delete", icon = Delete, onClick = ::handleDeleteClick, requiresSelection = true),
-        ToolbarAction(id = "refresh", icon = Refresh, onClick = ::handleRefreshClick),
+        ToolbarAction(name = "import", icon = GetApp, onClick = ::handleFilterClick, requiresSelection = true),
+        ToolbarAction(name = "delete", icon = Delete, onClick = ::handleDeleteClick, requiresSelection = true),
+        ToolbarAction(name = "refresh", icon = Refresh, onClick = ::handleRefreshClick),
     )
 
     EnhancedTable {

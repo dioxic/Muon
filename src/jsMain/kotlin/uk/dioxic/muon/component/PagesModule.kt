@@ -9,9 +9,9 @@ import uk.dioxic.muon.entity.Pages
 val PagesContext = createContext<Pages>()
 
 val PagesModule = FC<PropsWithChildren> { props ->
-    val users = usePages()
+    val pages = usePages()
 
-    PagesContext.Provider(users) {
+    PagesContext.Provider(pages) {
         +props.children
     }
 }
