@@ -5,7 +5,6 @@ package uk.dioxic.muon
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
-import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.content.*
 import io.ktor.response.*
 import io.ktor.routing.*
@@ -86,7 +85,7 @@ fun Application.main() {
         index()
 
         static("/") {
-            resources("")
+            resources("static")
         }
 
         get("/env") {

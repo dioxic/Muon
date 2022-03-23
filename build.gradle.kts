@@ -138,7 +138,7 @@ scmVersion {
 }
 
 // include JS artifacts in any JAR we generate
-tasks.getByName<Jar>("jvmJar") {
+tasks.getByName<ProcessResources>("jvmProcessResources") {
     val taskName = if ("true" == project.findProperty("isProduction")) {
         "jsBrowserProductionWebpack"
     } else {
@@ -147,7 +147,9 @@ tasks.getByName<Jar>("jvmJar") {
     val webpackTask = tasks.getByName<KotlinWebpack>(taskName)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     dependsOn(webpackTask) // make sure JS gets compiled first
-    from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) // bring output file along into the JAR
+    from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) {
+        into("static")
+    }
 }
 
 //tasks.withType<KotlinCompile> {
@@ -172,17 +174,17 @@ distributions {
 }
 
 // Alias "installDist" as "stage" (for cloud providers)
-tasks.create("stage") {
-    dependsOn(tasks.getByName("installDist"))
-}
+//tasks.create("stage") {
+//    dependsOn(tasks.getByName("installDist"))
+//}
 
-tasks.named<Copy>("jvmProcessResources") {
-    val jsBrowserDistribution = tasks.named("jsBrowserDistribution")
-    from(jsBrowserDistribution)
-}
+//tasks.named<Copy>("jvmProcessResources") {
+//    val jsBrowserDistribution = tasks.named("jsBrowserDistribution")
+//    from(jsBrowserDistribution)
+//}
 
 tasks.named<JavaExec>("run") {
-    dependsOn(tasks.named<Jar>("jvmJar"))
+//    dependsOn(tasks.named<Jar>("jvmJar"))
     classpath(tasks.named<Jar>("jvmJar"))
 }
 

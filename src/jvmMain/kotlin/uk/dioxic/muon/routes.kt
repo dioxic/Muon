@@ -15,7 +15,6 @@ import uk.dioxic.muon.repository.ConfigRepository
 import uk.dioxic.muon.repository.LibraryRepository
 import uk.dioxic.muon.repository.ShoppingRepository
 import uk.dioxic.muon.service.MusicService
-import java.awt.SystemColor.text
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.ExperimentalTime
 
@@ -194,7 +193,7 @@ inline fun <reified T : Config> Route.subconfig(
 fun Routing.index() {
     get("/") {
         call.respondText(
-            this::class.java.classLoader.getResource("index.html")!!.readText(),
+            this::class.java.classLoader.getResource("static/index.html")!!.readText(),
             ContentType.Text.Html
         )
     }
