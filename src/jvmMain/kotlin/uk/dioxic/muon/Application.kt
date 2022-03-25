@@ -26,8 +26,7 @@ import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.ExperimentalTime
 
 private val appModule = module {
-    single<SettingsRepository> { SettingsRepositoryImpl() }
-    single<LibraryRepository> { LibraryRepositoryImpl(get()) }
+    single<LibraryRepository> { LibraryRepositoryImpl() }
     single<MusicRepository> { MusicRepositoryImpl("index") }
     single<MusicService> { MusicServiceImpl(get()) }
     single { ShoppingRepository() }

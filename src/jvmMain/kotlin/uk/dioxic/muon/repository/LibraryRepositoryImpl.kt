@@ -1,14 +1,15 @@
 package uk.dioxic.muon.repository
 
 import org.apache.logging.log4j.LogManager
+import uk.dioxic.muon.common.Global
 import uk.dioxic.muon.model.Library
 
-class LibraryRepositoryImpl(private val settingsRepository: SettingsRepository) : LibraryRepository {
+class LibraryRepositoryImpl : LibraryRepository {
 
     private val logger = LogManager.getLogger()
 
     private var libraryCache: MutableMap<String, Library> =
-        settingsRepository.get().libraries.associateBy { it.id }.toMutableMap()
+        Global.settings.libraries.associateBy { it.id }.toMutableMap()
 
     override fun getLibraryById(libraryId: String) = libraryCache[libraryId] ?: error("Library '$libraryId' not found!")
 
@@ -28,11 +29,8 @@ class LibraryRepositoryImpl(private val settingsRepository: SettingsRepository) 
         saveLibaryConfig()
     }
 
-    private fun saveLibaryConfig() =
-        settingsRepository.save(
-            settingsRepository
-                .get()
-                .copy(libraries = libraryCache.values.toList())
-        )
+    private fun saveLibaryConfig() {
+        Global.settings = Global.settings.copy(libraries = libraryCache.values.toList())
+    }
 
 }

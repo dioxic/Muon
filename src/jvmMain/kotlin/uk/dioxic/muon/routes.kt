@@ -6,12 +6,10 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
 import org.koin.ktor.ext.inject
 import uk.dioxic.muon.common.Global
 import uk.dioxic.muon.config.Config
 import uk.dioxic.muon.config.Settings
-import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.repository.LibraryRepository
 import uk.dioxic.muon.repository.ShoppingRepository
 import uk.dioxic.muon.service.MusicService
@@ -119,7 +117,6 @@ fun Routing.music() {
 
 @ExperimentalPathApi
 fun Routing.settings() {
-    val settingsRepository by inject<SettingsRepository>()
 
     route(settingsPath) {
 //        subconfig(
@@ -134,7 +131,6 @@ fun Routing.settings() {
 //        )
 
         get {
-            delay(2000)
             call.respond(Global.settings)
         }
         post {
