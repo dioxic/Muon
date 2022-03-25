@@ -1,6 +1,5 @@
 package uk.dioxic.muon.component
 
-import csstype.Color
 import csstype.Display
 import csstype.number
 import csstype.px
@@ -27,7 +26,7 @@ external interface EnhancedTableProps : Props {
 val EnhancedTable = FC<EnhancedTableProps> { props ->
     val (selected, setSelected) = useState(emptyList<String>())
     val (order, setOrder) = useState(SortDirection.asc)
-    val (orderBy, setOrderBy) = useState(props.columns[0].id)
+    val (orderBy, setOrderBy) = useState("")
 
     fun handleRequestSort(id: String) {
         setOrder(
@@ -105,15 +104,8 @@ external interface ToolbarProps : Props {
 }
 
 val TableToolbar = FC<ToolbarProps> { props ->
-    val theme by useContext(ThemeContext)
 
     Toolbar {
-        sx {
-            if (props.selected.isNotEmpty()) {
-                backgroundColor = Color(theme.palette.secondary.main)
-                color = Color(theme.palette.secondary.contrastText)
-            }
-        }
 
         Typography {
             sx { flexGrow = number(1.0) }
@@ -271,7 +263,7 @@ val EnhancedTableBody = FC<EnhancedTableBodyProps> { props ->
 
                     if (props.actions.isNotEmpty()) {
                         TableCell {
-                            padding = TableCellPadding.normal
+                            padding = TableCellPadding.checkbox
                             align = TableCellAlign.center
                             size = Size.small
 

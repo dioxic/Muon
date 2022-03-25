@@ -6,18 +6,21 @@ import mui.icons.material.GetApp
 import mui.icons.material.Refresh
 import react.FC
 import react.Props
+import react.useContext
 import react.useState
 import uk.dioxic.muon.component.EnhancedTable
 import uk.dioxic.muon.component.RowAction
 import uk.dioxic.muon.component.ToolbarAction
-import uk.dioxic.muon.config.defaultImportTableColumns
+import uk.dioxic.muon.context.AppContext
 import uk.dioxic.muon.model.ImportTableData
 import uk.dioxic.muon.model.toColumns
 import uk.dioxic.muon.model.toRows
 
 val ImportPage = FC<Props> {
+    val ac = useContext(AppContext)
+    val columns = ac.settings.importTableColumns
+
     val (data, setData) = useState(testData)
-    val (columns, setColumns) = useState(defaultImportTableColumns)
 
     fun handleEditClick(id: String) {
         println("handleEdit for $id")

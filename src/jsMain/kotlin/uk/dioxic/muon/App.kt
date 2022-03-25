@@ -5,20 +5,19 @@ import csstype.Display
 import csstype.GridTemplateAreas
 import csstype.array
 import kotlinx.browser.document
-import kotlinx.coroutines.MainScope
-import react.router.dom.HashRouter
 import mui.system.Box
 import mui.system.sx
 import react.FC
 import react.Props
 import react.create
 import react.dom.render
+import react.router.dom.HashRouter
 import uk.dioxic.muon.common.Area
 import uk.dioxic.muon.common.Sizes.Header
 import uk.dioxic.muon.common.Sizes.Sidebar
 import uk.dioxic.muon.component.*
-
-private val scope = MainScope()
+import uk.dioxic.muon.context.PagesModule
+import uk.dioxic.muon.context.StateModule
 
 fun main() {
     render(
@@ -29,8 +28,8 @@ fun main() {
 
 private val App = FC<Props> {
     HashRouter {
-        PagesModule {
-            ThemeModule {
+        StateModule {
+            PagesModule {
                 Box {
                     sx {
                         display = Display.grid

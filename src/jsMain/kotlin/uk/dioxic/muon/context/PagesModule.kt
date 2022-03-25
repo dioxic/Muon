@@ -1,10 +1,10 @@
-package uk.dioxic.muon.component
+package uk.dioxic.muon.context
 
 import react.FC
 import react.PropsWithChildren
 import react.createContext
-import uk.dioxic.muon.hook.usePages
 import uk.dioxic.muon.entity.Pages
+import uk.dioxic.muon.hook.usePages
 
 val PagesContext = createContext<Pages>()
 

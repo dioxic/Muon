@@ -13,6 +13,7 @@ import react.router.Route
 import react.router.Routes
 import react.useContext
 import uk.dioxic.muon.common.Area
+import uk.dioxic.muon.context.PagesContext
 
 private val DEFAULT_PADDING = 30.px
 
