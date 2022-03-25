@@ -35,6 +35,8 @@ mockk = "1.12.3"
 spek = "2.0.16"
 react = "17.0.2"
 emotion = "11.8.1"
+sqlcipher = "3.37.2"
+exposed = "0.37.3"
 
 [libraries]
 bson = { module = "org.mongodb:bson", version.ref = "mongodb" }
@@ -87,9 +89,14 @@ ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = 
 koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
 koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
 jaudiotagger = { module = "net.jthink:jaudiotagger", version.ref = "jaudiotagger" }
-lucene-core = { module = "org.apache.lucene:lucene-core", version.ref = "lucene"}
-lucene-queryparser = { module = "org.apache.lucene:lucene-queryparser", version.ref = "lucene"}
-mockk = { module = "io.mockk:mockk", version.ref = "mockk"}
+lucene-core = { module = "org.apache.lucene:lucene-core", version.ref = "lucene" }
+lucene-queryparser = { module = "org.apache.lucene:lucene-queryparser", version.ref = "lucene" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+sqlcipher = { module = "io.github.willena:sqlite-jdbc", version.ref = "sqlcipher" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+exposed-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
 #gradle-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versionsPlugin" }
 #gradle-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
@@ -97,6 +104,7 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk"}
 logging = ["log4j-core", "log4j-api", "log4j-slf4j", "log4j-jul"]
 ktorServer = ["ktor-serialization", "ktor-server-core", "ktor-server-netty", "ktor-websockets"]
 ktorClient = ["ktor-client-js", "ktor-client-json-js", "ktor-client-serialization-js"]
+exposed = ["exposed-core", "exposed-dao", "exposed-jdbc", "exposed-datetime"]
 #mui = ["kotlin-wrappers-mui", "kotlin-wrappers-mui-icons"]
 #react = ["kotlin-wrappers-react", "kotlin-wrappers-react-dom", "kotlin-wrappers-react-css", "kotlin-wrappers-react-router-dom"]
 
