@@ -1,9 +1,6 @@
 package uk.dioxic.muon.audio
 
 import kotlinx.serialization.Serializable
-import uk.dioxic.muon.model.ColumnKeys
-import uk.dioxic.muon.model.ColumnKeys.*
-import uk.dioxic.muon.toTimeString
 
 @Serializable
 data class AudioDetails(
@@ -26,24 +23,6 @@ data class AudioDetails(
                 || audioFile.tags.comment.contains(text, ignoreCase = true)
                 || audioFile.location.filename.contains(text, ignoreCase = true)
 
-    operator fun get(field: ColumnKeys): String =
-        when (field) {
-            Artist -> audioFile.tags.artist
-            Title -> audioFile.tags.title
-            Genre -> audioFile.tags.genre
-            Comment -> audioFile.tags.comment
-            Length -> audioFile.header.length.toTimeString()
-            Bitrate -> audioFile.header.bitrate.toString()
-            VBR -> audioFile.header.vbr.toString()
-            Type -> audioFile.header.fileType
-            Filename -> audioFile.location.filename
-            Path -> audioFile.location.path
-            Lyricist -> audioFile.tags.lyricist
-            Year -> audioFile.tags.year
-            Album -> audioFile.tags.album
-            Score -> score.toString()
-        }
-
     companion object {
         val BLANK = build("")
 
@@ -57,13 +36,5 @@ data class AudioDetails(
                 ),
                 score = 0.0f
             )
-
-        fun comparator(a: AudioDetails, b: AudioDetails, orderBy: ColumnKeys) =
-            when (orderBy) {
-                Bitrate -> a.audioFile.header.bitrate.compareTo(b.audioFile.header.bitrate)
-                VBR -> a.audioFile.header.vbr.compareTo(b.audioFile.header.vbr)
-                Length -> a.audioFile.header.length.compareTo(b.audioFile.header.length)
-                else -> a[orderBy].compareTo(b[orderBy])
-            }
     }
 }

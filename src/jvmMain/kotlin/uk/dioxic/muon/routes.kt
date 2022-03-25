@@ -6,12 +6,12 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import org.koin.ktor.ext.inject
-import uk.dioxic.muon.config.AudioImportConfig
+import uk.dioxic.muon.common.Global
 import uk.dioxic.muon.config.Config
-import uk.dioxic.muon.config.LibraryConfig
-import uk.dioxic.muon.model.ConfigMap
-import uk.dioxic.muon.repository.ConfigRepository
+import uk.dioxic.muon.config.Settings
+import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.repository.LibraryRepository
 import uk.dioxic.muon.repository.ShoppingRepository
 import uk.dioxic.muon.service.MusicService
@@ -117,57 +117,28 @@ fun Routing.music() {
     }
 }
 
-@FlowPreview
-@ExperimentalTime
-fun Routing.library() {
-    val libraryRepository by inject<LibraryRepository>()
-    val musicService by inject<MusicService>()
-
-    route(libraryPath) {
-        get {
-            call.respond(libraryRepository.getLibraries())
-        }
-        post {
-            libraryRepository.saveLibrary(call.receive())
-            call.respond(HttpStatusCode.OK)
-        }
-        route("/{id}") {
-            get("/refresh") {
-                val library = libraryRepository.getLibraryById(call.parameters["id"]!!)
-                call.respond(musicService.refreshIndex(library))
-            }
-            get {
-                call.respond(libraryRepository.getLibraryById(call.parameters["id"]!!))
-            }
-            delete {
-                libraryRepository.deleteLibrary(call.parameters["id"]!!)
-                call.respond(HttpStatusCode.OK)
-            }
-        }
-    }
-}
-
 @ExperimentalPathApi
-fun Routing.config() {
-    val configRepository by inject<ConfigRepository>()
+fun Routing.settings() {
+    val settingsRepository by inject<SettingsRepository>()
 
-    route(configPath) {
-        subconfig(
-            key = AudioImportConfig.path,
-            getFn = { configRepository.getImportConfig() },
-            setFn = { configRepository.save(it) }
-        )
-        subconfig(
-            key = LibraryConfig.path,
-            getFn = { configRepository.getLibraryConfig() },
-            setFn = { configRepository.save(it) }
-        )
+    route(settingsPath) {
+//        subconfig(
+//            key = AudioImportConfig.path,
+//            getFn = { configRepository.getImportConfig() },
+//            setFn = { configRepository.save(it) }
+//        )
+//        subconfig(
+//            key = LibraryConfig.path,
+//            getFn = { configRepository.getLibraryConfig() },
+//            setFn = { configRepository.save(it) }
+//        )
 
         get {
-            call.respond(configRepository.getFullConfig())
+            delay(2000)
+            call.respond(Global.settings)
         }
         post {
-            configRepository.save(call.receive() as ConfigMap)
+            Global.settings = call.receive() as Settings
             call.respond(HttpStatusCode.OK)
         }
     }

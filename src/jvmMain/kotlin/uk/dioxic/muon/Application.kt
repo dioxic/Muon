@@ -25,10 +25,8 @@ import uk.dioxic.muon.service.MusicServiceImpl
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.ExperimentalTime
 
-val muonHome = "${System.getenv("HOMEPATH")}/.muon"
-
 private val appModule = module {
-    single<ConfigRepository> { ConfigRepositoryImpl(configDirectory = muonHome) }
+    single<SettingsRepository> { SettingsRepositoryImpl() }
     single<LibraryRepository> { LibraryRepositoryImpl(get()) }
     single<MusicRepository> { MusicRepositoryImpl("index") }
     single<MusicService> { MusicServiceImpl(get()) }
@@ -79,9 +77,8 @@ fun Application.main() {
 
     routing {
         shoppingList()
-        library()
         music()
-        config()
+        settings()
         index()
 
         static("/") {

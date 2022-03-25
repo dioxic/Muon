@@ -1,6 +1,24 @@
 package uk.dioxic.muon.config
 
-val defaultImportTableColumns = listOf(
+import kotlinx.serialization.Serializable
+import uk.dioxic.muon.model.Library
+
+@Serializable
+data class Settings(
+    val importTableColumns: List<TableColumnConfig>,
+    val libraries: List<Library>,
+    val theme: String,
+){
+    companion object {
+        val DEFAULT = Settings(
+            importTableColumns = defaultImportTableColumns,
+            libraries = emptyList(),
+            theme = "dark"
+        )
+    }
+}
+
+private val defaultImportTableColumns = listOf(
     TableColumnConfig(id = "title", label = "Title", minWidth = 170),
     TableColumnConfig(id = "artist", label = "Artist", minWidth = 170),
     TableColumnConfig(id = "lyricist", label = "Lyricist", minWidth = 170),

@@ -1,10 +1,7 @@
 package uk.dioxic.muon.audio
 
 import kotlinx.serialization.Serializable
-import uk.dioxic.muon.model.ColumnKeys.*
 import uk.dioxic.muon.coalesce
-import uk.dioxic.muon.model.ColumnKeys
-import uk.dioxic.muon.toTimeString
 
 @Serializable
 data class AudioFile(
@@ -13,24 +10,6 @@ data class AudioFile(
     val tags: Tags,
     val header: Header
 ) {
-
-    fun get(field: ColumnKeys): String =
-        when (field) {
-            Artist -> tags.artist
-            Title -> tags.title
-            Genre -> tags.genre
-            Comment -> tags.comment
-            Length -> header.length.toTimeString()
-            Bitrate -> header.bitrate.toString()
-            VBR -> header.vbr.toString()
-            Type -> header.fileType
-            Filename -> location.filename
-            Path -> location.path
-            Lyricist -> tags.lyricist
-            Year -> tags.year
-            Album -> tags.album
-            else -> ""
-        }
 
     fun matches(text: String) =
         tags.artist.contains(text, ignoreCase = true)
@@ -78,13 +57,5 @@ data class AudioFile(
                 location = Location(defaultText),
                 header = Header()
             )
-
-        fun comparator(a: AudioFile, b: AudioFile, orderBy: ColumnKeys) =
-            when (orderBy) {
-                Bitrate -> a.header.bitrate.compareTo(b.header.bitrate)
-                VBR -> a.header.vbr.compareTo(b.header.vbr)
-                Length -> a.header.length.compareTo(b.header.length)
-                else -> a.get(orderBy).compareTo(b.get(orderBy))
-            }
     }
 }

@@ -14,16 +14,19 @@ import org.apache.lucene.queryparser.classic.MultiFieldQueryParser
 import org.apache.lucene.search.*
 import org.apache.lucene.search.BooleanClause.Occur.*
 import org.apache.lucene.store.FSDirectory
-import uk.dioxic.muon.*
 import uk.dioxic.muon.audio.AudioDetails
 import uk.dioxic.muon.audio.AudioFile
+import uk.dioxic.muon.common.Global
 import uk.dioxic.muon.exceptions.IdNotFoundException
+import uk.dioxic.muon.isAudioFile
 import uk.dioxic.muon.model.Library
+import uk.dioxic.muon.removeProblemCharacters
+import uk.dioxic.muon.toAudioFile
+import uk.dioxic.muon.toDocument
 import java.io.Closeable
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -32,7 +35,7 @@ import kotlin.time.measureTime
 class MusicRepositoryImpl(indexPath: String) : MusicRepository, Closeable {
 
     private val logger = LogManager.getLogger()
-    private val indexDirectory = FSDirectory.open(Paths.get(muonHome).resolve(indexPath))
+    private val indexDirectory = FSDirectory.open(Global.homePath.resolve(indexPath))
     private val indexWriter: IndexWriter = IndexWriter(
         indexDirectory,
         IndexWriterConfig(StandardAnalyzer())
