@@ -1,4 +1,4 @@
-package uk.dioxic.muon.component
+package uk.dioxic.muon.context
 
 import react.FC
 import react.PropsWithChildren

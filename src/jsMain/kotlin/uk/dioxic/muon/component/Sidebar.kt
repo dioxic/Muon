@@ -15,6 +15,7 @@ import react.router.useLocation
 import react.useContext
 import uk.dioxic.muon.common.Area
 import uk.dioxic.muon.common.Sizes.Sidebar
+import uk.dioxic.muon.context.PagesContext
 
 val Sidebar = FC<Props> {
     val pages = useContext(PagesContext)

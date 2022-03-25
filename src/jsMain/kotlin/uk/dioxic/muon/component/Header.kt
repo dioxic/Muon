@@ -17,9 +17,11 @@ import react.dom.html.ReactHTML
 import react.router.useLocation
 import uk.dioxic.muon.common.Area
 import uk.dioxic.muon.common.Themes
+import uk.dioxic.muon.context.AppContext
+import uk.dioxic.muon.context.ThemeContext
 
 val Header = FC<Props> {
-    var theme by useContext(ThemeContext)
+    val ac = useContext(AppContext)
     val lastPathname = useLocation().pathname.substringAfterLast("/")
 
     AppBar {
@@ -45,12 +47,10 @@ val Header = FC<Props> {
                 Switch {
                     icon = Brightness7.create()
                     checkedIcon = Brightness4.create()
-                    checked = theme == Themes.Dark
+                    checked = ac.settings.theme == "dark"
                     ariaLabel = "theme"
 
-                    onChange = { _, checked ->
-                        theme = if (checked) Themes.Dark else Themes.Light
-                    }
+                    onChange = { _, _ -> ac.toggleTheme() }
                 }
             }
 
