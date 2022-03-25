@@ -10,6 +10,7 @@ import uk.dioxic.muon.model.rekordbox.Artists
 import uk.dioxic.muon.model.rekordbox.Genres
 import uk.dioxic.muon.model.rekordbox.Tracks
 import uk.dioxic.muon.model.rekordbox.Tracks.genreId
+import java.time.format.DateTimeFormatter
 import kotlin.test.Test
 
 class RekordBoxTest {
@@ -54,10 +55,20 @@ class RekordBoxTest {
                         artist="${it[Artists.name]}", 
                         title="${it[Tracks.title]}", 
                         genre="${it[Genres.name]}"
+                        updatedOn="${it[Artists.updatedOn]}"
                         """.trimIndent().replace("\n", "")
                     )
                 }
         }
+    }
+
+    @Test
+    fun dateTest() {
+        val dateStr = "2021-03-24 06:02:26.846 +00:00"
+
+        val pattern = DateTimeFormatter.ofPattern("yyyy-MM-d HH:mm:ss")
+
+        println(pattern.parse(dateStr))
     }
 
 }

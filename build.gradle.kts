@@ -72,7 +72,6 @@ kotlin {
             dependencies {
                 implementation(libs.bundles.ktorServer)
                 implementation(libs.bundles.logging)
-                implementation(libs.bundles.exposed)
                 implementation(libs.koin.ktor)
                 implementation(libs.koin.logger.slf4j)
                 implementation(libs.kotlin.reflect)
