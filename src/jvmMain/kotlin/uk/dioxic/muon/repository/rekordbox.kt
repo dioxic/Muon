@@ -1,20 +1,24 @@
 package uk.dioxic.muon.repository
 
 import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.LocalDateTime
 import uk.dioxic.muon.model.Track
 import java.nio.file.Path
 import java.sql.DriverManager
 import kotlin.io.path.name
 
-private const val rekordboxDb = "J:\\rekordbox\\master.backup.db"
 private const val cipherKey = "402fd482c38817c35ffa8ffb8c7d93143b749e7d315df7a81732a1ff43608497"
-private const val url = "jdbc:sqlite:$rekordboxDb?cipher=sqlcipher&legacy=4&key=$cipherKey"
 
-fun getRekordboxTracks() = flow {
+/**
+ * Returns all tracks imported later than the input date (if specified)
+ */
+fun getRekordboxTracks(rbDatabase: Path, oldestImportDate: LocalDateTime? = null) = flow {
+
+    val url = "jdbc:sqlite:${rbDatabase}?cipher=sqlcipher&legacy=4&key=$cipherKey"
+
     DriverManager.getConnection(url).use { conn ->
         conn.createStatement().use { stmt ->
-            val rs = stmt.executeQuery(
-                """
+            var query = """
                     SELECT
                         track.ID as id,
                         FolderPath as fullPath,
@@ -34,7 +38,12 @@ fun getRekordboxTracks() = flow {
                     LEFT JOIN djmdAlbum as album ON track.AlbumID = album.ID
                     LEFT JOIN djmdGenre as genre ON track.GenreID = genre.ID
                 """.trimIndent()
-            )
+
+            oldestImportDate?.let {
+                query += "\nWHERE track.created_at > '${oldestImportDate}'"
+            }
+
+            val rs = stmt.executeQuery(query)
 
             while (rs.next()) {
                 val fullPath = Path.of(rs.getString("fullPath"))

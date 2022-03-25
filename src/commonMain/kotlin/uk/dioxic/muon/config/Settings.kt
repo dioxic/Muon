@@ -1,5 +1,6 @@
 package uk.dioxic.muon.config
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import uk.dioxic.muon.model.Library
 
@@ -8,12 +9,16 @@ data class Settings(
     val importTableColumns: List<TableColumnConfig>,
     val libraries: List<Library>,
     val theme: String,
-){
+    val rekordboxDatabase: String,
+    val lastRekordboxRefresh: LocalDateTime,
+) {
     companion object {
         val DEFAULT = Settings(
             importTableColumns = defaultImportTableColumns,
             libraries = emptyList(),
-            theme = "dark"
+            theme = "dark",
+            rekordboxDatabase = "J:\\rekordbox\\master.db",
+            lastRekordboxRefresh = LocalDateTime(1985, 1, 1, 0, 0, 0),
         )
     }
 }

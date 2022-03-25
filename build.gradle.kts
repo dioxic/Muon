@@ -58,6 +58,7 @@ kotlin {
                 implementation(libs.kotlin.serialization.core)
 //                implementation(libs.kotlin.serialization.json)
                 implementation(libs.ktor.client.core)
+                implementation(libs.kotlin.datetime)
             }
         }
         commonTest {
