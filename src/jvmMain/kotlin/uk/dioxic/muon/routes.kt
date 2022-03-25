@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.delay
 import org.koin.core.context.GlobalContext
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
@@ -53,6 +54,7 @@ fun Routing.settings() {
 
     route(Routes.settings) {
         get {
+            delay(1000)
             call.respond(settingsRepository.get())
         }
         post {

@@ -31,36 +31,33 @@ data class AppState(
     val isLoading: Boolean = true,
     val settings: Settings = Settings.DEFAULT,
     val error: String? = null,
-    val theme: Theme = Themes.Light,
 )
 
 private sealed class AppEvent {
     object Loading : AppEvent()
-    object SaveSettings : AppEvent()
-    data class SetTheme(val theme: Theme) : AppEvent()
-    data class LoadSettings(val settings: Settings) : AppEvent()
+    data class SetSettings(val settings: Settings) : AppEvent()
     data class Error(val error: String) : AppEvent()
 }
 
 private fun stateReducer(state: AppState, event: AppEvent): AppState =
     when (event) {
         is AppEvent.Loading -> state.copy(isLoading = true, error = null)
-        is AppEvent.SaveSettings -> state.copy(isLoading = false, error = null)
-        is AppEvent.LoadSettings -> state.copy(isLoading = false, settings = event.settings)
+        is AppEvent.SetSettings -> state.copy(isLoading = false, settings = event.settings)
         is AppEvent.Error -> state.copy(isLoading = false, error = event.error)
-        is AppEvent.SetTheme -> state.copy(theme = event.theme)
     }
+
+private fun getTheme(theme: String) =
+    Themes.asDynamic()[theme].unsafeCast<Theme>()
 
 val StateModule = FC<PropsWithChildren> { props ->
 
     val (state, dispatch) = useReducer(::stateReducer, AppState())
 
     fun saveSettings(settings: Settings): Job {
-        dispatch(AppEvent.Loading)
         return MainScope().launch {
             try {
                 Api.saveSettings(settings)
-                dispatch(AppEvent.LoadSettings(settings))
+                dispatch(AppEvent.SetSettings(settings))
             } catch (e: Exception) {
                 dispatch(AppEvent.Error("Error saving settings"))
             }
@@ -71,7 +68,7 @@ val StateModule = FC<PropsWithChildren> { props ->
         dispatch(AppEvent.Loading)
         return MainScope().launch {
             try {
-                dispatch(AppEvent.LoadSettings(Api.getSettings()))
+                dispatch(AppEvent.SetSettings(Api.getSettings()))
             } catch (e: Exception) {
                 dispatch(AppEvent.Error("Error loading settings"))
             }
@@ -82,7 +79,6 @@ val StateModule = FC<PropsWithChildren> { props ->
         val themeText = if (state.settings.theme == "dark") "light" else "dark"
 
         saveSettings(state.settings.copy(theme = themeText))
-        dispatch(AppEvent.SetTheme(Themes.asDynamic()[themeText].unsafeCast<Theme>()))
     }
 
     useEffectOnce {
@@ -96,7 +92,7 @@ val StateModule = FC<PropsWithChildren> { props ->
         AppContextDto(
             settings = state.settings,
             error = state.error,
-            theme = state.theme,
+            theme = getTheme(state.settings.theme),
             saveSettings = ::saveSettings,
             toggleTheme = ::toggleTheme,
         )
@@ -115,7 +111,7 @@ val StateModule = FC<PropsWithChildren> { props ->
 
         if (!state.isLoading) {
             ThemeProvider {
-                this.theme = state.theme
+                this.theme = getTheme(state.settings.theme)
 
                 CssBaseline()
                 +props.children
