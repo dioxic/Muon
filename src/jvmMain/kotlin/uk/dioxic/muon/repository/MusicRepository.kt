@@ -2,8 +2,8 @@ package uk.dioxic.muon.repository
 
 import kotlinx.coroutines.FlowPreview
 import org.apache.lucene.search.Query
-import uk.dioxic.muon.audio.AudioFile
 import uk.dioxic.muon.audio.AudioDetails
+import uk.dioxic.muon.audio.AudioFile
 import uk.dioxic.muon.model.Library
 import kotlin.time.ExperimentalTime
 
