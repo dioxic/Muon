@@ -2,22 +2,26 @@
 
 package uk.dioxic.muon
 
-import io.ktor.application.*
-import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.response.*
-import io.ktor.routing.*
 import io.ktor.serialization.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
 import io.ktor.server.engine.*
+import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.util.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.serialization.json.Json
+import org.koin.core.KoinApplication
+import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.dsl.onClose
-import org.koin.ktor.ext.Koin
 import org.koin.logger.slf4jLogger
 import uk.dioxic.muon.common.Global
 import uk.dioxic.muon.exceptions.IdNotFoundException
@@ -67,19 +71,19 @@ fun Application.main() {
     install(Compression) {
         gzip()
     }
-    install(Koin) {
+    install(CustomKoinPlugin) {
         slf4jLogger(level = Level.ERROR)
         modules(appModule)
     }
     install(StatusPages) {
-        exception<IdNotFoundException> { cause ->
-            call.respond(HttpStatusCode.NotFound, "file Id [${cause.id}] not found")
+        exception<IdNotFoundException> { call, cause ->
+            call.respondText("file Id [${cause.id}] not found", status = HttpStatusCode.NotFound)
         }
-        exception<MusicImportException> { cause ->
+        exception<MusicImportException> { call, cause ->
             call.respond(HttpStatusCode.NotModified, cause.errors)
         }
-        exception<IllegalStateException> { cause ->
-            call.respond(HttpStatusCode.BadRequest, cause.message ?: "")
+        exception<IllegalStateException> { call, cause ->
+            call.respondText(cause.message ?: "", status = HttpStatusCode.BadRequest)
         }
     }
 
@@ -95,6 +99,23 @@ fun Application.main() {
 
         get("/env") {
             call.respondText(env)
+        }
+    }
+}
+
+internal class CustomKoinPlugin(internal val koinApplication: KoinApplication) {
+    // Implements ApplicationPlugin as a companion object.
+    companion object Plugin : ApplicationPlugin<ApplicationCallPipeline, KoinApplication, CustomKoinPlugin> {
+        // Creates a unique key for the plugin.
+        override val key = AttributeKey<CustomKoinPlugin>("CustomKoinPlugin")
+
+        // Code to execute when installing the plugin.
+        override fun install(
+            pipeline: ApplicationCallPipeline,
+            configure: KoinApplication.() -> Unit
+        ): CustomKoinPlugin {
+            val koinApplication = startKoin(appDeclaration = configure)
+            return CustomKoinPlugin(koinApplication)
         }
     }
 }

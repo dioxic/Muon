@@ -1,11 +1,13 @@
 package uk.dioxic.muon
 
-import io.ktor.application.*
 import io.ktor.http.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import org.koin.ktor.ext.inject
+import io.ktor.server.application.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import org.koin.core.context.GlobalContext
+import org.koin.core.parameter.ParametersDefinition
+import org.koin.core.qualifier.Qualifier
 import uk.dioxic.muon.config.Settings
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
@@ -68,3 +70,20 @@ fun Routing.index() {
         )
     }
 }
+
+
+// TODO remove when koin is compatible with ktor 2.0.0
+
+private inline fun <reified T : Any> Routing.inject(
+    qualifier: Qualifier? = null,
+    noinline parameters: ParametersDefinition? = null
+) =
+    lazy { get<T>(qualifier, parameters) }
+
+private inline fun <reified T : Any> Routing.get(
+    qualifier: Qualifier? = null,
+    noinline parameters: ParametersDefinition? = null
+) =
+    getKoin().get<T>(qualifier, parameters)
+
+fun Routing.getKoin() = GlobalContext.get()
