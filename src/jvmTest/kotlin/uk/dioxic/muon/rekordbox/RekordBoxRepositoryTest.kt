@@ -11,7 +11,6 @@ import org.junit.jupiter.api.DisplayName
 import uk.dioxic.muon.config.Settings
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 @ExperimentalCoroutinesApi
@@ -31,7 +30,7 @@ class RekordBoxRepositoryTest {
             rekordboxDatabase = "J:\\rekordbox\\master.backup3.db"
         )
         runTest {
-            val count = rekordboxRepository.getRekordboxTracks()
+            val count = rekordboxRepository.getTracks()
                 .count()
             println(count)
         }
@@ -41,7 +40,7 @@ class RekordBoxRepositoryTest {
     @DisplayName("Tracks filter by updateDate")
     fun takeSomeTracks() {
         runTest {
-            rekordboxRepository.getRekordboxTracks(LocalDateTime(2021, 1, 1, 0, 0, 0))
+            rekordboxRepository.getTracks(LocalDateTime(2021, 1, 1, 0, 0, 0))
                 .take(20)
                 .collect {
                     println(it)
@@ -54,7 +53,7 @@ class RekordBoxRepositoryTest {
     fun getTracksById() {
         val ids = arrayOf("104605110", "127296874")
         runTest {
-            val actual = rekordboxRepository.getRekordboxTracksById(ids.toList())
+            val actual = rekordboxRepository.getTracksById(ids.toList())
                 .onEach { println(it) }
                 .map { track -> track.id }
                 .toList(mutableListOf())

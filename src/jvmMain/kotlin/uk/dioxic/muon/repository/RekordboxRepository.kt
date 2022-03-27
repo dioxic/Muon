@@ -2,6 +2,7 @@ package uk.dioxic.muon.repository
 
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDateTime
+import uk.dioxic.muon.exceptions.IdNotFoundException
 import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.Track
 import java.io.Closeable
@@ -42,7 +43,7 @@ class RekordboxRepository(private val settingsRepository: SettingsRepository) : 
     /**
      * Returns all tracks imported later than the input date (if specified)
      */
-    fun getRekordboxTracks(oldestImportDate: LocalDateTime? = null) =
+    fun getTracks(oldestImportDate: LocalDateTime? = null) =
         conn.createStatement().use { stmt ->
             flow {
                 var query = baseQuery
@@ -59,10 +60,22 @@ class RekordboxRepository(private val settingsRepository: SettingsRepository) : 
             }
         }
 
-    fun getRekordboxTracksById(id: List<String>) =
+    fun getTrackById(id: String) : Track {
+        conn.createStatement().use { stmt ->
+            val rs = stmt.executeQuery("$baseQuery\nWHERE track.id = $id")
+            if (rs.next()) {
+                return rs.toTrack()
+            }
+            else {
+                throw IdNotFoundException(id)
+            }
+        }
+    }
+
+    fun getTracksById(ids: List<String>) =
         conn.createStatement().use { stmt ->
             flow {
-                id.forEach {
+                ids.forEach {
                     val rs = stmt.executeQuery("$baseQuery\nWHERE track.id = $it")
                     if (rs.next()) {
                         emit(rs.toTrack())
@@ -75,31 +88,31 @@ class RekordboxRepository(private val settingsRepository: SettingsRepository) : 
         conn.close()
     }
 
+    private fun ResultSet.toTrack(): Track {
+        val fullPath = Path.of(this.getString("fullPath"))
+        return Track(
+            title = this.getString("title").orEmpty(),
+            artist = this.getString("artist").orEmpty(),
+            genre = this.getString("genre").orEmpty(),
+            bitrate = this.getInt("bitRate"),
+            length = this.getInt("length"),
+            lyricist = this.getString("lyricist").orEmpty(),
+            path = fullPath.parent.name,
+            filename = fullPath.fileName.name,
+            album = this.getString("album").orEmpty(),
+            comment = this.getString("comment").orEmpty(),
+            year = this.getInt("releaseYear"),
+            id = this.getString("id"),
+            fileType = this.getInt("fileType").toFileType(),
+            fileSize = this.getInt("fileSize")
+        )
+    }
+
+    private fun Int.toFileType() = when (this) {
+        5 -> FileType.FLAC
+        1 -> FileType.MP3
+        11 -> FileType.WAV
+        else -> FileType.UNKNOWN
+    }
 }
 
-private fun ResultSet.toTrack(): Track {
-    val fullPath = Path.of(this.getString("fullPath"))
-    return Track(
-        title = this.getString("title").orEmpty(),
-        artist = this.getString("artist").orEmpty(),
-        genre = this.getString("genre").orEmpty(),
-        bitrate = this.getInt("bitRate"),
-        length = this.getInt("length"),
-        lyricist = this.getString("lyricist").orEmpty(),
-        path = fullPath.parent.name,
-        filename = fullPath.fileName.name,
-        album = this.getString("album").orEmpty(),
-        comment = this.getString("comment").orEmpty(),
-        year = this.getInt("releaseYear"),
-        id = this.getString("id"),
-        fileType = this.getInt("fileType").toFileType(),
-        fileSize = this.getInt("fileSize")
-    )
-}
-
-private fun Int.toFileType() = when (this) {
-    5 -> FileType.FLAC
-    1 -> FileType.MP3
-    11 -> FileType.WAV
-    else -> FileType.UNKNOWN
-}

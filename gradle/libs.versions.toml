@@ -93,6 +93,8 @@ koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref =
 jaudiotagger = { module = "net.jthink:jaudiotagger", version.ref = "jaudiotagger" }
 lucene-core = { module = "org.apache.lucene:lucene-core", version.ref = "lucene" }
 lucene-queryparser = { module = "org.apache.lucene:lucene-queryparser", version.ref = "lucene" }
+lucene-analysis-common = { module = "org.apache.lucene:lucene-analysis-common", version.ref = "lucene" }
+lucene-facet = { module = "org.apache.lucene:lucene-facet", version.ref = "lucene" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 sqlcipher = { module = "io.github.willena:sqlite-jdbc", version.ref = "sqlcipher" }
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
@@ -107,6 +109,7 @@ logging = ["log4j-core", "log4j-api", "log4j-slf4j", "log4j-jul"]
 ktorServer = ["ktor-serialization", "ktor-server-core", "ktor-server-netty", "ktor-websockets"]
 ktorClient = ["ktor-client-js", "ktor-client-json-js", "ktor-client-serialization-js"]
 exposed = ["exposed-core", "exposed-dao", "exposed-jdbc", "exposed-datetime"]
+lucene = ["lucene-core", "lucene-queryparser", "lucene-analysis-common"]
 #mui = ["kotlin-wrappers-mui", "kotlin-wrappers-mui-icons"]
 #react = ["kotlin-wrappers-react", "kotlin-wrappers-react-dom", "kotlin-wrappers-react-css", "kotlin-wrappers-react-router-dom"]
 

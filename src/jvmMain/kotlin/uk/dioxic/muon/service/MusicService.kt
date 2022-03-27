@@ -2,6 +2,7 @@ package uk.dioxic.muon.service
 
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import uk.dioxic.muon.model.Track
@@ -15,21 +16,30 @@ class MusicService(
     private val settingsRepository: SettingsRepository
 ) {
 
-    suspend fun search(text: String, maxResults: Int): List<Track> {
+    suspend fun search(text: String?, maxResults: Int): List<Track> {
         val trackIds = luceneRepository.search(text, maxResults)
-        val tracks = rekordboxRepository.getRekordboxTracksById(trackIds)
-        return tracks.toList(mutableListOf())
+        return rekordboxRepository.getTracksById(trackIds)
+            .toList(mutableListOf())
+//            .map { track ->
+//                val score = trackIds
+//                    .find { tas -> tas.first == track.id }
+//                    ?.second
+//
+//                score?.let {
+//                    track.copy(score = it)
+//                } ?: track
+//            }
+//        return tracks.toList(mutableListOf())
     }
 
-    suspend fun buildIndex() =
-        luceneRepository.upsert(
-            rekordboxRepository.getRekordboxTracks()
-        )
+    suspend fun rebuildIndex() = buildIndex()
 
-    suspend fun refreshIndex(): Int {
+    suspend fun refreshIndex() = buildIndex(settingsRepository.get().lastRekordboxRefresh)
+
+    private suspend fun buildIndex(lastRefresh: LocalDateTime? = null): Int {
         val now = Clock.System.now().toLocalDateTime(TimeZone.UTC)
         val count = luceneRepository.upsert(
-            rekordboxRepository.getRekordboxTracks(settingsRepository.get().lastRekordboxRefresh)
+            rekordboxRepository.getTracks(lastRefresh)
         )
         settingsRepository.save(settingsRepository.get().copy(lastRekordboxRefresh = now))
         return count

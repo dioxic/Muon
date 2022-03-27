@@ -1,6 +1,5 @@
 package uk.dioxic.muon
 
-import io.netty.internal.tcnative.Library
 import org.apache.lucene.document.*
 import org.apache.lucene.util.BytesRef
 import org.jaudiotagger.audio.AudioFileIO

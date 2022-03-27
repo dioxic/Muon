@@ -73,14 +73,14 @@ kotlin {
             dependencies {
                 implementation(libs.bundles.ktorServer)
                 implementation(libs.bundles.logging)
+                implementation(libs.bundles.lucene)
                 implementation(libs.koin.ktor)
                 implementation(libs.koin.logger.slf4j)
                 implementation(libs.kotlin.reflect)
                 implementation(libs.clikt)
                 implementation(libs.jaudiotagger)
-                implementation(libs.lucene.core)
-                implementation(libs.lucene.queryparser)
                 implementation(libs.sqlcipher)
+                implementation("org.apache.lucene:lucene-demo:9.1.0")
             }
         }
 
@@ -103,7 +103,6 @@ kotlin {
 
         val jsMain by getting {
             dependencies {
-//                implementation(libs.kotlin.stdlib.js)
                 implementation(kotlin("stdlib-js"))
                 implementation(libs.bundles.ktorClient)
 //                implementation(libs.bundles.react)

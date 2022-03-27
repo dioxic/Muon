@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger
 import uk.dioxic.muon.config.Settings
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.*
+import kotlin.io.path.exists
 
 class SettingsRepository(path: Path) {
 

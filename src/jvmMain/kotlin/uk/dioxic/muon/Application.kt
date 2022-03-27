@@ -21,7 +21,9 @@ import org.koin.logger.slf4jLogger
 import uk.dioxic.muon.common.Global
 import uk.dioxic.muon.exceptions.IdNotFoundException
 import uk.dioxic.muon.exceptions.MusicImportException
-import uk.dioxic.muon.repository.*
+import uk.dioxic.muon.repository.LuceneRepository
+import uk.dioxic.muon.repository.RekordboxRepository
+import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.service.MusicService
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.ExperimentalTime
@@ -65,7 +67,7 @@ fun Application.main() {
         gzip()
     }
     install(Koin) {
-        slf4jLogger(level = Level.INFO)
+        slf4jLogger(level = Level.ERROR)
         modules(appModule)
     }
     install(StatusPages) {
@@ -83,7 +85,7 @@ fun Application.main() {
     routing {
         settings()
         index()
-        search()
+        tracks()
         lucene()
 
         static("/") {
