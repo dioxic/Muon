@@ -14,6 +14,7 @@ import io.ktor.server.netty.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.serialization.json.Json
 import org.koin.core.logger.Level
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.dsl.onClose
 import org.koin.ktor.ext.Koin
@@ -32,10 +33,10 @@ private val appModule = module {
     single { LuceneRepository(Global.homePath.resolve("index")) } onClose {
         it?.close()
     }
-    single { RekordboxRepository(get()) } onClose {
+    singleOf(::RekordboxRepository) onClose {
         it?.close()
     }
-    single { MusicService(get(), get(), get()) }
+    singleOf(::MusicService)
     single { SettingsRepository(Global.homePath) }
 }
 

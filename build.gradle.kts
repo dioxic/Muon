@@ -88,16 +88,8 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlin.coroutines.test)
-//                implementation(libs.koin.test)
-//                implementation(kotlin("test-common"))
-//                implementation(kotlin("test-annotations-common"))
-//                implementation(platform("org.junit:junit-bom:5.8.2"))
-//                implementation("org.junit.jupiter:junit-jupiter")
-//                implementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
                 implementation(libs.assertj)
                 implementation(libs.mockk)
-//                runtimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
-//                runtimeOnly("org.spekframework.spek2:spek-runtime-jvm:$spekVersion")
             }
         }
 
@@ -105,8 +97,6 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-js"))
                 implementation(libs.bundles.ktorClient)
-//                implementation(libs.bundles.react)
-//                implementation(libs.bundles.mui)
 
                 implementation(
                     project.dependencies.enforcedPlatform(

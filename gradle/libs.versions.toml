@@ -1,65 +1,83 @@
 [versions]
-kotlin = "1.6.10"
-ksp = "1.6.10-1.0.4"
-kotlinCoroutines = "1.6.0"
-kotlinSerialization = "1.3.2"
-kotlinDatetime = "0.3.2"
-kotlinWrapper = "pre.322-kotlin-1.6.10"
+#atomicfuPlugin = "1.6.20-RC"
+#kotlinWrapperMui = "5.5.1-pre.321-kotlin-1.6.10"
 #kotlinWrapperReact = "17.0.2-pre.321-kotlin-1.6.10"
 #kotlinWrapperReactRouter = "6.2.1-pre.321-kotlin-1.6.10"
-#kotlinWrapperMui = "5.5.1-pre.321-kotlin-1.6.10"
-mui = "5.5.1"
-mongodb = "4.5.0"
-clikt = "2.8.0"
-statistics = "1.2.1"
-slf4j = "1.7.36"
-log4j = "2.17.2"
-junit = "5.8.2"
 assertj = "3.22.0"
 assertk = "0.25"
-commonsCodec = "1.15"
-faker = "0.0.4"
-reflections = "0.10.2"
-versionsPlugin = "0.42.0"
-axionPlugin = "1.13.6"
-kbson = "0.4.4"
-kotlinPoet = "1.10.2"
 atomicfu = "0.17.1"
-#atomicfuPlugin = "1.6.20-RC"
+axionPlugin = "1.13.6"
+clikt = "2.8.0"
+commonsCodec = "1.15"
 dokka = "1.6.10"
-ktor = "1.6.8"
-koin = "3.1.5"
+emotion = "11.8.1"
+exposed = "0.37.3"
+faker = "0.0.4"
 jaudiotagger = "3.0.1"
+junit = "5.8.2"
+kbson = "0.4.4"
+koin = "3.2.0-beta-1"
+kotlin = "1.6.10"
+kotlinCoroutines = "1.6.0"
+kotlinDatetime = "0.3.2"
+kotlinPoet = "1.10.2"
+kotlinSerialization = "1.3.2"
+kotlinWrapper = "pre.322-kotlin-1.6.10"
+ksp = "1.6.10-1.0.4"
+ktor = "1.6.8"
+log4j = "2.17.2"
 lucene = "9.1.0"
 mockk = "1.12.3"
-spek = "2.0.16"
+mongodb = "4.5.0"
+mui = "5.5.1"
 react = "17.0.2"
-emotion = "11.8.1"
+reflections = "0.10.2"
+slf4j = "1.7.36"
+spek = "2.0.16"
 sqlcipher = "3.37.2"
-exposed = "0.37.3"
+statistics = "1.2.1"
+versionsPlugin = "0.42.0"
 
 [libraries]
+#gradle-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+#gradle-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versionsPlugin" }
+#kotlin-wrappers-mui = { module = "org.jetbrains.kotlin-wrappers:kotlin-mui", version.ref = "kotlinWrapperMui"}
+#kotlin-wrappers-mui-icons = { module = "org.jetbrains.kotlin-wrappers:kotlin-mui-icons", version.ref = "kotlinWrapperMui"}
+#kotlin-wrappers-react = { module = "org.jetbrains.kotlin-wrappers:kotlin-react", version.ref = "kotlinWrapperReact"}
+#kotlin-wrappers-react-css = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-css", version.ref = "kotlinWrapperReact"}
+#kotlin-wrappers-react-dom = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-dom", version.ref = "kotlinWrapperReact"}
+#kotlin-wrappers-react-router-dom = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-router-dom", version.ref = "kotlinWrapperReactRouter"}
+assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref = "assertk" }
+atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
 bson = { module = "org.mongodb:bson", version.ref = "mongodb" }
-mongodb-sync = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongodb" }
-mongodb-async = { module = "org.mongodb:mongodb-driver-reactivestreams", version.ref = "mongodb" }
 clikt = { module = "com.github.ajalt:clikt", version.ref = "clikt" }
-statistics = { module = "org.nield:kotlin-statistics", version.ref = "statistics" }
+commons-codec = { module = "commons-codec:commons-codec", version.ref = "commonsCodec" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
+exposed-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+faker = { module = "uk.dioxic.faker4j:faker4j", version.ref = "faker" }
+jaudiotagger = { module = "net.jthink:jaudiotagger", version.ref = "jaudiotagger" }
+junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+kbson = { module = "com.github.jershell:kbson", version.ref = "kbson" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
+koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinCoroutines" }
+kotlin-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinCoroutines" }
+kotlin-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinDatetime" }
+kotlin-poet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinPoet" }
+kotlin-poetKsp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinPoet" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinSerialization" }
+kotlin-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinSerialization" }
 kotlin-stdlib-common = { module = "org.jetbrains.kotlin:stdlib-common", version.ref = "kotlin" }
 kotlin-stdlib-js = { module = "org.jetbrains.kotlin:stdlib-js", version.ref = "kotlin" }
 kotlin-stdlib-jvm = { module = "org.jetbrains.kotlin:stdlib-jvm", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
-kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinCoroutines" }
-kotlin-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinCoroutines" }
-kotlin-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinSerialization" }
-kotlin-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinSerialization" }
-kotlin-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinDatetime" }
-#kotlin-wrappers-react = { module = "org.jetbrains.kotlin-wrappers:kotlin-react", version.ref = "kotlinWrapperReact"}
-#kotlin-wrappers-react-dom = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-dom", version.ref = "kotlinWrapperReact"}
-#kotlin-wrappers-react-router-dom = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-router-dom", version.ref = "kotlinWrapperReactRouter"}
-#kotlin-wrappers-react-css = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-css", version.ref = "kotlinWrapperReact"}
-#kotlin-wrappers-mui = { module = "org.jetbrains.kotlin-wrappers:kotlin-mui", version.ref = "kotlinWrapperMui"}
-#kotlin-wrappers-mui-icons = { module = "org.jetbrains.kotlin-wrappers:kotlin-mui-icons", version.ref = "kotlinWrapperMui"}
+ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 ktor-client-json-js = { module = "io.ktor:ktor-client-json-js", version.ref = "ktor" }
@@ -69,40 +87,22 @@ ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
 ktor-server-tests = { module = "io.ktor:ktor-server-tests", version.ref = "ktor" }
 ktor-websockets = { module = "io.ktor:ktor-websockets", version.ref = "ktor" }
-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
-slf4j-core = { module = "org.slf4j:slf4j-core", version.ref = "slf4j" }
-log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
+log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4j" }
 log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
-commons-codec = { module = "commons-codec:commons-codec", version.ref = "commonsCodec" }
-reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
-faker = { module = "uk.dioxic.faker4j:faker4j", version.ref = "faker" }
-assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
-assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref = "assertk" }
-junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
-kbson = { module = "com.github.jershell:kbson", version.ref = "kbson" }
-kotlin-poet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinPoet" }
-kotlin-poetKsp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinPoet" }
-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
-ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
-koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
-koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
-koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
-koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
-jaudiotagger = { module = "net.jthink:jaudiotagger", version.ref = "jaudiotagger" }
-lucene-core = { module = "org.apache.lucene:lucene-core", version.ref = "lucene" }
-lucene-queryparser = { module = "org.apache.lucene:lucene-queryparser", version.ref = "lucene" }
 lucene-analysis-common = { module = "org.apache.lucene:lucene-analysis-common", version.ref = "lucene" }
+lucene-core = { module = "org.apache.lucene:lucene-core", version.ref = "lucene" }
 lucene-facet = { module = "org.apache.lucene:lucene-facet", version.ref = "lucene" }
+lucene-queryparser = { module = "org.apache.lucene:lucene-queryparser", version.ref = "lucene" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+mongodb-async = { module = "org.mongodb:mongodb-driver-reactivestreams", version.ref = "mongodb" }
+mongodb-sync = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongodb" }
+reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-core = { module = "org.slf4j:slf4j-core", version.ref = "slf4j" }
 sqlcipher = { module = "io.github.willena:sqlite-jdbc", version.ref = "sqlcipher" }
-exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
-exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
-exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
-exposed-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
-#gradle-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versionsPlugin" }
-#gradle-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+statistics = { module = "org.nield:kotlin-statistics", version.ref = "statistics" }
 
 [bundles]
 logging = ["log4j-core", "log4j-api", "log4j-slf4j", "log4j-jul"]
@@ -114,12 +114,12 @@ lucene = ["lucene-core", "lucene-queryparser", "lucene-analysis-common"]
 #react = ["kotlin-wrappers-react", "kotlin-wrappers-react-dom", "kotlin-wrappers-react-css", "kotlin-wrappers-react-router-dom"]
 
 [plugins]
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-js = { id = "org.jetbrains.kotlin.js", version.ref = "kotlin" }
-kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 atomicfu = { id = "org.jetbrains.kotlin.plugin.atomicfu", version.ref = "kotlin" }
-versions = { id = "com.github.ben-manes.versions", version.ref = "versionsPlugin" }
 axion = { id = "pl.allegro.tech.build.axion-release", version.ref = "axionPlugin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+kotlin-js = { id = "org.jetbrains.kotlin.js", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+versions = { id = "com.github.ben-manes.versions", version.ref = "versionsPlugin" }
