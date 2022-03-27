@@ -13,7 +13,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.serialization.json.Json
-import org.koin.core.logger.Level.ERROR
+import org.koin.core.logger.Level
 import org.koin.dsl.module
 import org.koin.dsl.onClose
 import org.koin.ktor.ext.Koin
@@ -23,20 +23,18 @@ import uk.dioxic.muon.exceptions.IdNotFoundException
 import uk.dioxic.muon.exceptions.MusicImportException
 import uk.dioxic.muon.repository.*
 import uk.dioxic.muon.service.MusicService
-import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.ExperimentalTime
 
 private val appModule = module {
-    single<LibraryRepository> { LibraryRepositoryImpl() }
     single { LuceneRepository(Global.homePath.resolve("index")) } onClose {
         it?.close()
     }
-    single { RekordboxRepository(Path.of(Global.settings.rekordboxDatabase)) } onClose {
+    single { RekordboxRepository(get()) } onClose {
         it?.close()
     }
-    single { MusicService(get(), get()) }
-    single { ShoppingRepository() }
+    single { MusicService(get(), get(), get()) }
+    single { SettingsRepository(Global.homePath) }
 }
 
 fun main(args: Array<String>) {
@@ -67,7 +65,7 @@ fun Application.main() {
         gzip()
     }
     install(Koin) {
-        slf4jLogger(level = ERROR)
+        slf4jLogger(level = Level.INFO)
         modules(appModule)
     }
     install(StatusPages) {
@@ -83,8 +81,6 @@ fun Application.main() {
     }
 
     routing {
-        shoppingList()
-        music()
         settings()
         index()
         search()

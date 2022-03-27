@@ -1,5 +1,6 @@
 package uk.dioxic.muon
 
+import io.netty.internal.tcnative.Library
 import org.apache.lucene.document.*
 import org.apache.lucene.util.BytesRef
 import org.jaudiotagger.audio.AudioFileIO
@@ -10,7 +11,6 @@ import uk.dioxic.muon.audio.AudioFile
 import uk.dioxic.muon.audio.Header
 import uk.dioxic.muon.audio.Location
 import uk.dioxic.muon.audio.Tags
-import uk.dioxic.muon.model.Library
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -61,13 +61,6 @@ val File.isAudioFile: Boolean
     get() = this.isFile && SupportedFileFormat.values().map { it.filesuffix }.contains(this.extension)
 
 fun AudioFile.getPath(): Path = Path(this.location.path).resolve(this.location.filename)
-
-fun createLibrary(name: String, path: String, genre: String? = null) = Library(
-    id = UUID.randomUUID().toString(),
-    name = name,
-    path = path,
-    genre = genre
-)
 
 fun org.jaudiotagger.audio.AudioFile.merge(audioFile: AudioFile) {
     if (this.tag == null) {

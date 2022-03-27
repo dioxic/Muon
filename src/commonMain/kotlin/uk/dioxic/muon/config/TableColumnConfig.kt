@@ -8,6 +8,5 @@ data class TableColumnConfig(
     val label: String,
     val minWidth: Int,
     val align: String = "left",
-//    val width: Int,
     val visible: Boolean = true,
 )

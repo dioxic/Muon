@@ -1,7 +1,7 @@
 package uk.dioxic.muon
 
 import uk.dioxic.muon.audio.AudioFile
-import uk.dioxic.muon.audio.ImportError
+import uk.dioxic.muon.model.ImportError
 
 fun Int.toTimeString(): String {
     val minutes = this.floorDiv(60)

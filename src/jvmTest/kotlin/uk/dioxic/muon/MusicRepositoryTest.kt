@@ -1,19 +1,7 @@
 package uk.dioxic.muon
 
-import io.mockk.every
-import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.runBlocking
-import org.apache.lucene.search.MatchAllDocsQuery
-import org.apache.lucene.search.Query
 import org.junit.jupiter.api.extension.ExtendWith
-import uk.dioxic.muon.repository.LibraryRepository
-import uk.dioxic.muon.repository.MusicRepositoryImpl
-import java.io.File
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.time.ExperimentalTime
 
 @ExtendWith(MockKExtension::class)
 class MusicRepositoryTest {}

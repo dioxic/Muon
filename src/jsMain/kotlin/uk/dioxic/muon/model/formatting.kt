@@ -44,19 +44,13 @@ external interface ImportTableRow: TableRow {
     var genre: String
     var comment: String
     var bitrate: String
-    var vbr: String
-    var type: String
+    var fileType: String
     var path: String
     var filename: String
     var length: String
     var lengthSort: Int
     var year: String
 }
-
-//external interface SortAndDisplay {
-//    var display: String
-//    var sort: Any
-//}
 
 fun Collection<TableColumnConfig>.toColumns() =
     this.map { it.toColumn() }
@@ -82,11 +76,10 @@ fun ImportTableData.toRow(): ImportTableRow =
         this.genre = this@toRow.genre
         this.comment = this@toRow.comment
         this.bitrate = this@toRow.bitrate.toString()
-        this.vbr = displayBoolean(this@toRow.vbr)
-        this.type = this@toRow.type
+        this.fileType = this@toRow.fileType.toString()
         this.path = this@toRow.path
         this.filename = this@toRow.filename
         this.length = displayLength(this@toRow.length)
         this.lengthSort = this@toRow.length
-        this.year = this@toRow.year
+        this.year = this@toRow.year.toString()
     }

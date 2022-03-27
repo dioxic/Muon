@@ -4,14 +4,15 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import uk.dioxic.muon.common.Global.settings
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.repository.LuceneRepository
 import uk.dioxic.muon.repository.RekordboxRepository
+import uk.dioxic.muon.repository.SettingsRepository
 
 class MusicService(
     private val luceneRepository: LuceneRepository,
-    private val rekordboxRepository: RekordboxRepository
+    private val rekordboxRepository: RekordboxRepository,
+    private val settingsRepository: SettingsRepository
 ) {
 
     suspend fun search(text: String, maxResults: Int): List<Track> {
@@ -28,9 +29,9 @@ class MusicService(
     suspend fun refreshIndex(): Int {
         val now = Clock.System.now().toLocalDateTime(TimeZone.UTC)
         val count = luceneRepository.upsert(
-            rekordboxRepository.getRekordboxTracks(settings.lastRekordboxRefresh)
+            rekordboxRepository.getRekordboxTracks(settingsRepository.get().lastRekordboxRefresh)
         )
-        settings = settings.copy(lastRekordboxRefresh = now)
+        settingsRepository.save(settingsRepository.get().copy(lastRekordboxRefresh = now))
         return count
     }
 

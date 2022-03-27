@@ -11,10 +11,9 @@ data class ImportTableData(
     val genre: String = "",
     val comment: String = "",
     val bitrate: Int,
-    val vbr: Boolean,
-    val type: String = "",
+    val fileType: FileType,
     val path: String,
     val filename: String,
     val length: Int,
-    val year: String = ""
+    val year: Int
 )

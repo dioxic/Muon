@@ -12,6 +12,7 @@ import uk.dioxic.muon.component.EnhancedTable
 import uk.dioxic.muon.component.RowAction
 import uk.dioxic.muon.component.ToolbarAction
 import uk.dioxic.muon.context.AppContext
+import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.ImportTableData
 import uk.dioxic.muon.model.toColumns
 import uk.dioxic.muon.model.toRows
@@ -78,7 +79,8 @@ private val testData = listOf(
         length = 62,
         path = "c:\\library",
         filename = "sometrack.mp3",
-        vbr = false
+        fileType = FileType.MP3,
+        year = 0,
     ),
     ImportTableData(
         id = "2",
@@ -88,7 +90,8 @@ private val testData = listOf(
         length = 200,
         path = "c:\\library",
         filename = "sometrack.mp3",
-        vbr = false
+        fileType = FileType.MP3,
+        year = 0,
     ),
     ImportTableData(
         id = "3",
@@ -98,6 +101,7 @@ private val testData = listOf(
         length = 185,
         path = "c:\\library",
         filename = "sometrack.mp3",
-        vbr = false
+        fileType = FileType.MP3,
+        year = 0,
     )
 )

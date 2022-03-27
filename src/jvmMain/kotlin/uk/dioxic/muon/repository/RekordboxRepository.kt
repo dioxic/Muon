@@ -1,6 +1,5 @@
 package uk.dioxic.muon.repository
 
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDateTime
 import uk.dioxic.muon.model.FileType
@@ -9,11 +8,12 @@ import java.io.Closeable
 import java.nio.file.Path
 import java.sql.DriverManager
 import java.sql.ResultSet
-import java.sql.Statement
 import kotlin.io.path.name
 
-private const val cipherKey = "402fd482c38817c35ffa8ffb8c7d93143b749e7d315df7a81732a1ff43608497"
-private val baseQuery = """
+
+class RekordboxRepository(private val settingsRepository: SettingsRepository) : Closeable {
+    private val cipherKey = "402fd482c38817c35ffa8ffb8c7d93143b749e7d315df7a81732a1ff43608497"
+    private val baseQuery = """
                     SELECT
                         track.ID as id,
                         FolderPath as fullPath,
@@ -35,9 +35,8 @@ private val baseQuery = """
                     LEFT JOIN djmdAlbum as album ON track.AlbumID = album.ID
                     LEFT JOIN djmdGenre as genre ON track.GenreID = genre.ID
                 """.trimIndent()
-
-class RekordboxRepository(rbDatabase: Path) : Closeable {
-    private val url = "jdbc:sqlite:${rbDatabase}?cipher=sqlcipher&legacy=4&key=$cipherKey"
+    private val url =
+        "jdbc:sqlite:${settingsRepository.get().rekordboxDatabase}?cipher=sqlcipher&legacy=4&key=$cipherKey"
     private val conn = DriverManager.getConnection(url)
 
     /**
