@@ -86,7 +86,7 @@ val Header = FC<Props> {
                         }
 
                         window.location.href =
-                            "https://github.com/karakum-team/kotlin-mui-showcase/blob/main/src/main/kotlin/team/karakum/component/showcase/$name"
+                            "https://github.com/dioxic/Muon/tree/kotlin-mui/src/jsMain/kotlin/uk/dioxic/muon/component/page/$name"
                     }
 
                     GitHub()
