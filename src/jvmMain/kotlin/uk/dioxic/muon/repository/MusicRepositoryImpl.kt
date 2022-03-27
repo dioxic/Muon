@@ -16,7 +16,7 @@ import org.apache.lucene.search.BooleanClause.Occur.*
 import org.apache.lucene.store.FSDirectory
 import uk.dioxic.muon.audio.AudioDetails
 import uk.dioxic.muon.audio.AudioFile
-import uk.dioxic.muon.common.Global
+import uk.dioxic.muon.common.Global.homePath
 import uk.dioxic.muon.exceptions.IdNotFoundException
 import uk.dioxic.muon.isAudioFile
 import uk.dioxic.muon.model.Library
@@ -35,7 +35,7 @@ import kotlin.time.measureTime
 class MusicRepositoryImpl(indexPath: String) : MusicRepository, Closeable {
 
     private val logger = LogManager.getLogger()
-    private val indexDirectory = FSDirectory.open(Global.homePath.resolve(indexPath))
+    private val indexDirectory = FSDirectory.open(homePath.resolve(indexPath))
     private val indexWriter: IndexWriter = IndexWriter(
         indexDirectory,
         IndexWriterConfig(StandardAnalyzer())

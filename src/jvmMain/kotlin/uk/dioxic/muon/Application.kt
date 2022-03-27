@@ -15,20 +15,27 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.serialization.json.Json
 import org.koin.core.logger.Level.ERROR
 import org.koin.dsl.module
+import org.koin.dsl.onClose
 import org.koin.ktor.ext.Koin
 import org.koin.logger.slf4jLogger
+import uk.dioxic.muon.common.Global
 import uk.dioxic.muon.exceptions.IdNotFoundException
 import uk.dioxic.muon.exceptions.MusicImportException
 import uk.dioxic.muon.repository.*
 import uk.dioxic.muon.service.MusicService
-import uk.dioxic.muon.service.MusicServiceImpl
+import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.ExperimentalTime
 
 private val appModule = module {
     single<LibraryRepository> { LibraryRepositoryImpl() }
-    single<MusicRepository> { MusicRepositoryImpl("index") }
-    single<MusicService> { MusicServiceImpl(get()) }
+    single { LuceneRepository(Global.homePath.resolve("index")) } onClose {
+        it?.close()
+    }
+    single { RekordboxRepository(Path.of(Global.settings.rekordboxDatabase)) } onClose {
+        it?.close()
+    }
+    single { MusicService(get(), get()) }
     single { ShoppingRepository() }
 }
 
@@ -42,6 +49,7 @@ fun main(args: Array<String>) {
 @ExperimentalPathApi
 fun Application.main() {
     val env = environment.config.property("ktor.environment").getString()
+
     install(CallLogging)
     install(ContentNegotiation) {
         json(Json {
@@ -79,6 +87,8 @@ fun Application.main() {
         music()
         settings()
         index()
+        search()
+        lucene()
 
         static("/") {
             resources("static")

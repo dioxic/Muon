@@ -87,6 +87,7 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(libs.kotlin.coroutines.test)
 //                implementation(kotlin("test-common"))
 //                implementation(kotlin("test-annotations-common"))
 //                implementation(platform("org.junit:junit-bom:5.8.2"))

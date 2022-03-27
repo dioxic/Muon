@@ -6,13 +6,14 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.toList
 import org.koin.ktor.ext.inject
 import uk.dioxic.muon.common.Global
 import uk.dioxic.muon.config.Config
 import uk.dioxic.muon.config.Settings
-import uk.dioxic.muon.repository.LibraryRepository
-import uk.dioxic.muon.repository.ShoppingRepository
+import uk.dioxic.muon.repository.*
 import uk.dioxic.muon.service.MusicService
+import uk.dioxic.muon.service.OldMusicService
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.ExperimentalTime
 
@@ -60,10 +61,45 @@ fun Routing.shoppingList() {
 //    }
 //}
 
+fun Routing.search() {
+    val luceneRepository by inject<LuceneRepository>()
+    val rekordboxRepository by inject<RekordboxRepository>()
+
+    route("/search") {
+        get {
+            val maxResults = call.parameters["maxResults"]?.toIntOrNull() ?: 500
+            val query = call.parameters["q"]
+            val trackIds = luceneRepository.search(query, maxResults)
+            val tracks = rekordboxRepository.getRekordboxTracksById(trackIds)
+            call.respond(tracks.toList(mutableListOf()))
+        }
+    }
+}
+
+fun Routing.lucene() {
+    val musicService by inject<MusicService>()
+//    val luceneRepository by inject<LuceneRepository>()
+
+    route("/index") {
+        get("/rebuild") {
+            val count = musicService.buildIndex()
+            call.respond("rebuilt index for $count tracks")
+        }
+        get("/refresh") {
+            val count = musicService.refreshIndex()
+            call.respond("refreshed index for $count tracks")
+        }
+//        get("/drop") {
+//            luceneRepository.dropIndex()
+//            call.respond(HttpStatusCode.OK)
+//        }
+    }
+}
+
 @FlowPreview
 @ExperimentalTime
 fun Routing.music() {
-    val musicService by inject<MusicService>()
+    val oldMusicService by inject<OldMusicService>()
     val libraryRepository by inject<LibraryRepository>()
 
     route(musicPath) {
@@ -80,10 +116,10 @@ fun Routing.music() {
                 if (libraryId == null) {
                     error("Invalid delete request - refresh parameter not valid without a library specified")
                 }
-                musicService.refreshIndex(libraryRepository.getLibraryById(libraryId))
+                oldMusicService.refreshIndex(libraryRepository.getLibraryById(libraryId))
             }
 
-            val details = musicService.search(
+            val details = oldMusicService.search(
                 libraryId = libraryId,
                 text = query,
                 maxResults = maxResults,
@@ -93,23 +129,23 @@ fun Routing.music() {
             )
 
             if (includeDuplicates) {
-                call.respond(musicService.attachDuplicates(details))
+                call.respond(oldMusicService.attachDuplicates(details))
             } else {
                 call.respond(details)
             }
         }
         get("/{id}") {
-            call.respond(musicService.getById(call.parameters["id"]!!))
+            call.respond(oldMusicService.getById(call.parameters["id"]!!))
         }
         patch {
             call.respond(
-                musicService.updateMany(
+                oldMusicService.updateMany(
                     libraryId = call.parameters["library"], audioFiles = call.receive()
                 )
             )
         }
         delete("/{id}") {
-            musicService.deleteById(call.parameters["id"]!!)
+            oldMusicService.deleteById(call.parameters["id"]!!)
             call.respond(HttpStatusCode.OK)
         }
     }

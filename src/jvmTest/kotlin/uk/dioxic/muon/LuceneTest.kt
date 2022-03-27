@@ -16,7 +16,6 @@ import org.apache.lucene.search.*
 import org.apache.lucene.store.FSDirectory
 import org.apache.lucene.util.BytesRef
 import uk.dioxic.muon.repository.MusicRepositoryImpl
-import uk.dioxic.muon.common.Global
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths

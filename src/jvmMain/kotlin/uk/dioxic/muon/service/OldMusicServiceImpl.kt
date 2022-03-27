@@ -20,8 +20,8 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import kotlin.io.path.extension
 
-class MusicServiceImpl(private val musicRepository: MusicRepository) : MusicRepository by musicRepository,
-    MusicService {
+class OldMusicServiceImpl(private val musicRepository: MusicRepository) : MusicRepository by musicRepository,
+    OldMusicService {
 
     private val logger = LogManager.getLogger()
 

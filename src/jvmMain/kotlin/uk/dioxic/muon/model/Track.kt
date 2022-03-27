@@ -1,7 +1,8 @@
 package uk.dioxic.muon.model
 
-import java.nio.file.Path
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Track(
     val id: String,
     val title: String,
@@ -15,4 +16,6 @@ data class Track(
     val filename: String,
     val length: Int,
     val year: Int,
+    val fileSize: Int,
+    val fileType: FileType
 )

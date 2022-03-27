@@ -15,26 +15,6 @@ private val log: Logger = LogManager.getLogger()
 
 private val settingsFile = Global.homePath.resolve("settings.json")
 
-fun initHomePath(): Path {
-    val configPath = Paths.get("${System.getenv("HOMEPATH")}/.muon")
-
-    // create the muon directory if it doesn't exist
-    if (!configPath.exists()) {
-        if (configPath.parent.isDirectory()) {
-            configPath.createDirectory()
-        } else {
-            throw IllegalStateException("cannot create .muon config directory")
-        }
-    }
-
-    // check the muon directory is valid
-    require(configPath.isDirectory()) { "config dir must be a directory" }
-    require(configPath.isReadable()) { "config dir must be readable" }
-    require(configPath.isWritable()) { "config dir must be writable" }
-
-    return configPath
-}
-
 fun saveSettings(settings: Settings) {
     log.debug("Saving settings")
     Files.writeString(settingsFile, Json.encodeToString(settings))

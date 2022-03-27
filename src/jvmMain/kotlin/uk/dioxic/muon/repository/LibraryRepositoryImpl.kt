@@ -1,7 +1,7 @@
 package uk.dioxic.muon.repository
 
 import org.apache.logging.log4j.LogManager
-import uk.dioxic.muon.common.Global
+import uk.dioxic.muon.common.Global.settings
 import uk.dioxic.muon.model.Library
 
 class LibraryRepositoryImpl : LibraryRepository {
@@ -9,7 +9,7 @@ class LibraryRepositoryImpl : LibraryRepository {
     private val logger = LogManager.getLogger()
 
     private var libraryCache: MutableMap<String, Library> =
-        Global.settings.libraries.associateBy { it.id }.toMutableMap()
+        settings.libraries.associateBy { it.id }.toMutableMap()
 
     override fun getLibraryById(libraryId: String) = libraryCache[libraryId] ?: error("Library '$libraryId' not found!")
 
@@ -30,7 +30,7 @@ class LibraryRepositoryImpl : LibraryRepository {
     }
 
     private fun saveLibaryConfig() {
-        Global.settings = Global.settings.copy(libraries = libraryCache.values.toList())
+        settings = settings.copy(libraries = libraryCache.values.toList())
     }
 
 }
