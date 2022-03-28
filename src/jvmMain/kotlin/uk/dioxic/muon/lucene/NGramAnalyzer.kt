@@ -9,7 +9,7 @@ import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter
 import org.apache.lucene.analysis.ngram.NGramTokenFilter
 import org.apache.lucene.analysis.standard.StandardTokenizer
 
-class NGramAnalyser(private val stopWords: CharArraySet) : Analyzer() {
+class NGramAnalyzer(private val stopWords: CharArraySet) : Analyzer() {
     override fun createComponents(fieldName: String?): TokenStreamComponents {
         val source = StandardTokenizer()
         val tokenStream = source

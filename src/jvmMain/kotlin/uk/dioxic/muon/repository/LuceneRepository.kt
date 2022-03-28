@@ -11,7 +11,7 @@ import org.apache.lucene.queryparser.classic.QueryParser
 import org.apache.lucene.search.*
 import org.apache.lucene.search.BooleanClause.Occur
 import org.apache.lucene.store.MMapDirectory
-import uk.dioxic.muon.lucene.NGramAnalyser
+import uk.dioxic.muon.lucene.NGramAnalyzer
 import uk.dioxic.muon.lucene.charArraySetOf
 import uk.dioxic.muon.lucene.toDocument
 import uk.dioxic.muon.model.Track
@@ -22,7 +22,7 @@ import java.nio.file.Path
 class LuceneRepository(indexPath: Path) : Closeable {
     private val logger = LogManager.getLogger()
     private val stopWords = charArraySetOf("and", "ft", "feat")
-    private val searchAnalyser = NGramAnalyser(stopWords)
+    private val searchAnalyser = NGramAnalyzer(stopWords)
     private val directory = MMapDirectory.open(indexPath)
     private val indexWriter: IndexWriter = IndexWriter(
         directory,

@@ -10,7 +10,7 @@ import uk.dioxic.muon.repository.LuceneRepository
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
 
-class MusicService(
+class SearchService(
     private val luceneRepository: LuceneRepository,
     private val rekordboxRepository: RekordboxRepository,
     private val settingsRepository: SettingsRepository
@@ -20,16 +20,6 @@ class MusicService(
         val trackIds = luceneRepository.search(text, maxResults)
         return rekordboxRepository.getTracksById(trackIds)
             .toList(mutableListOf())
-//            .map { track ->
-//                val score = trackIds
-//                    .find { tas -> tas.first == track.id }
-//                    ?.second
-//
-//                score?.let {
-//                    track.copy(score = it)
-//                } ?: track
-//            }
-//        return tracks.toList(mutableListOf())
     }
 
     suspend fun rebuildIndex() = buildIndex()

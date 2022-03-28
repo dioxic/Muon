@@ -54,9 +54,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(kotlin("stdlib-common"))
-//                implementation(libs.kotlin.stdlib.common)
                 implementation(libs.kotlin.serialization.core)
-//                implementation(libs.kotlin.serialization.json)
                 implementation(libs.ktor.client.core)
                 implementation(libs.kotlin.datetime)
             }
@@ -64,8 +62,6 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(libs.kotlin.test)
-//                implementation(kotlin("test-common"))
-//                implementation(kotlin("test-annotations-common"))
             }
         }
 
@@ -80,7 +76,6 @@ kotlin {
                 implementation(libs.clikt)
                 implementation(libs.jaudiotagger)
                 implementation(libs.sqlcipher)
-                implementation("org.apache.lucene:lucene-demo:9.1.0")
             }
         }
 
@@ -130,7 +125,7 @@ scmVersion {
 }
 
 // include JS artifacts in any JAR we generate
-tasks.getByName<ProcessResources>("jvmProcessResources") {
+tasks.getByName<Jar>("jvmJar") {
     val taskName = if ("true" == project.findProperty("isProduction")) {
         "jsBrowserProductionWebpack"
     } else {
@@ -176,12 +171,21 @@ distributions {
 //}
 
 tasks.named<JavaExec>("run") {
-//    dependsOn(tasks.named<Jar>("jvmJar"))
     classpath(tasks.named<Jar>("jvmJar"))
 }
 
 tasks.withType<Test> {
     systemProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
+}
+
+tasks.getByName("distZip") {
+    dependsOn(tasks.getByName("jsJar"))
+    dependsOn(tasks.getByName("metadataJar"))
+}
+
+tasks.getByName("distTar") {
+    dependsOn(tasks.getByName("jsJar"))
+    dependsOn(tasks.getByName("metadataJar"))
 }
 
 //tasks.withType<ShadowJar> {

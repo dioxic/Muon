@@ -3,8 +3,6 @@
 package uk.dioxic.muon
 
 import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.serialization.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -29,7 +27,7 @@ import uk.dioxic.muon.exceptions.MusicImportException
 import uk.dioxic.muon.repository.LuceneRepository
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
-import uk.dioxic.muon.service.MusicService
+import uk.dioxic.muon.service.SearchService
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.ExperimentalTime
 
@@ -40,7 +38,7 @@ private val appModule = module {
     singleOf(::RekordboxRepository) onClose {
         it?.close()
     }
-    singleOf(::MusicService)
+    singleOf(::SearchService)
     single { SettingsRepository(Global.homePath) }
 }
 

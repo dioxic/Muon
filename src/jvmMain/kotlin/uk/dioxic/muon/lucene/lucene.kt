@@ -1,5 +1,6 @@
 package uk.dioxic.muon.lucene
 
+import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.CharArraySet
 import org.apache.lucene.document.*
 import org.apache.lucene.index.IndexOptions
@@ -15,11 +16,11 @@ private val searchFieldType = FieldType().apply {
     freeze()
 }
 
-fun Track.toDocument(searchAnalyser: NGramAnalyser): Document = Document().apply {
+fun Track.toDocument(searchAnalyser: Analyzer): Document = Document().apply {
     add(
         Field(
         "search",
-        searchAnalyser.tokenStream("search", "$artist $title"), searchFieldType)
+        searchAnalyser.tokenStream("search", "$artist $title $lyricist"), searchFieldType)
     )
     add(StringField("id", id, Field.Store.YES))
     add(TextField("artist", artist, Field.Store.NO))

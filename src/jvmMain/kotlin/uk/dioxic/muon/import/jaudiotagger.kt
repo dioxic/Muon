@@ -1,7 +1,5 @@
 package uk.dioxic.muon
 
-import org.apache.lucene.document.*
-import org.apache.lucene.util.BytesRef
 import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.audio.SupportedFileFormat
 import org.jaudiotagger.tag.FieldKey
@@ -11,7 +9,6 @@ import uk.dioxic.muon.audio.Header
 import uk.dioxic.muon.audio.Location
 import uk.dioxic.muon.audio.Tags
 import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.Path
@@ -123,50 +120,3 @@ fun File.toAudioFile(): AudioFile {
         )
     )
 }
-
-fun AudioFile.toDocument(libraryId: String): Document = Document().also {
-    it.add(StringField("id", id, Field.Store.YES))
-    it.add(TextField("artist", tags.artist, Field.Store.YES))
-    it.add(TextField("title", tags.title, Field.Store.YES))
-    it.add(TextField("lyricist", tags.lyricist, Field.Store.YES))
-    it.add(TextField("album", tags.album, Field.Store.YES))
-    it.add(StringField("comment", tags.comment, Field.Store.YES))
-    it.add(StringField("genre", tags.genre, Field.Store.YES))
-    it.add(StringField("year", tags.year, Field.Store.YES))
-    it.add(StringField("fileType", header.fileType, Field.Store.YES))
-    it.add(StringField("bitrate", header.bitrate.toString(), Field.Store.YES))
-    it.add(StringField("vbr", header.vbr.toString(), Field.Store.YES))
-    it.add(StringField("length", header.length.toString(), Field.Store.YES))
-    it.add(StringField("path", location.path, Field.Store.YES))
-    it.add(StringField("filename", location.filename, Field.Store.YES))
-    it.add(StringField("filesize", Files.size(getPath()).toString(), Field.Store.NO))
-    it.add(StringField("library", libraryId, Field.Store.YES))
-
-    it.add(SortedDocValuesField("artist_sort", BytesRef(tags.artist)))
-    it.add(SortedDocValuesField("title_sort", BytesRef(tags.title)))
-    it.add(SortedDocValuesField("lyricist_sort", BytesRef(tags.lyricist)))
-    it.add(SortedDocValuesField("album_sort", BytesRef(tags.album)))
-}
-
-fun Document.toAudioFile() = AudioFile(
-    id = this.get("id"),
-    tags = Tags(
-        artist = this.get("artist"),
-        title = this.get("title"),
-        lyricist = this.get("lyricist"),
-        comment = this.get("comment"),
-        genre = this.get("genre"),
-        year = this.get("year"),
-        album = this.get("album")
-    ),
-    header = Header(
-        fileType = this.get("fileType"),
-        bitrate = this.get("bitrate").toInt(),
-        vbr = this.get("vbr").toBoolean(),
-        length = this.get("length").toInt()
-    ),
-    location = Location(
-        path = this.get("path"),
-        filename = this.get("filename")
-    )
-)

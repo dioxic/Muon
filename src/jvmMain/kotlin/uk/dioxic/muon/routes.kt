@@ -12,11 +12,11 @@ import uk.dioxic.muon.config.Settings
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.route.Routes
-import uk.dioxic.muon.service.MusicService
+import uk.dioxic.muon.service.SearchService
 import kotlin.io.path.ExperimentalPathApi
 
 fun Routing.tracks() {
-    val musicService by inject<MusicService>()
+    val searchService by inject<SearchService>()
     val rekordboxRepository by inject<RekordboxRepository>()
 
     route(Routes.track) {
@@ -27,21 +27,21 @@ fun Routing.tracks() {
         get {
             val maxResults = call.parameters["maxResults"]?.toIntOrNull() ?: 500
             val query = call.parameters["q"]
-            call.respond(musicService.search(query, maxResults))
+            call.respond(searchService.search(query, maxResults))
         }
     }
 }
 
 fun Routing.lucene() {
-    val musicService by inject<MusicService>()
+    val searchService by inject<SearchService>()
 
     route(Routes.index) {
         get("/rebuild") {
-            val count = musicService.rebuildIndex()
+            val count = searchService.rebuildIndex()
             call.respond("rebuilt index for $count tracks")
         }
         get("/refresh") {
-            val count = musicService.refreshIndex()
+            val count = searchService.refreshIndex()
             call.respond("refreshed index for $count tracks")
         }
     }
