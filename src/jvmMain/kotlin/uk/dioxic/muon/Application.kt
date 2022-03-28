@@ -11,6 +11,7 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
 import io.ktor.util.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.serialization.json.Json
@@ -28,6 +29,7 @@ import uk.dioxic.muon.repository.LuceneRepository
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.service.SearchService
+import uk.dioxic.muon.service.ImportService
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.ExperimentalTime
 
@@ -40,11 +42,12 @@ private val appModule = module {
     }
     singleOf(::SearchService)
     single { SettingsRepository(Global.homePath) }
+    singleOf(::ImportService)
 }
 
 fun main(args: Array<String>) {
     System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
-    embeddedServer(Netty, commandLineEnvironment(args)).start()
+    embeddedServer(Netty, commandLineEnvironment(args)).start(wait = true)
 }
 
 @FlowPreview
@@ -73,6 +76,12 @@ fun Application.main() {
         slf4jLogger(level = Level.ERROR)
         modules(appModule)
     }
+//    install(Sessions) {
+//        val secretSignKey = hex("6819b57a326945c1968f45236589")
+//        header<CartSession>("cart_session", directorySessionStorage(File("build/.sessions"))) {
+//            transform(SessionTransportTransformerMessageAuthentication(secretSignKey))
+//        }
+//    }
     install(StatusPages) {
         exception<IdNotFoundException> { call, cause ->
             call.respondText("file Id [${cause.id}] not found", status = HttpStatusCode.NotFound)
@@ -92,7 +101,10 @@ fun Application.main() {
         lucene()
 
         static("/") {
-            resources("static")
+            staticBasePackage = "static"
+//            resource("index.html")
+            defaultResource("index.html")
+            resources()
         }
 
         get("/env") {

@@ -26,8 +26,8 @@ fun Routing.tracks() {
             call.respond(rekordboxRepository.getTrackById(id!!))
         }
         get {
-            val maxResults = call.parameters["maxResults"]?.toIntOrNull() ?: 500
-            val query = call.parameters["q"]
+            val maxResults = call.request.queryParameters["maxResults"]?.toIntOrNull() ?: 500
+            val query = call.request.queryParameters["q"]
             call.respond(searchService.search(query, maxResults))
         }
     }
