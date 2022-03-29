@@ -47,6 +47,9 @@ kotlin {
 //            dceTask {
 //                dceOptions.devMode = true
 //            }
+            webpackTask {
+                outputFileName = "app.js"
+            }
         }
         binaries.executable()
     }

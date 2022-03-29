@@ -73,6 +73,47 @@ fun Routing.index() {
     }
 }
 
+fun Route.index() {
+    get("/") {
+        call.respondHtml {
+            head {
+                meta { charset = Charsets.UTF_8.name() }
+                meta {
+                    name = "viewport"
+                    content = "initial-scale=1, width=device-width"
+                }
+                title { +"Muon" }
+                link {
+                    rel = LinkRel.stylesheet
+                    href = "index.css"
+                    type = "text/css"
+                }
+                link {
+                    rel = "shortcut icon"
+                    href = "favicon.ico"
+                }
+                link {
+                    rel = LinkRel.stylesheet
+                    href = "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+                }
+            }
+            body {
+                hiddenInput {
+                    id = "_csrf_token"
+                    value = "mytoken"
+                }
+                div { id = "root" }
+                noScript {
+                    +"You need to enable JavaScript to run this app."
+                }
+                script {
+                    type = ScriptType.textJavaScript
+                    src = "/app.js"
+                }
+            }
+        }
+    }
+}
 
 // TODO remove when koin is compatible with ktor 2.0.0
 

@@ -101,10 +101,9 @@ fun Application.main() {
         lucene()
 
         static("/") {
-            staticBasePackage = "static"
-//            resource("index.html")
-            defaultResource("index.html")
-            resources()
+//            staticBasePackage = "static"
+//            defaultResource("index.html")
+            resources("static")
         }
 
         get("/env") {
