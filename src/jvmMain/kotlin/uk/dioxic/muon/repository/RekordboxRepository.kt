@@ -60,13 +60,12 @@ class RekordboxRepository(private val settingsRepository: SettingsRepository) : 
             }
         }
 
-    fun getTrackById(id: String) : Track {
+    fun getTrackById(id: String): Track {
         conn.createStatement().use { stmt ->
             val rs = stmt.executeQuery("$baseQuery\nWHERE track.id = $id")
             if (rs.next()) {
                 return rs.toTrack()
-            }
-            else {
+            } else {
                 throw IdNotFoundException(id)
             }
         }
@@ -101,7 +100,12 @@ class RekordboxRepository(private val settingsRepository: SettingsRepository) : 
             filename = fullPath.fileName.name,
             album = this.getString("album").orEmpty(),
             comment = this.getString("comment").orEmpty(),
-            year = this.getInt("releaseYear"),
+            year = this.getInt("releaseYear").let {
+                when (it) {
+                    0 -> ""
+                    else -> it.toString()
+                }
+            },
             id = this.getString("id"),
             fileType = this.getInt("fileType").toFileType(),
             fileSize = this.getInt("fileSize")

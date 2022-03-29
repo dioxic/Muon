@@ -15,7 +15,7 @@ data class Track(
     val path: String,
     val filename: String,
     val length: Int,
-    val year: Int,
+    val year: String,
     val fileSize: Int,
     val fileType: FileType
 )

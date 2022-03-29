@@ -88,21 +88,23 @@ fun File.toTrack(): Track {
     val audioFile = AudioFileIO.read(this)
     val (artist, title) = getArtistAndTitleFromFilename(this.nameWithoutExtension)
 
+    val tag = audioFile.tagOrCreateDefault
+
     return Track(
         id = UUID.randomUUID().toString(),
-        album = audioFile.tag.album,
-        artist = audioFile.tag.artist.nullIfBlank() ?: artist,
+        album = tag.album,
+        artist = tag.artist.nullIfBlank() ?: artist,
         bitrate = audioFile.audioHeader.bitRateAsNumber.toInt(),
-        comment = audioFile.tag.comment,
+        comment = tag.comment,
         fileSize = Files.size(this.toPath()).toInt(),
         fileType = this.toFileType(),
         filename = this.nameWithoutExtension,
-        genre = audioFile.tag.genre,
+        genre = tag.genre,
         length = audioFile.audioHeader.trackLength,
-        lyricist = audioFile.tag.lyricist,
+        lyricist = tag.lyricist,
         path = this.parent,
-        title = audioFile.tag.title.nullIfBlank() ?: title,
-        year = audioFile.tag.year.toInt(),
+        title = tag.title.nullIfBlank() ?: title,
+        year = tag.year,
     )
 }
 
