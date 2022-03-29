@@ -3,7 +3,7 @@ package uk.dioxic.muon.config
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TableColumnConfig(
+data class ColumnDefinition(
     val id: String,
     val label: String,
     val minWidth: Int,

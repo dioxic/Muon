@@ -4,7 +4,7 @@ import csstype.Length
 import csstype.px
 import kotlinx.js.jso
 import mui.material.TableCellAlign
-import uk.dioxic.muon.config.TableColumnConfig
+import uk.dioxic.muon.config.ColumnDefinition
 
 private fun String.toTableCellAlign() =
     when (this) {
@@ -23,10 +23,10 @@ external interface TableColumn {
     var visible: Boolean
 }
 
-fun Collection<TableColumnConfig>.toColumns() =
+fun Collection<ColumnDefinition>.toColumns() =
     this.map { it.toColumn() }
 
-fun TableColumnConfig.toColumn(): TableColumn =
+fun ColumnDefinition.toColumn(): TableColumn =
     jso {
         this.id = this@toColumn.id
         this.label = this@toColumn.label
