@@ -1,18 +1,25 @@
 package uk.dioxic.muon
 
-import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.html.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
 import kotlinx.coroutines.delay
+import kotlinx.html.*
 import org.koin.core.context.GlobalContext
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
-import uk.dioxic.muon.config.Settings
+import uk.dioxic.muon.model.SettingsLoadResponse
+import uk.dioxic.muon.model.SettingsSaveResponse
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.route.Routes
+import uk.dioxic.muon.server.UserSession
+import uk.dioxic.muon.server.getCsrfToken
+import uk.dioxic.muon.server.getUserSession
+import uk.dioxic.muon.service.ImportService
 import uk.dioxic.muon.service.SearchService
 import kotlin.io.path.ExperimentalPathApi
 
@@ -55,26 +62,45 @@ fun Routing.settings() {
     route(Routes.settings) {
         get {
             delay(1000)
-            call.respond(settingsRepository.get())
+            call.respond(SettingsLoadResponse(settingsRepository.get()))
         }
         post {
-            settingsRepository.save(call.receive() as Settings)
-            call.respond(HttpStatusCode.OK)
+            settingsRepository.save(call.receive())
+            call.respond(SettingsSaveResponse())
         }
     }
 }
 
-fun Routing.index() {
-    get("/") {
-        call.respondText(
-            this::class.java.classLoader.getResource("static/index.html")!!.readText(),
-            ContentType.Text.Html
-        )
+fun Routing.import() {
+    val importService by inject<ImportService>()
+
+    route(Routes.import) {
+        get {
+            val tracks = importService.getTracks()
+            call.sessions.set(UserSession(
+                importFileLocations = tracks.associate { it.id to it.path }
+            ))
+            call.respond(tracks)
+        }
+        patch("/{id}") {
+            val session = call.getUserSession()
+            val trackId = call.parameters["id"]
+            val path = session.importFileLocations[trackId]
+        }
+        get("/retrieve") {
+            val userSession = call.getUserSession()
+            if (userSession.importFileLocations.isNotEmpty()) {
+                call.respondText("Import files: ${userSession.importFileLocations}")
+            } else {
+                call.respondText("Your import list is empty.")
+            }
+        }
     }
 }
 
-fun Route.index() {
+fun Routing.indexHtml() {
     get("/") {
+        val token = call.getCsrfToken()
         call.respondHtml {
             head {
                 meta { charset = Charsets.UTF_8.name() }
@@ -100,7 +126,7 @@ fun Route.index() {
             body {
                 hiddenInput {
                     id = "_csrf_token"
-                    value = "mytoken"
+                    value = token
                 }
                 div { id = "root" }
                 noScript {

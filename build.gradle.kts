@@ -79,6 +79,7 @@ kotlin {
                 implementation(libs.clikt)
                 implementation(libs.jaudiotagger)
                 implementation(libs.sqlcipher)
+//                implementation("io.ktor:ktor-server-sessions-jvm:2.0.0-beta-1")
             }
         }
 

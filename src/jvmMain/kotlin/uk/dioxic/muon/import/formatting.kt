@@ -1,6 +1,7 @@
-package uk.dioxic.muon
+package uk.dioxic.muon.import
 
 import uk.dioxic.muon.audio.Tags
+import uk.dioxic.muon.fileExtension
 
 fun formatFilename(filename: String, tags: Tags): String {
 

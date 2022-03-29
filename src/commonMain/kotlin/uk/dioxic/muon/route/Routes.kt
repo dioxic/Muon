@@ -5,4 +5,5 @@ object Routes {
     const val settings = "/api/settings"
     const val index = "/api/index"
     const val track = "/api/track"
+    const val static = "/static"
 }

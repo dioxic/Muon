@@ -1,3 +1,6 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+@file:Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
+
 package uk.dioxic.muon.api
 
 import io.ktor.client.*
@@ -5,32 +8,58 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.js.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.window
-import kotlinx.serialization.json.Json
-import uk.dioxic.muon.config.Settings
-import uk.dioxic.muon.route.Routes
+import kotlinx.serialization.ExperimentalSerializationApi
+import uk.dioxic.muon.utils.CsrfTokenHandler
 
+val client = HttpClient(Js) {
+    install(ContentNegotiation) {
+        json()
+    }
+    defaultRequest {
+        port = 8080
+    }
+}
+
+fun HttpRequestBuilder.localUrl(path: String) = url {
+    takeFrom(window.location.href)
+    encodedPath = path
+}
+
+suspend inline fun <reified T> apiRequest(requestConfigurator: HttpRequestBuilder.() -> Unit): T {
+    val res = client.request {
+        requestConfigurator()
+        if (method != HttpMethod.Get) {
+            header("X-CSRF", CsrfTokenHandler.getToken())
+        }
+    }
+    return res.body()
+}
 
 object Api {
 
-    val endpoint = window.location.origin // only needed until https://github.com/ktorio/ktor/issues/1695 is resolved
-    private val client = HttpClient(Js) {
-        install(ContentNegotiation) { json(Json) }
-        defaultRequest {
-            port = 8080
+    suspend inline fun <reified T> get(path: String): T =
+        apiRequest {
+            method = HttpMethod.Get
+            localUrl(path)
         }
-    }
 
-    suspend fun getSettings(): Settings =
-        client.get(Routes.settings).body()
+    suspend inline fun <reified T> rawPost(path: String, noinline formBuilder: FormBuilder.() -> Unit): T =
+        apiRequest {
+            method = HttpMethod.Post
+            localUrl(path)
+            formData(formBuilder)
+        }
 
-
-    suspend fun saveSettings(settings: Settings) =
-        client.post(Routes.settings) {
+    suspend inline fun <reified T> post(path: String, data: Any): T =
+        apiRequest {
+            method = HttpMethod.Post
+            localUrl(path)
             contentType(ContentType.Application.Json)
-            setBody(settings)
+            setBody(data)
         }
 
 }

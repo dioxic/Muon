@@ -1,14 +1,15 @@
-package uk.dioxic.muon
+package uk.dioxic.muon.import
 
 import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.audio.SupportedFileFormat
 import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.Tag
 import uk.dioxic.muon.audio.AudioFile
-import uk.dioxic.muon.audio.Header
-import uk.dioxic.muon.audio.Location
-import uk.dioxic.muon.audio.Tags
+import uk.dioxic.muon.model.FileType
+import uk.dioxic.muon.model.Track
+import uk.dioxic.muon.nullIfBlank
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.Path
@@ -72,51 +73,43 @@ fun org.jaudiotagger.audio.AudioFile.merge(audioFile: AudioFile) {
     this.tag.year = audioFile.tags.year
 }
 
-private fun getArtistAndTitleFromFilename(filename: String): Tags {
+private fun getArtistAndTitleFromFilename(filename: String): Pair<String, String> {
     val regex = Regex("(.*)-(.*)")
     regex.find(filename)?.let {
         if (it.groupValues.size >= 3) {
-            return Tags(
-                artist = it.groupValues[1].trim(),
-                title = it.groupValues[2].trim()
-            )
+            return it.groupValues[1].trim() to it.groupValues[2].trim()
         }
     }
-    return Tags()
+    return Pair("", "")
 }
 
-fun File.toAudioFile(): AudioFile {
+fun File.toTrack(): Track {
     require(this.isAudioFile)
     val audioFile = AudioFileIO.read(this)
-    val artistAndTitle = getArtistAndTitleFromFilename(this.nameWithoutExtension)
+    val (artist, title) = getArtistAndTitleFromFilename(this.nameWithoutExtension)
 
-    val tags = if (audioFile.tag != null) {
-        Tags(
-            artist = audioFile.tag.artist.ifEmpty { artistAndTitle.artist },
-            title = audioFile.tag.title.ifEmpty { artistAndTitle.title },
-            genre = audioFile.tag.genre,
-            comment = audioFile.tag.comment,
-            year = audioFile.tag.year,
-            album = audioFile.tag.album,
-            lyricist = audioFile.tag.lyricist,
-        )
-    } else {
-        artistAndTitle
-    }
-
-    return AudioFile(
+    return Track(
         id = UUID.randomUUID().toString(),
-        tags = tags,
-        location = Location(
-            path = this.parent,
-            filename = this.name,
-            extension = this.extension
-        ),
-        header = Header(
-            length = audioFile.audioHeader.trackLength,
-            bitrate = audioFile.audioHeader.bitRateAsNumber.toInt(),
-            vbr = audioFile.audioHeader.isVariableBitRate,
-            fileType = SupportedFileFormat.values().first { it.filesuffix == this.extension }.displayName,
-        )
+        album = audioFile.tag.album,
+        artist = audioFile.tag.artist.nullIfBlank() ?: artist,
+        bitrate = audioFile.audioHeader.bitRateAsNumber.toInt(),
+        comment = audioFile.tag.comment,
+        fileSize = Files.size(this.toPath()).toInt(),
+        fileType = this.toFileType(),
+        filename = this.nameWithoutExtension,
+        genre = audioFile.tag.genre,
+        length = audioFile.audioHeader.trackLength,
+        lyricist = audioFile.tag.lyricist,
+        path = this.parent,
+        title = audioFile.tag.title.nullIfBlank() ?: title,
+        year = audioFile.tag.year.toInt(),
     )
 }
+
+fun File.toFileType() = when (this.extension.lowercase()) {
+    "mp3" -> FileType.MP3
+    "flac" -> FileType.FLAC
+    "wav" -> FileType.WAV
+    else -> FileType.UNKNOWN
+}
+

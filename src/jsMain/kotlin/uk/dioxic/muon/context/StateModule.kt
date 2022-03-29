@@ -2,13 +2,12 @@ package uk.dioxic.muon.context
 
 import csstype.Color
 import csstype.integer
+import io.ktor.client.plugins.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import mui.material.Backdrop
-import mui.material.CircularProgress
-import mui.material.CircularProgressColor
-import mui.material.CssBaseline
+import kotlinx.js.jso
+import mui.material.*
 import mui.material.styles.Theme
 import mui.material.styles.ThemeProvider
 import mui.system.sx
@@ -16,6 +15,9 @@ import react.*
 import uk.dioxic.muon.api.Api
 import uk.dioxic.muon.common.Themes
 import uk.dioxic.muon.config.Settings
+import uk.dioxic.muon.model.SettingsLoadResponse
+import uk.dioxic.muon.model.SettingsSaveResponse
+import uk.dioxic.muon.route.Routes
 
 val AppContext = createContext<AppContextDto>()
 
@@ -29,21 +31,26 @@ data class AppContextDto(
 
 data class AppState(
     val isLoading: Boolean = true,
+    val isSnackbarOpen: Boolean = false,
     val settings: Settings = Settings.DEFAULT,
     val error: String? = null,
 )
 
 private sealed class AppEvent {
     object Loading : AppEvent()
+    object ClearError : AppEvent()
+    object CloseSnackbar : AppEvent()
     data class SetSettings(val settings: Settings) : AppEvent()
     data class Error(val error: String) : AppEvent()
 }
 
 private fun stateReducer(state: AppState, event: AppEvent): AppState =
     when (event) {
-        is AppEvent.Loading -> state.copy(isLoading = true, error = null)
+        is AppEvent.Loading -> state.copy(isLoading = true)
         is AppEvent.SetSettings -> state.copy(isLoading = false, settings = event.settings)
-        is AppEvent.Error -> state.copy(isLoading = false, error = event.error)
+        is AppEvent.Error -> state.copy(isLoading = false, error = event.error, isSnackbarOpen = true)
+        is AppEvent.ClearError -> state.copy(error = null)
+        is AppEvent.CloseSnackbar -> state.copy(isSnackbarOpen = false)
     }
 
 private fun getTheme(theme: String) =
@@ -56,10 +63,13 @@ val StateModule = FC<PropsWithChildren> { props ->
     fun saveSettings(settings: Settings): Job {
         return MainScope().launch {
             try {
-                Api.saveSettings(settings)
+                val response = Api.post<SettingsSaveResponse>(Routes.settings, settings)
+                response.error?.let {
+                    dispatch(AppEvent.Error(it))
+                }
                 dispatch(AppEvent.SetSettings(settings))
-            } catch (e: Exception) {
-                dispatch(AppEvent.Error("Error saving settings"))
+            } catch (e: ResponseException) {
+                dispatch(AppEvent.Error("${e.response.status.value} - ${e.response.status.description}"))
             }
         }
     }
@@ -68,11 +78,20 @@ val StateModule = FC<PropsWithChildren> { props ->
         dispatch(AppEvent.Loading)
         return MainScope().launch {
             try {
-                dispatch(AppEvent.SetSettings(Api.getSettings()))
-            } catch (e: Exception) {
-                dispatch(AppEvent.Error("Error loading settings"))
+                val response = Api.get<SettingsLoadResponse>(Routes.settings)
+                response.error?.let {
+                    dispatch(AppEvent.Error(it))
+                }
+                dispatch(AppEvent.SetSettings(response.settings))
+            } catch (e: ResponseException) {
+                console.error(e)
+                dispatch(AppEvent.Error("${e.response.status.value} - ${e.response.status.description}"))
             }
         }
+    }
+
+    fun clearError() {
+        dispatch(AppEvent.ClearError)
     }
 
     fun toggleTheme() {
@@ -101,11 +120,31 @@ val StateModule = FC<PropsWithChildren> { props ->
             open = state.isLoading
             sx {
                 color = Color("#FFFFFF")
-                zIndex = integer(1000)
+                zIndex = integer(2_000)
             }
 
             CircularProgress {
                 color = CircularProgressColor.inherit
+            }
+        }
+
+        Snackbar {
+            open = state.isSnackbarOpen
+            onClose = { _, _ -> dispatch(AppEvent.CloseSnackbar) }
+            autoHideDuration = 6000
+            anchorOrigin = jso {
+                horizontal = SnackbarOriginHorizontal.center
+                vertical = SnackbarOriginVertical.top
+            }
+            sx {
+                zIndex = integer(2_000)
+            }
+
+            Alert {
+                severity = AlertColor.error
+                onClose = { _ -> dispatch(AppEvent.CloseSnackbar) }
+
+                +state.error.orEmpty()
             }
         }
 

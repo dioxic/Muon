@@ -3,6 +3,7 @@
 package uk.dioxic.muon
 
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -12,11 +13,8 @@ import io.ktor.server.plugins.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
-import io.ktor.util.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.serialization.json.Json
-import org.koin.core.KoinApplication
-import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -28,8 +26,12 @@ import uk.dioxic.muon.exceptions.MusicImportException
 import uk.dioxic.muon.repository.LuceneRepository
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
-import uk.dioxic.muon.service.SearchService
+import uk.dioxic.muon.server.Csrf
+import uk.dioxic.muon.server.Koin
+import uk.dioxic.muon.server.apiSessionCookie
+import uk.dioxic.muon.server.getCsrfToken
 import uk.dioxic.muon.service.ImportService
+import uk.dioxic.muon.service.SearchService
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.ExperimentalTime
 
@@ -60,28 +62,39 @@ fun Application.main() {
     install(ContentNegotiation) {
         json(Json {
             prettyPrint = env == "dev"
-            encodeDefaults = false
         })
     }
     install(CORS) {
-        method(HttpMethod.Get)
-        method(HttpMethod.Post)
-        method(HttpMethod.Delete)
+//        host("0.0.0.0:5000")
         anyHost()
+        header(HttpHeaders.ContentType)
     }
     install(Compression) {
         gzip()
     }
-    install(CustomKoinPlugin) {
+    install(CachingHeaders) {
+        options { outgoingContent ->
+            when (outgoingContent.contentType?.withoutParameters()) {
+                ContentType.Application.Json -> null
+                ContentType.Application.JavaScript -> if (env == "dev") {
+                    null
+                } else {
+                    CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 3600))
+                }
+                else -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 3600))
+            }
+        }
+    }
+    install(Koin) {
         slf4jLogger(level = Level.ERROR)
         modules(appModule)
     }
-//    install(Sessions) {
-//        val secretSignKey = hex("6819b57a326945c1968f45236589")
-//        header<CartSession>("cart_session", directorySessionStorage(File("build/.sessions"))) {
-//            transform(SessionTransportTransformerMessageAuthentication(secretSignKey))
-//        }
-//    }
+    install(Sessions) {
+        apiSessionCookie()
+    }
+    install(Csrf) {
+        validateHeader("X-CSRF") { it.call.getCsrfToken() }
+    }
     install(StatusPages) {
         exception<IdNotFoundException> { call, cause ->
             call.respondText("file Id [${cause.id}] not found", status = HttpStatusCode.NotFound)
@@ -96,13 +109,12 @@ fun Application.main() {
 
     routing {
         settings()
-        index()
         tracks()
         lucene()
+        import()
+        indexHtml()
 
         static("/") {
-//            staticBasePackage = "static"
-//            defaultResource("index.html")
             resources("static")
         }
 
@@ -112,19 +124,3 @@ fun Application.main() {
     }
 }
 
-internal class CustomKoinPlugin(internal val koinApplication: KoinApplication) {
-    // Implements ApplicationPlugin as a companion object.
-    companion object Plugin : ApplicationPlugin<ApplicationCallPipeline, KoinApplication, CustomKoinPlugin> {
-        // Creates a unique key for the plugin.
-        override val key = AttributeKey<CustomKoinPlugin>("CustomKoinPlugin")
-
-        // Code to execute when installing the plugin.
-        override fun install(
-            pipeline: ApplicationCallPipeline,
-            configure: KoinApplication.() -> Unit
-        ): CustomKoinPlugin {
-            val koinApplication = startKoin(appDeclaration = configure)
-            return CustomKoinPlugin(koinApplication)
-        }
-    }
-}

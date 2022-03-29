@@ -82,18 +82,18 @@ ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negoti
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 ktor-client-json-js = { module = "io.ktor:ktor-client-json-js", version.ref = "ktor" }
-#ktor-client-serialization-js = { module = "io.ktor:ktor-client-serialization-js", version.ref = "ktor" }
 ktor-serialization = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-caching-headers = { module = "io.ktor:ktor-server-caching-headers", version.ref = "ktor" }
 ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
-ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
-ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
 ktor-server-compression = { module = "io.ktor:ktor-server-compression", version.ref = "ktor" }
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
+ktor-server-html-builder = { module = "io.ktor:ktor-server-html-builder", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = "ktor" }
 ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
 ktor-server-tests = { module = "io.ktor:ktor-server-tests", version.ref = "ktor" }
-ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = "ktor" }
-ktor-server-html-builder = { module = "io.ktor:ktor-server-html-builder", version.ref = "ktor" }
 ktor-websockets = { module = "io.ktor:ktor-websockets", version.ref = "ktor" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
@@ -116,7 +116,8 @@ statistics = { module = "org.nield:kotlin-statistics", version.ref = "statistics
 logging = ["log4j-core", "log4j-api", "log4j-slf4j", "log4j-jul"]
 ktorServer = ["ktor-serialization", "ktor-server-core", "ktor-server-netty", "ktor-websockets",
     "ktor-server-call-logging", "ktor-server-compression", "ktor-server-status-pages",
-    "ktor-server-content-negotiation", "ktor-server-cors", "ktor-server-sessions", "ktor-server-html-builder"]
+    "ktor-server-content-negotiation", "ktor-server-cors", "ktor-server-sessions", "ktor-server-html-builder",
+    "ktor-server-caching-headers"]
 ktorClient = ["ktor-client-core", "ktor-client-js", "ktor-serialization", "ktor-client-content-negotiation"]
 exposed = ["exposed-core", "exposed-dao", "exposed-jdbc", "exposed-datetime"]
 lucene = ["lucene-core", "lucene-queryparser", "lucene-analysis-common"]
