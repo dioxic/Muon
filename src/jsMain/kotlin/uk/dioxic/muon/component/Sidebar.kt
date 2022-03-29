@@ -8,7 +8,7 @@ import mui.system.sx
 import react.FC
 import react.Props
 import react.ReactNode
-import react.css.css
+import emotion.react.css
 import react.dom.html.ReactHTML
 import react.router.dom.NavLink
 import react.router.useLocation
