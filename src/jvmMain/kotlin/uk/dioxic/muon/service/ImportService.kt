@@ -24,7 +24,14 @@ class ImportService(private val settingsRepository: SettingsRepository) {
 
         return dir.walk()
             .filter { it.isAudioFile }
-            .map { it.toTrack() }
+            .map {
+                try {
+                    it.toTrack()
+                } catch( e: Throwable) {
+                    logger.error("error on ${it.name}")
+                    throw e
+                }
+            }
             .toList()
     }
 

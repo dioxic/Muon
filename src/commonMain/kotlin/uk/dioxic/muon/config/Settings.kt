@@ -20,7 +20,6 @@ data class Settings(
                 TableColumnConfig(id = "genre", label = "Genre", minWidth = 170, visible = false),
                 TableColumnConfig(id = "comment", label = "Comment", minWidth = 170, visible = false),
                 TableColumnConfig(id = "bitrate", label = "Bitrate", minWidth = 100),
-                TableColumnConfig(id = "vbr", label = "VBR", minWidth = 100, visible = false, align = "center"),
                 TableColumnConfig(id = "type", label = "Type", minWidth = 100),
                 TableColumnConfig(id = "path", label = "Path", minWidth = 170, visible = false),
                 TableColumnConfig(id = "filename", label = "Filename", minWidth = 170),
@@ -29,6 +28,7 @@ data class Settings(
             ),
             theme = "dark",
             rekordboxDatabase = "J:\\rekordbox\\master.db", //TODO remove this
+            importPath = "J:\\import\\complete",  //TODO remove this
             lastRekordboxRefresh = LocalDateTime(1985, 1, 1, 0, 0, 0),
         )
     }

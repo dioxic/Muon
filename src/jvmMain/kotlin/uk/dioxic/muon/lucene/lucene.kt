@@ -29,7 +29,7 @@ fun Track.toDocument(searchAnalyser: Analyzer): Document = Document().apply {
     add(TextField("album", album, Field.Store.NO))
     add(TextField("comment", comment, Field.Store.NO))
     add(StringField("genre", genre, Field.Store.NO))
-    add(IntPoint("year", year))
+    add(StringField("year", year, Field.Store.NO))
     add(StringField("fileType", fileType.toString(), Field.Store.NO))
     add(IntPoint("bitrate", bitrate))
     add(IntPoint("length", length))

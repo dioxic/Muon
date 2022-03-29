@@ -3,6 +3,7 @@ package uk.dioxic.muon.context
 import csstype.Color
 import csstype.integer
 import io.ktor.client.plugins.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -17,6 +18,7 @@ import uk.dioxic.muon.common.Themes
 import uk.dioxic.muon.config.Settings
 import uk.dioxic.muon.model.SettingsLoadResponse
 import uk.dioxic.muon.model.SettingsSaveResponse
+import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.route.Routes
 
 val AppContext = createContext<AppContextDto>()
@@ -25,7 +27,9 @@ data class AppContextDto(
     val settings: Settings,
     val error: String? = null,
     val theme: Theme,
-    val saveSettings: (Settings) -> Unit,
+    val importTracks: List<Track>,
+    val loadImportTracks: () -> Job,
+    val saveSettings: (Settings) -> Job,
     val toggleTheme: () -> Unit
 )
 
@@ -33,6 +37,7 @@ data class AppState(
     val isLoading: Boolean = true,
     val isSnackbarOpen: Boolean = false,
     val settings: Settings = Settings.DEFAULT,
+    val importTracks: List<Track> = emptyList(),
     val error: String? = null,
 )
 
@@ -41,6 +46,7 @@ private sealed class AppEvent {
     object ClearError : AppEvent()
     object CloseSnackbar : AppEvent()
     data class SetSettings(val settings: Settings) : AppEvent()
+    data class SetImportData(val importTracks: List<Track>) : AppEvent()
     data class Error(val error: String) : AppEvent()
 }
 
@@ -51,44 +57,51 @@ private fun stateReducer(state: AppState, event: AppEvent): AppState =
         is AppEvent.Error -> state.copy(isLoading = false, error = event.error, isSnackbarOpen = true)
         is AppEvent.ClearError -> state.copy(error = null)
         is AppEvent.CloseSnackbar -> state.copy(isSnackbarOpen = false)
+        is AppEvent.SetImportData -> state.copy(importTracks = event.importTracks)
     }
 
 private fun getTheme(theme: String) =
     Themes.asDynamic()[theme].unsafeCast<Theme>()
 
+private fun useApi(dispatch: Dispatch<AppEvent>, block: suspend CoroutineScope.() -> Unit): Job =
+    MainScope().launch {
+        try {
+            block()
+        } catch (e: ResponseException) {
+            console.error(e)
+            dispatch(AppEvent.Error("${e.response.status.value} - ${e.response.status.description}"))
+        }
+    }
+
 val StateModule = FC<PropsWithChildren> { props ->
 
     val (state, dispatch) = useReducer(::stateReducer, AppState())
 
-    fun saveSettings(settings: Settings): Job {
-        return MainScope().launch {
-            try {
-                val response = Api.post<SettingsSaveResponse>(Routes.settings, settings)
-                response.error?.let {
-                    dispatch(AppEvent.Error(it))
-                }
-                dispatch(AppEvent.SetSettings(settings))
-            } catch (e: ResponseException) {
-                dispatch(AppEvent.Error("${e.response.status.value} - ${e.response.status.description}"))
+    fun saveSettings(settings: Settings): Job =
+        useApi(dispatch) {
+            val response = Api.post<SettingsSaveResponse>(Routes.settings, settings)
+            response.error?.let {
+                dispatch(AppEvent.Error(it))
             }
+            dispatch(AppEvent.SetSettings(settings))
         }
-    }
 
     fun loadSettings(): Job {
         dispatch(AppEvent.Loading)
-        return MainScope().launch {
-            try {
-                val response = Api.get<SettingsLoadResponse>(Routes.settings)
-                response.error?.let {
-                    dispatch(AppEvent.Error(it))
-                }
-                dispatch(AppEvent.SetSettings(response.settings))
-            } catch (e: ResponseException) {
-                console.error(e)
-                dispatch(AppEvent.Error("${e.response.status.value} - ${e.response.status.description}"))
+        return useApi(dispatch) {
+            val response = Api.get<SettingsLoadResponse>(Routes.settings)
+            response.error?.let {
+                dispatch(AppEvent.Error(it))
             }
+            dispatch(AppEvent.SetSettings(response.settings))
         }
     }
+
+    fun loadImportTracks(): Job =
+        useApi(dispatch) {
+            val response = Api.get<List<Track>>(Routes.import)
+            dispatch(AppEvent.SetImportData(response))
+        }
 
     fun clearError() {
         dispatch(AppEvent.ClearError)
@@ -114,6 +127,8 @@ val StateModule = FC<PropsWithChildren> { props ->
             theme = getTheme(state.settings.theme),
             saveSettings = ::saveSettings,
             toggleTheme = ::toggleTheme,
+            loadImportTracks = ::loadImportTracks,
+            importTracks = state.importTracks,
         )
     ) {
         Backdrop {
