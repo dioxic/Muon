@@ -15,9 +15,14 @@ data class UserSession(
     val importFileLocations: FileLocations = emptyMap()
 )
 
-fun Sessions.Configuration.apiSessionCookie() {
+fun Sessions.Configuration.apiSessionCookie(memoryStorage: Boolean) {
     val secretSignKey = hex("6819b57a326945c1968f45236589")
-    val sessionStorage = directorySessionStorage(File("${Global.homePath}/.sessions"))
+    val sessionStorage = if (memoryStorage) {
+        SessionStorageMemory()
+    }
+    else {
+        directorySessionStorage(File("${Global.homePath}/.sessions"))
+    }
     cookie<UserSession>("session", sessionStorage) {
         transform(SessionTransportTransformerMessageAuthentication(secretSignKey))
         cookie.maxAgeInSeconds = 1.days.inWholeSeconds

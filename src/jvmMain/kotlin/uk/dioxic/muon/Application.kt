@@ -57,11 +57,12 @@ fun main(args: Array<String>) {
 @ExperimentalPathApi
 fun Application.main() {
     val env = environment.config.property("ktor.environment").getString()
+    val isDevelopment = env == "dev"
 
     install(CallLogging)
     install(ContentNegotiation) {
         json(Json {
-            prettyPrint = env == "dev"
+            prettyPrint = isDevelopment
         })
     }
     install(CORS) {
@@ -76,7 +77,8 @@ fun Application.main() {
         options { outgoingContent ->
             when (outgoingContent.contentType?.withoutParameters()) {
                 ContentType.Application.Json -> null
-                ContentType.Application.JavaScript -> if (env == "dev") {
+                ContentType.Message.Http -> null
+                ContentType.Application.JavaScript -> if (isDevelopment) {
                     null
                 } else {
                     CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 3600))
@@ -90,7 +92,7 @@ fun Application.main() {
         modules(appModule)
     }
     install(Sessions) {
-        apiSessionCookie()
+        apiSessionCookie(isDevelopment)
     }
     install(Csrf) {
         validateHeader("X-CSRF") { it.call.getCsrfToken() }
