@@ -6,6 +6,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import io.ktor.util.*
 import kotlinx.coroutines.delay
 import kotlinx.html.*
 import org.koin.core.context.GlobalContext
@@ -78,7 +79,7 @@ fun Routing.import() {
         get {
             val tracks = importService.getTracks()
             call.sessions.set(UserSession(
-                importFileLocations = tracks.associate { it.id to it.path }
+                importFileLocations = tracks.associate { it.id to it.path.encodeBase64() }
             ))
             call.respond(tracks)
         }
