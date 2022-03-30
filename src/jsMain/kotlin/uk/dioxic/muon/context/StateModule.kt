@@ -10,14 +10,11 @@ import kotlinx.coroutines.launch
 import kotlinx.js.jso
 import mui.material.*
 import mui.material.styles.Theme
-import mui.material.styles.ThemeProvider
 import mui.system.sx
 import react.*
 import uk.dioxic.muon.api.Api
-import uk.dioxic.muon.common.Themes
 import uk.dioxic.muon.config.Settings
 import uk.dioxic.muon.model.SettingsLoadResponse
-import uk.dioxic.muon.model.SettingsSaveResponse
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.route.Routes
 
@@ -60,9 +57,6 @@ private fun stateReducer(state: AppState, event: AppEvent): AppState =
         is AppEvent.SetImportData -> state.copy(importTracks = event.importTracks)
     }
 
-private fun getTheme(theme: String) =
-    Themes.asDynamic()[theme].unsafeCast<Theme>()
-
 private fun useApi(dispatch: Dispatch<AppEvent>, block: suspend CoroutineScope.() -> Unit): Job =
     MainScope().launch {
         try {
@@ -73,16 +67,14 @@ private fun useApi(dispatch: Dispatch<AppEvent>, block: suspend CoroutineScope.(
         }
     }
 
+@Deprecated("going to remove this")
 val StateModule = FC<PropsWithChildren> { props ->
 
     val (state, dispatch) = useReducer(::stateReducer, AppState())
 
     fun saveSettings(settings: Settings): Job =
         useApi(dispatch) {
-            val response = Api.post<SettingsSaveResponse>(Routes.settings, settings)
-            response.error?.let {
-                dispatch(AppEvent.Error(it))
-            }
+            Api.post(Routes.settings, settings)
             dispatch(AppEvent.SetSettings(settings))
         }
 
@@ -164,12 +156,7 @@ val StateModule = FC<PropsWithChildren> { props ->
         }
 
         if (!state.isLoading) {
-            ThemeProvider {
-                this.theme = getTheme(state.settings.theme)
-
-                CssBaseline()
-                +props.children
-            }
+            +props.children
         }
     }
 }

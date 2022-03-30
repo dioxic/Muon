@@ -6,26 +6,28 @@ import mui.icons.material.GetApp
 import mui.icons.material.Refresh
 import react.FC
 import react.Props
-import react.useContext
-import react.useEffectOnce
 import uk.dioxic.muon.component.EnhancedTable
 import uk.dioxic.muon.component.RowAction
 import uk.dioxic.muon.component.ToolbarAction
-import uk.dioxic.muon.context.AppContext
+import uk.dioxic.muon.hook.useImport
+import uk.dioxic.muon.hook.useSettings
 import uk.dioxic.muon.model.toColumns
 import uk.dioxic.muon.model.toRows
 
 val ImportPage = FC<Props> {
-    val ac = useContext(AppContext)
-    val columns = ac.settings.importTableColumns
-    val tracks = ac.importTracks
+    val settings = useSettings().data
+    val import = useImport()
 
-    useEffectOnce {
-        val job = ac.loadImportTracks()
-        cleanup {
-            job.cancel()
-        }
-    }
+//    val ac = useContext(AppContext)
+//    val columns = ac.settings.importTableColumns
+//    val tracks = ac.importTracks
+//
+//    useEffectOnce {
+//        val job = ac.loadImportTracks()
+//        cleanup {
+//            job.cancel()
+//        }
+//    }
 
     fun handleEditClick(id: String) {
         println("handleEdit for $id")
@@ -49,7 +51,7 @@ val ImportPage = FC<Props> {
 
     fun handleRefreshClick(selected: List<String>) {
         println("handleRefresh")
-        ac.loadImportTracks()
+//        ac.loadImportTracks()
     }
 
     val rowActions = listOf(
@@ -68,8 +70,8 @@ val ImportPage = FC<Props> {
         this.title = "Music Import"
         this.rowActions = rowActions
         this.toolbarActions = toolbarActions
-        this.rows = tracks.toRows()
-        this.columns = columns.toColumns()
+        this.rows = import.data.toRows()
+        this.columns = settings?.importTableColumns.toColumns()
         this.selectable = true
         this.sortable = true
     }

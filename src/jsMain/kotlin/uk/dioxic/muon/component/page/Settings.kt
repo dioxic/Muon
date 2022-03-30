@@ -10,8 +10,7 @@ import mui.system.sx
 import react.FC
 import react.Props
 import react.dom.html.ReactHTML
-import react.useContext
-import uk.dioxic.muon.context.AppContext
+import uk.dioxic.muon.hook.useSettings
 
 private val json = Json {
     prettyPrint = true
@@ -20,7 +19,7 @@ private val json = Json {
 
 val SettingsPage = FC<Props> {
 
-    val ac = useContext(AppContext)
+    val settings = useSettings()
 
     Box {
         Paper {
@@ -30,7 +29,7 @@ val SettingsPage = FC<Props> {
                 fontFamily= FontFamily.monospace
             }
 
-            +json.encodeToString(ac.settings)
+            +json.encodeToString(settings.data)
         }
     }
 }

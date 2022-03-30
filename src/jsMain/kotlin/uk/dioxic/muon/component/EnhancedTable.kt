@@ -15,8 +15,8 @@ import uk.dioxic.muon.model.TableRow
 
 external interface EnhancedTableProps : Props {
     var title: String
-    var rows: List<TableRow>
-    var columns: List<TableColumn>
+    var rows: List<TableRow>?
+    var columns: List<TableColumn>?
     var rowActions: List<RowAction>
     var toolbarActions: List<ToolbarAction>
     var selectable: Boolean
@@ -50,7 +50,7 @@ val EnhancedTable = FC<EnhancedTableProps> { props ->
 
     fun handleSelectAllClick(selectAll: Boolean) {
         if (selectAll) {
-            setSelected(props.rows.map { row -> row.id })
+            setSelected(props.rows?.map { row -> row.id } ?: emptyList())
         } else {
             setSelected(emptyList())
         }
@@ -68,28 +68,30 @@ val EnhancedTable = FC<EnhancedTableProps> { props ->
                 Table {
                     sx { minWidth = 650.px }
 
-                    EnhancedTableHead {
-                        rowCount = props.rows.size
-                        columns = props.columns
-                        sortable = props.sortable
-                        selectable = props.selectable
-                        hasActions = props.rowActions.isNotEmpty()
-                        numSelected = selected.size
-                        this.order = order
-                        this.orderBy = orderBy
-                        onSelectAllClick = ::handleSelectAllClick
-                        onRequestSort = ::handleRequestSort
-                    }
+                    if (props.columns != null) {
+                        EnhancedTableHead {
+                            rowCount = props.rows?.size ?: 0
+                            columns = props.columns!!
+                            sortable = props.sortable
+                            selectable = props.selectable
+                            hasActions = props.rowActions.isNotEmpty()
+                            numSelected = selected.size
+                            this.order = order
+                            this.orderBy = orderBy
+                            onSelectAllClick = ::handleSelectAllClick
+                            onRequestSort = ::handleRequestSort
+                        }
 
-                    EnhancedTableBody {
-                        columns = props.columns
-                        rows = props.rows
-                        selectable = props.selectable
-                        actions = props.rowActions
-                        this.selected = selected
-                        this.order = order
-                        this.orderBy = orderBy
-                        onRowClick = ::handleRowClick
+                        EnhancedTableBody {
+                            columns = props.columns!!
+                            rows = props.rows ?: emptyList()
+                            selectable = props.selectable
+                            actions = props.rowActions
+                            this.selected = selected
+                            this.order = order
+                            this.orderBy = orderBy
+                            onRowClick = ::handleRowClick
+                        }
                     }
                 }
             }
