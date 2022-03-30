@@ -33,6 +33,7 @@ import uk.dioxic.muon.server.getCsrfToken
 import uk.dioxic.muon.service.ImportService
 import uk.dioxic.muon.service.SearchService
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.time.Duration.Companion.days
 import kotlin.time.ExperimentalTime
 
 private val appModule = module {
@@ -75,15 +76,16 @@ fun Application.main() {
     }
     install(CachingHeaders) {
         options { outgoingContent ->
-            when (outgoingContent.contentType?.withoutParameters()) {
-                ContentType.Application.Json -> null
-                ContentType.Message.Http -> null
-                ContentType.Application.JavaScript -> if (isDevelopment) {
-                    null
-                } else {
-                    CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 3600))
+            if (!isDevelopment) {
+                when (outgoingContent.contentType?.withoutParameters()) {
+                    ContentType.Image.XIcon, ContentType.Image.PNG, ContentType.Image.JPEG ->
+                        CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 7.days.inWholeSeconds.toInt()))
+                    ContentType.Application.JavaScript, ContentType.Text.CSS ->
+                        CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 7.days.inWholeSeconds.toInt()))
+                    else -> null
                 }
-                else -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 3600))
+            } else {
+                null
             }
         }
     }
