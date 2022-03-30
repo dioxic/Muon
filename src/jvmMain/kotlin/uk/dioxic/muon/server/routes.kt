@@ -17,9 +17,7 @@ import uk.dioxic.muon.model.SettingsSaveResponse
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.route.Routes
-import uk.dioxic.muon.server.UserSession
-import uk.dioxic.muon.server.getCsrfToken
-import uk.dioxic.muon.server.getUserSession
+import uk.dioxic.muon.server.*
 import uk.dioxic.muon.service.ImportService
 import uk.dioxic.muon.service.SearchService
 import kotlin.io.path.ExperimentalPathApi
@@ -78,9 +76,9 @@ fun Routing.import() {
     route(Routes.import) {
         get {
             val tracks = importService.getTracks()
-            call.sessions.set(UserSession(
-                importFileLocations = tracks.associate { it.id to it.path.encodeBase64() }
-            ))
+            call.updateApiSession { currentSession ->
+                currentSession.copy(importFileLocations = tracks.associate { it.id to it.path.encodeBase64() })
+            }
             call.respond(tracks)
         }
         patch("/{id}") {
@@ -91,7 +89,8 @@ fun Routing.import() {
         get("/retrieve") {
             val userSession = call.getUserSession()
             if (userSession.importFileLocations.isNotEmpty()) {
-                call.respondText("Import files: ${userSession.importFileLocations}")
+                val decodedImportFiles = userSession.importFileLocations.mapValues { (_, v) -> v.decodeBase64String() }
+                call.respondText("Import files: $decodedImportFiles")
             } else {
                 call.respondText("Your import list is empty.")
             }

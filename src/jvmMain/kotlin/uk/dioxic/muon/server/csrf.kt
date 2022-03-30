@@ -16,7 +16,7 @@ internal class Csrf(config: CsrfConfiguration) {
     class CsrfConfiguration {
         internal var validators: MutableList<CsrfValidator> = mutableListOf()
 
-        fun validator(validator: CsrfValidator) {
+        private fun validator(validator: CsrfValidator) {
             this.validators.add(validator)
         }
 

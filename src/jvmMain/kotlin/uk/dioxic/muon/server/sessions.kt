@@ -19,8 +19,7 @@ fun Sessions.Configuration.apiSessionCookie(memoryStorage: Boolean) {
     val secretSignKey = hex("6819b57a326945c1968f45236589")
     val sessionStorage = if (memoryStorage) {
         SessionStorageMemory()
-    }
-    else {
+    } else {
         directorySessionStorage(File("${Global.homePath}/.sessions"))
     }
     cookie<UserSession>("session", sessionStorage) {
@@ -32,5 +31,5 @@ fun Sessions.Configuration.apiSessionCookie(memoryStorage: Boolean) {
 fun ApplicationCall.getUserSession(): UserSession = sessions.getOrSet { UserSession() }
 fun ApplicationCall.getCsrfToken(): String = getUserSession().csrfToken
 fun ApplicationCall.setApiSession(session: UserSession) = sessions.set(session)
-fun ApplicationCall.updateApiSession(callback: (UserSession) -> UserSession) = sessions.set(callback(UserSession()))
+fun ApplicationCall.updateApiSession(callback: (UserSession) -> UserSession) = sessions.set(callback(getUserSession()))
 fun ApplicationCall.deleteApiSession() = sessions.clear<UserSession>()
