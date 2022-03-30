@@ -30,7 +30,7 @@ fun Track.toDocument(searchAnalyser: Analyzer): Document = Document().apply {
     add(TextField("comment", comment, Field.Store.NO))
     add(StringField("genre", genre, Field.Store.NO))
     add(StringField("year", year, Field.Store.NO))
-    add(StringField("fileType", fileType.toString(), Field.Store.NO))
+    add(StringField("fileType", type.toString(), Field.Store.NO))
     add(IntPoint("bitrate", bitrate))
     add(IntPoint("length", length))
     add(StringField("path", path, Field.Store.NO))

@@ -107,7 +107,7 @@ class RekordboxRepository(private val settingsRepository: SettingsRepository) : 
                 }
             },
             id = this.getString("id"),
-            fileType = this.getInt("fileType").toFileType(),
+            type = this.getInt("fileType").toFileType(),
             fileSize = this.getInt("fileSize")
         )
     }
