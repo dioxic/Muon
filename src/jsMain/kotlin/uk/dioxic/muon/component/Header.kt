@@ -9,17 +9,22 @@ import mui.icons.material.GitHub
 import mui.icons.material.MenuBook
 import mui.material.*
 import mui.system.sx
-import react.*
+import react.FC
+import react.Props
+import react.ReactNode
+import react.create
 import react.dom.aria.AriaHasPopup.`false`
 import react.dom.aria.ariaHasPopup
 import react.dom.aria.ariaLabel
 import react.dom.html.ReactHTML
 import react.router.useLocation
 import uk.dioxic.muon.common.Area
-import uk.dioxic.muon.context.AppContext
+import uk.dioxic.muon.hook.useSaveSettings
+import uk.dioxic.muon.hook.useSettings
 
 val Header = FC<Props> {
-    val ac = useContext(AppContext)
+    val settings = useSettings()
+    val saveSettings = useSaveSettings()
     val lastPathname = useLocation().pathname.substringAfterLast("/")
 
     AppBar {
@@ -45,10 +50,16 @@ val Header = FC<Props> {
                 Switch {
                     icon = Brightness7.create()
                     checkedIcon = Brightness4.create()
-                    checked = ac.settings.theme == "dark"
+                    checked = settings.data!!.theme == "dark"
                     ariaLabel = "theme"
 
-                    onChange = { _, _ -> ac.toggleTheme() }
+                    onChange = { _, _ ->
+                        saveSettings(
+                            settings.data!!.copy(
+                                theme = if (settings.data!!.theme == "dark") "light" else "dark"
+                            )
+                        )
+                    }
                 }
             }
 

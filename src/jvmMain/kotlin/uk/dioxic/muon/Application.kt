@@ -26,10 +26,7 @@ import uk.dioxic.muon.exceptions.MusicImportException
 import uk.dioxic.muon.repository.LuceneRepository
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
-import uk.dioxic.muon.server.Csrf
-import uk.dioxic.muon.server.Koin
-import uk.dioxic.muon.server.apiSessionCookie
-import uk.dioxic.muon.server.getCsrfToken
+import uk.dioxic.muon.server.*
 import uk.dioxic.muon.service.ImportService
 import uk.dioxic.muon.service.SearchService
 import kotlin.io.path.ExperimentalPathApi
@@ -78,8 +75,7 @@ fun Application.main() {
         options { outgoingContent ->
             if (!isDevelopment) {
                 when (outgoingContent.contentType?.withoutParameters()) {
-                    ContentType.Image.XIcon, ContentType.Image.PNG, ContentType.Image.JPEG ->
-                        CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 7.days.inWholeSeconds.toInt()))
+                    ContentType.Image.XIcon, ContentType.Image.PNG, ContentType.Image.JPEG,
                     ContentType.Application.JavaScript, ContentType.Text.CSS ->
                         CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 7.days.inWholeSeconds.toInt()))
                     else -> null

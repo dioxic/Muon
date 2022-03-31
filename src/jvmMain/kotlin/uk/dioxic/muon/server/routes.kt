@@ -1,11 +1,11 @@
-package uk.dioxic.muon
+package uk.dioxic.muon.server
 
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
 import io.ktor.util.*
 import kotlinx.coroutines.delay
 import kotlinx.html.*
@@ -13,11 +13,9 @@ import org.koin.core.context.GlobalContext
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
 import uk.dioxic.muon.model.SettingsLoadResponse
-import uk.dioxic.muon.model.SettingsSaveResponse
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.route.Routes
-import uk.dioxic.muon.server.*
 import uk.dioxic.muon.service.ImportService
 import uk.dioxic.muon.service.SearchService
 import kotlin.io.path.ExperimentalPathApi
@@ -65,7 +63,7 @@ fun Routing.settings() {
         }
         post {
             settingsRepository.save(call.receive())
-            call.respond(SettingsSaveResponse())
+            call.respond(HttpStatusCode.OK)
         }
     }
 }

@@ -106,6 +106,7 @@ kotlin {
                 implementation(kotlinw("react"))
                 implementation(kotlinw("react-dom"))
                 implementation(kotlinw("react-css"))
+                implementation(kotlinw("react-query"))
                 implementation(kotlinw("react-router-dom"))
 
                 implementation(kotlinw("mui"))

@@ -27,8 +27,8 @@ external interface ImportTableRow: TableRow {
     var title: String
     var year: String
 }
-fun Collection<Track>.toRows() =
-    this.map { it.toRow() }
+fun Collection<Track>?.toRows() =
+    this?.map { it.toRow() }
 
 fun Track.toRow(): ImportTableRow =
     jso {

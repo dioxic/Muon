@@ -54,7 +54,7 @@ object Api {
             formData(formBuilder)
         }
 
-    suspend inline fun <reified T> post(path: String, data: Any): T =
+    suspend inline fun <reified T> post(path: String, data: T): Unit =
         apiRequest {
             method = HttpMethod.Post
             localUrl(path)

@@ -23,8 +23,8 @@ external interface TableColumn {
     var visible: Boolean
 }
 
-fun Collection<ColumnDefinition>.toColumns() =
-    this.map { it.toColumn() }
+fun Collection<ColumnDefinition>?.toColumns() =
+    this?.map { it.toColumn() }
 
 fun ColumnDefinition.toColumn(): TableColumn =
     jso {
