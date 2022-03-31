@@ -11,11 +11,6 @@ import react.useState
 
 val AlertContext = createContext<AlertContextDto>()
 
-data class AlertMessage(
-    val severity: AlertColor,
-    val message: String
-)
-
 sealed class Alert(val severity: AlertColor, val message: String) {
     class AlertError(message: String): Alert(AlertColor.error, message)
     class AlertWarning(message: String): Alert(AlertColor.warning, message)

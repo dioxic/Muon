@@ -29,7 +29,7 @@ val ThemeModule = FC<PropsWithChildren> { props ->
         }
     }
 
-    if (!settings.isLoading) {
+    if (settings.isSuccess) {
         ThemeProvider {
             this.theme = settings.data?.let { getTheme(it.theme) } ?: Themes.Light
 

@@ -33,8 +33,8 @@ private val App = FC<Props> {
     QueryClientProvider {
         client = queryClient
         HashRouter {
-            ThemeModule {
-                AlertModule {
+            AlertModule {
+                ThemeModule {
                     PagesModule {
                         Box {
                             sx {

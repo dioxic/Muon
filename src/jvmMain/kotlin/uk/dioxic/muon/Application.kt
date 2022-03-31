@@ -75,8 +75,7 @@ fun Application.main() {
         options { outgoingContent ->
             if (!isDevelopment) {
                 when (outgoingContent.contentType?.withoutParameters()) {
-                    ContentType.Image.XIcon, ContentType.Image.PNG, ContentType.Image.JPEG ->
-                        CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 7.days.inWholeSeconds.toInt()))
+                    ContentType.Image.XIcon, ContentType.Image.PNG, ContentType.Image.JPEG,
                     ContentType.Application.JavaScript, ContentType.Text.CSS ->
                         CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 7.days.inWholeSeconds.toInt()))
                     else -> null
