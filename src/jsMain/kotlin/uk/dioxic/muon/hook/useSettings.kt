@@ -21,7 +21,6 @@ fun useSettings(): SettingQueryResult =
         options = jso {
             refetchOnWindowFocus = false
             staleTime = JsDuration.MAX_VALUE
-            optimisticResults
         }
     )
 

@@ -18,17 +18,6 @@ val ImportPage = FC<Props> {
     val settings = useSettings().data
     val import = useImport()
 
-//    val ac = useContext(AppContext)
-//    val columns = ac.settings.importTableColumns
-//    val tracks = ac.importTracks
-//
-//    useEffectOnce {
-//        val job = ac.loadImportTracks()
-//        cleanup {
-//            job.cancel()
-//        }
-//    }
-
     fun handleEditClick(id: String) {
         println("handleEdit for $id")
     }

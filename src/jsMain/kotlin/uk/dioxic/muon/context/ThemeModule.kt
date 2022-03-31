@@ -14,25 +14,8 @@ import react.PropsWithChildren
 import uk.dioxic.muon.common.Themes
 import uk.dioxic.muon.hook.useSettings
 
-//typealias ThemeState = StateInstance<Theme>
-
-//val ThemeContext = createContext<ThemeState>()
-
 val ThemeModule = FC<PropsWithChildren> { props ->
     val settings = useSettings()
-//    val state = useState(Themes.Light)
-//    val (theme) = state
-
-//    println("settings: ${settings.data}")
-//    val theme = settings.data?.let { getTheme(it.theme) } ?: Themes.Light
-//
-//    println("theme: ${JSON.stringify(theme)}")
-    println("settings:" +
-            "isLoading=${settings.isLoading}," +
-            "isFetching=${settings.isFetching}," +
-            "isStale=${settings.isStale}," +
-            "isSuccess=${settings.isSuccess}," +
-            "isPreviousData=${settings.isPreviousData}")
 
     Backdrop {
         open = settings.isLoading
@@ -49,7 +32,6 @@ val ThemeModule = FC<PropsWithChildren> { props ->
     if (!settings.isLoading) {
         ThemeProvider {
             this.theme = settings.data?.let { getTheme(it.theme) } ?: Themes.Light
-//            this.theme = Themes.Light
 
             CssBaseline()
             +props.children
