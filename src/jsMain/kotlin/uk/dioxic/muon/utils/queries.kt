@@ -17,6 +17,7 @@ fun <TData> defaultQueryOptions(queryKey: QueryKey): UseQueryOptions<TData, Resp
 
     return jso {
         refetchOnWindowFocus = false
+        retry = { failureCount, _ -> (failureCount < 1) }
         staleTime = JsDuration.MAX_VALUE
         onError = { error ->
             addAlert(Alert.AlertError("Error fetching ${queryKey.name.lowercase()} - ${error.response.status.description}"))

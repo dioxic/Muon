@@ -77,8 +77,7 @@ fun Routing.import() {
             call.updateApiSession { currentSession ->
                 currentSession.copy(importFileLocations = tracks.associate { it.id to it.path.encodeBase64() })
             }
-            call.respond(HttpStatusCode.NotImplemented)
-//            call.respond(tracks)
+            call.respond(tracks)
         }
         patch("/{id}") {
             val session = call.getUserSession()

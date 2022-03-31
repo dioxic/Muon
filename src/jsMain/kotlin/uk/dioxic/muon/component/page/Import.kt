@@ -10,6 +10,7 @@ import uk.dioxic.muon.component.EnhancedTable
 import uk.dioxic.muon.component.RowAction
 import uk.dioxic.muon.component.ToolbarAction
 import uk.dioxic.muon.hook.useImport
+import uk.dioxic.muon.hook.useReloadImport
 import uk.dioxic.muon.hook.useSettings
 import uk.dioxic.muon.model.toColumns
 import uk.dioxic.muon.model.toRows
@@ -17,6 +18,8 @@ import uk.dioxic.muon.model.toRows
 val ImportPage = FC<Props> {
     val settings = useSettings().data
     val import = useImport()
+//    val queryClient = useQueryClient()
+    val reloadImport = useReloadImport()
 
     fun handleEditClick(id: String) {
         println("handleEdit for $id")
@@ -38,9 +41,10 @@ val ImportPage = FC<Props> {
         println("handleFilter for $selected")
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun handleRefreshClick(selected: List<String>) {
         println("handleRefresh")
-//        ac.loadImportTracks()
+        reloadImport()
     }
 
     val rowActions = listOf(
