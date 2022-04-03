@@ -102,18 +102,17 @@ kotlin {
                         kotlinw("wrappers-bom:0.0.1-${libs.versions.kotlinWrapper.get()}")
                     )
                 )
+                implementation(kotlinw("css"))
 
                 implementation(kotlinw("react"))
                 implementation(kotlinw("react-dom"))
-                implementation(kotlinw("react-css"))
                 implementation(kotlinw("react-query"))
+                implementation(kotlinw("react-table"))
                 implementation(kotlinw("react-router-dom"))
 
+                implementation(kotlinw("emotion"))
                 implementation(kotlinw("mui"))
                 implementation(kotlinw("mui-icons"))
-
-                implementation(npm("@emotion/react", libs.versions.emotion.get()))
-                implementation(npm("@emotion/styled", libs.versions.emotion.get()))
             }
         }
         val jsTest by getting

@@ -11,8 +11,11 @@ import mui.material.styles.ThemeProvider
 import mui.system.sx
 import react.FC
 import react.PropsWithChildren
+import react.createContext
 import uk.dioxic.muon.common.Themes
 import uk.dioxic.muon.hook.useSettings
+
+val ThemeContext = createContext<Theme>()
 
 val ThemeModule = FC<PropsWithChildren> { props ->
     val settings = useSettings()
@@ -30,11 +33,14 @@ val ThemeModule = FC<PropsWithChildren> { props ->
     }
 
     if (settings.isSuccess) {
-        ThemeProvider {
-            this.theme = settings.data?.let { getTheme(it.theme) } ?: Themes.Light
+        val theme = settings.data?.let { getTheme(it.theme) } ?: Themes.Light
+        ThemeContext.Provider(theme) {
+            ThemeProvider {
+                this.theme = theme
 
-            CssBaseline()
-            +props.children
+                CssBaseline()
+                +props.children
+            }
         }
     }
 }
