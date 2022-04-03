@@ -11,6 +11,6 @@ fun usePages(): Pages = useMemo {
     setOf(
         Page("settings", "Settings", SettingsPage),
         Page("library", "Library", LibraryPage),
-        Page("import", "Import", ImportPage),
+        Page("import", "Import", ImportPage)
     )
 }
