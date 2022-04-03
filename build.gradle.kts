@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
 
 plugins {
-    kotlin("multiplatform") version "1.6.10"
-    kotlin("plugin.serialization") version "1.6.10"
+    kotlin("multiplatform") version "1.6.20"
+    kotlin("plugin.serialization") version "1.6.20"
 //    alias(libs.plugins.kotlin.serialization)
 //    alias(libs.plugins.axion)
 //    alias(libs.plugins.versions)
@@ -185,12 +185,21 @@ tasks.withType<Test> {
 
 tasks.getByName("distZip") {
     dependsOn(tasks.getByName("jsJar"))
-    dependsOn(tasks.getByName("metadataJar"))
+    dependsOn(tasks.getByName("allMetadataJar"))
 }
 
 tasks.getByName("distTar") {
     dependsOn(tasks.getByName("jsJar"))
-    dependsOn(tasks.getByName("metadataJar"))
+    dependsOn(tasks.getByName("allMetadataJar"))
+}
+
+tasks.getByName("jsBrowserDevelopmentWebpack") {
+    dependsOn(tasks.getByName("jsProductionExecutableCompileSync"))
+}
+
+tasks.getByName("jsBrowserProductionWebpack") {
+    dependsOn(tasks.getByName("jsProductionExecutableCompileSync"))
+    dependsOn(tasks.getByName("jsDevelopmentExecutableCompileSync"))
 }
 
 //tasks.withType<ShadowJar> {
