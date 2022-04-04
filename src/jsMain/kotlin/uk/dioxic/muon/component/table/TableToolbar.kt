@@ -14,14 +14,10 @@ import react.table.Row
 import react.useContext
 import uk.dioxic.muon.context.ThemeContext
 
-external interface EnhancedTableToolbarProps : Props {
+external interface TableToolbarProps : Props {
     var title: String
     var selected: ReadonlyArray<Row<*>>
     var actions: List<ToolbarAction>
-//    var deleteRowHandler:
-//    var preGlobalFilteredRows
-//    var setGlobalFilter
-//    var globalFilter
 }
 
 data class ToolbarAction(
@@ -33,11 +29,11 @@ data class ToolbarAction(
     val onClick: (ReadonlyArray<Row<*>>) -> Unit,
 )
 
-private operator fun EnhancedTableToolbarProps.component1() = title
-private operator fun EnhancedTableToolbarProps.component2() = selected
-private operator fun EnhancedTableToolbarProps.component3() = actions
+private operator fun TableToolbarProps.component1() = title
+private operator fun TableToolbarProps.component2() = selected
+private operator fun TableToolbarProps.component3() = actions
 
-val EnhancedTableToolbar = FC<EnhancedTableToolbarProps> { (title, selected, actions) ->
+val TableToolbar = FC<TableToolbarProps> { (title, selected, actions) ->
 
     val theme = useContext(ThemeContext)
 

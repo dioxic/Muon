@@ -9,10 +9,11 @@ import react.table.PluginHook
 import react.table.SimpleColumn
 import react.table.TableToggleAllRowsSelectedProps
 import react.table.TableToggleRowsSelectedProps
+import uk.dioxic.muon.component.table.CellType
 
 val useCheckboxSelect = PluginHook<Any> {
     val newColumn = jso<SimpleColumn<Any, *>> {
-        id = "selection"
+        id = CellType.CHECKBOX.id
         headerFunction = { header ->
             val component = FC<TableToggleAllRowsSelectedProps> { props ->
                 Checkbox {

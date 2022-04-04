@@ -4,6 +4,7 @@ import csstype.px
 import kotlinx.js.ReadonlyArray
 import kotlinx.js.jso
 import mui.icons.material.Delete
+import mui.icons.material.Edit
 import mui.icons.material.GetApp
 import mui.icons.material.Refresh
 import mui.material.*
@@ -12,9 +13,12 @@ import react.FC
 import react.Props
 import react.table.*
 import react.useMemo
-import uk.dioxic.muon.component.table.EnhancedTableToolbar
+import uk.dioxic.muon.component.table.CellType
+import uk.dioxic.muon.component.table.RowAction
+import uk.dioxic.muon.component.table.TableToolbar
 import uk.dioxic.muon.component.table.ToolbarAction
 import uk.dioxic.muon.component.table.plugin.useCheckboxSelect
+import uk.dioxic.muon.component.table.plugin.useRowActions
 import uk.dioxic.muon.hook.useImport
 import uk.dioxic.muon.hook.useReloadImport
 import uk.dioxic.muon.hook.useSettings
@@ -24,9 +28,14 @@ import kotlin.time.Duration.Companion.seconds
 
 
 private val COLUMNS = columns<Track> {
+
+//    val editableCellFunction: (CellProps<Track, *>) -> ReactNode =
+//        { cellProps -> useMemo { editableCell(cellProps) } }
+
     column<String> {
         header = "Title"
         accessorFunction = { it.title }
+//        cellFunction = editableCellFunction
     }
     column<String> {
         header = "Artist"
@@ -75,20 +84,20 @@ val ImportPage = FC<Props> {
     val import = useImport().data
     val reloadImport = useReloadImport()
 
-    fun handleEditClick(id: String) {
-        println("handleEdit for $id")
+    fun handleEditClick(row: Row<Track>) {
+        println("handleEdit for $row")
     }
 
-    fun handleDeleteClick(id: String) {
-        println("handleDelete for $id")
+    fun handleDeleteClick(row: Row<Track>) {
+        println("handleDelete for $row")
     }
 
     fun handleDeleteClick(selected: ReadonlyArray<Row<*>>) {
         println("handleDelete for $selected")
     }
 
-    fun handleImportClick(id: String) {
-        println("handleImport for $id")
+    fun handleImportClick(row: Row<Track>) {
+        println("handleImport for $row")
     }
 
     fun handleFilterClick(selected: ReadonlyArray<Row<*>>) {
@@ -101,11 +110,11 @@ val ImportPage = FC<Props> {
         reloadImport()
     }
 
-//    val rowActions = listOf(
-//        RowAction(name = "edit", icon = Edit, onClick = ::handleEditClick),
-//        RowAction(name = "import", icon = GetApp, onClick = ::handleImportClick),
-//        RowAction(name = "delete", icon = Delete, onClick = ::handleDeleteClick),
-//    )
+    val rowActions = listOf(
+        RowAction(name = "edit", icon = Edit, onClick = ::handleEditClick),
+        RowAction(name = "import", icon = GetApp, onClick = ::handleImportClick),
+        RowAction(name = "delete", icon = Delete, onClick = ::handleDeleteClick),
+    )
 
     val toolbarActions = listOf(
         ToolbarAction(name = "import", icon = GetApp, onClick = ::handleFilterClick, requiresSelection = true),
@@ -117,20 +126,18 @@ val ImportPage = FC<Props> {
         options = jso {
             data = useMemo(import) { import?.toTypedArray() ?: emptyArray() }
             columns = useMemo { COLUMNS }
-//            defaultColumn = column {
-//                 cellFunction =  { cellProps ->  editableCell(cellProps) }
-//            }
         },
         useSortBy,
         useRowSelect,
         useCheckboxSelect,
         useColumnOrder,
+        useRowActions(rowActions),
     )
 
     Box {
         Paper {
             TableContainer {
-                EnhancedTableToolbar {
+                TableToolbar {
                     title = "Import Table"
                     actions = toolbarActions
                     selected = table.selectedFlatRows
@@ -151,20 +158,22 @@ val ImportPage = FC<Props> {
                                     val header = originalHeader ?: h
 
                                     TableCell {
-                                        val isCheckboxCell = (header.id == "selection")
+                                        val cellType = CellType.getCellType(header.id)
 
-                                        if (isCheckboxCell) {
-                                            +header.getHeaderProps()
-                                        } else {
+                                        align = cellType.cellAlign
+
+                                        if (cellType == CellType.DEFAULT) {
                                             sx {
                                                 minWidth = 120.px
                                             }
                                             +header.getHeaderProps(header.getSortByToggleProps())
+                                        } else {
+                                            +header.getHeaderProps()
                                         }
 
                                         +header.render(RenderType.Header)
 
-                                        if (!isCheckboxCell) {
+                                        if (cellType == CellType.DEFAULT) {
                                             TableSortLabel {
                                                 active = header.isSorted
                                                 direction = if (header.isSortedDesc)
@@ -199,33 +208,5 @@ val ImportPage = FC<Props> {
             }
         }
     }
-
-//    val tableComponent = useMemo { enhancedReactTable<Track>() }
-//    val toolbarComponent = useMemo { enhancedTableToolbar<Track>() }
-//
-//    child(
-//        createElement(tableComponent, jso {
-//            this.table = table
-//            this.toolbar = createElement(toolbarComponent, jso {
-//                title = "Import Table"
-//                actions = toolbarActions
-//                selected = table.selectedFlatRows
-//            })
-//            title = "Import Table"
-//            data = useMemo(import) { import?.toTypedArray() ?: emptyArray() }
-//            columns = useMemo { COLUMNS }
-//            this.toolbarActions = toolbarActions
-//            minWidth = 120.px
-//        })
-//    )
-
-//    EnhancedReactTable {
-//        AriaRole.table = table.asDynamic().unsafeCast<TableInstance<Any>>()
-//        title = "React Import Table"
-//        data = useMemo(import) { import?.toTypedArray() ?: emptyArray() }
-//        columns = useMemo { COLUMNS }
-//        this.toolbarActions = toolbarActions
-//        minWidth = 150.px
-//    }
 
 }
