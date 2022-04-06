@@ -34,7 +34,7 @@ fun <T: Any> useRowActions(actions: List<RowAction<T>>) = PluginHook<T> {
                     actions.forEach { action ->
                         Tooltip {
                             title = ReactNode(action.name)
-                            mui.material.IconButton {
+                            IconButton {
                                 action.iconColor?.let {
                                     color = it
                                 }
