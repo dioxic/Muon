@@ -11,12 +11,14 @@ import mui.material.*
 import mui.system.sx
 import react.FC
 import react.Props
+import react.ReactNode
 import react.table.*
 import react.useMemo
 import uk.dioxic.muon.component.table.CellType
 import uk.dioxic.muon.component.table.RowAction
 import uk.dioxic.muon.component.table.TableToolbar
 import uk.dioxic.muon.component.table.ToolbarAction
+import uk.dioxic.muon.component.table.editableCell
 import uk.dioxic.muon.component.table.plugin.useCheckboxSelect
 import uk.dioxic.muon.component.table.plugin.useRowActions
 import uk.dioxic.muon.hook.useImport
@@ -29,13 +31,13 @@ import kotlin.time.Duration.Companion.seconds
 
 private val COLUMNS = columns<Track> {
 
-//    val editableCellFunction: (CellProps<Track, *>) -> ReactNode =
-//        { cellProps -> useMemo { editableCell(cellProps) } }
+    val editableCellFunction: (CellProps<Track, *>) -> ReactNode =
+        { cellProps -> useMemo { editableCell(cellProps) } }
 
     column<String> {
         header = "Title"
         accessorFunction = { it.title }
-//        cellFunction = editableCellFunction
+        cellFunction = editableCellFunction
     }
     column<String> {
         header = "Artist"
