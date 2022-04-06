@@ -58,7 +58,6 @@ fun Routing.settings() {
 
     route(Routes.settings) {
         get {
-            delay(1000)
             call.respond(SettingsLoadResponse(settingsRepository.get()))
         }
         post {
