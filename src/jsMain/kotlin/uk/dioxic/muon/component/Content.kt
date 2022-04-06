@@ -39,6 +39,7 @@ val Content = FC<Props> {
             }
 
             for ((key, _, Component) in pages) {
+                Component.displayName = key
                 Route {
                     path = key
                     element = Component.create()
