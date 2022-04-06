@@ -1,7 +1,10 @@
 package uk.dioxic.muon.component.table
 
-import csstype.BackgroundColor
+import csstype.Position
+import csstype.integer
 import csstype.number
+import csstype.px
+import emotion.react.css
 import kotlinx.js.ReadonlyArray
 import mui.icons.material.SvgIconComponent
 import mui.material.*
@@ -13,6 +16,7 @@ import react.dom.html.ReactHTML
 import react.table.Row
 import react.useContext
 import uk.dioxic.muon.context.ThemeContext
+import uk.dioxic.muon.external.chroma
 
 external interface TableToolbarProps : Props {
     var title: String
@@ -22,11 +26,11 @@ external interface TableToolbarProps : Props {
 
 data class ToolbarAction(
     val name: String,
-    val size: Size = Size.small,
     val icon: SvgIconComponent,
     val iconColor: IconButtonColor? = null,
     val requiresSelection: Boolean = false,
     val onClick: (ReadonlyArray<Row<*>>) -> Unit,
+    val fetchingAnimation: Boolean = false,
 )
 
 private operator fun TableToolbarProps.component1() = title
@@ -46,6 +50,7 @@ val TableToolbar = FC<TableToolbarProps> { (title, selected, actions) ->
 
             }
         }
+
         Typography {
             sx {
                 flexGrow = number(1.0)
@@ -63,16 +68,39 @@ val TableToolbar = FC<TableToolbarProps> { (title, selected, actions) ->
 
         actions.forEach { action ->
             if (!action.requiresSelection || selected.isNotEmpty()) {
-                Tooltip {
-                    this.title = ReactNode(action.name)
+                Box {
+                    sx {
+                        position = Position.relative
+                    }
 
-                    IconButton {
-                        action.iconColor?.let {
-                            color = it
+                    Tooltip {
+                        this.title = ReactNode(action.name)
+
+                        IconButton {
+                            action.iconColor?.let {
+                                color = it
+                            }
+                            onClick = { _ -> action.onClick(selected) }
+
+                            action.icon()
                         }
-                        onClick = { _ -> action.onClick(selected) }
+                    }
 
-                        action.icon()
+                    if (action.fetchingAnimation) {
+                        CircularProgress {
+                            size = 32.px
+                            color = CircularProgressColor.success
+
+                            sx {
+                                position = Position.absolute
+                                top = 4.px
+                                left = 4.px
+                                zIndex = integer(1)
+//                                color = kotlinx.css.Color.green.value.asDynamic().unsafeCast<ColorProperty>()
+                            }
+
+                            variant = CircularProgressVariant.indeterminate
+                        }
                     }
                 }
             }
