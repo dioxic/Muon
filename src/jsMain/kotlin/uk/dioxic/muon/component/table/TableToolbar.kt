@@ -38,11 +38,12 @@ val TableToolbar = FC<TableToolbarProps> { (title, selected, actions) ->
     val theme = useContext(ThemeContext)
 
     Toolbar {
-        sx {
+        css {
             if (selected.isNotEmpty()) {
-                val colour = kotlinx.css.Color(theme.palette.primary.main.asDynamic().unsafeCast<String>())
-                val opacity = theme.palette.action.activatedOpacity.unsafeCast<Double>()
-                backgroundColor = colour.withAlpha(opacity).value.unsafeCast<BackgroundColor>()
+                backgroundColor = chroma(theme.palette.primary.main)
+                    .alpha(theme.palette.action.activatedOpacity)
+                    .hex()
+
             }
         }
         Typography {

@@ -102,7 +102,6 @@ kotlin {
                         kotlinw("wrappers-bom:0.0.1-${libs.versions.kotlinWrapper.get()}")
                     )
                 )
-                implementation(kotlinw("css"))
 
                 implementation(kotlinw("react"))
                 implementation(kotlinw("react-dom"))
@@ -113,6 +112,8 @@ kotlin {
                 implementation(kotlinw("emotion"))
                 implementation(kotlinw("mui"))
                 implementation(kotlinw("mui-icons"))
+
+                implementation(npm("chroma-js", "2.4.2"))
             }
         }
         val jsTest by getting
