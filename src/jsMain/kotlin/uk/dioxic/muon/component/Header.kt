@@ -23,7 +23,7 @@ import uk.dioxic.muon.hook.useSaveSettings
 import uk.dioxic.muon.hook.useSettings
 
 val Header = FC<Props> {
-    val settings = useSettings()
+    val settings = useSettings().data
     val saveSettings = useSaveSettings()
     val lastPathname = useLocation().pathname.substringAfterLast("/")
 
@@ -50,13 +50,13 @@ val Header = FC<Props> {
                 Switch {
                     icon = Brightness7.create()
                     checkedIcon = Brightness4.create()
-                    checked = settings.data!!.theme == "dark"
+                    checked = settings!!.theme == "dark"
                     ariaLabel = "theme"
 
                     onChange = { _, _ ->
                         saveSettings(
-                            settings.data!!.copy(
-                                theme = if (settings.data!!.theme == "dark") "light" else "dark"
+                            settings.copy(
+                                theme = if (settings.theme == "dark") "light" else "dark"
                             )
                         )
                     }

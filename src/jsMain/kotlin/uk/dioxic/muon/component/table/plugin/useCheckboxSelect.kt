@@ -36,8 +36,7 @@ val useCheckboxSelect = PluginHook<Any> {
             createElement(component, cell.row.getToggleRowSelectedProps())
         }
     }
-
-    allColumns += { columns, _ ->
+    visibleColumns += { columns, _ ->
         arrayOf(newColumn, *columns)
     }
 }

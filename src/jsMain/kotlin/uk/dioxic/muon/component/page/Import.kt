@@ -1,29 +1,26 @@
 package uk.dioxic.muon.component.page
 
-import csstype.px
 import kotlinx.js.ReadonlyArray
 import kotlinx.js.jso
 import mui.icons.material.Delete
 import mui.icons.material.Edit
 import mui.icons.material.GetApp
 import mui.icons.material.Refresh
-import mui.material.*
-import mui.system.sx
+import mui.material.Box
+import mui.material.Paper
 import react.FC
 import react.Props
 import react.ReactNode
 import react.table.*
 import react.useMemo
-import uk.dioxic.muon.component.table.CellType
+import uk.dioxic.muon.component.table.EnhancedTable
 import uk.dioxic.muon.component.table.RowAction
-import uk.dioxic.muon.component.table.TableToolbar
 import uk.dioxic.muon.component.table.ToolbarAction
 import uk.dioxic.muon.component.table.editableCell
 import uk.dioxic.muon.component.table.plugin.useCheckboxSelect
 import uk.dioxic.muon.component.table.plugin.useRowActions
 import uk.dioxic.muon.hook.useImport
 import uk.dioxic.muon.hook.useReloadImport
-import uk.dioxic.muon.hook.useSettings
 import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.Track
 import kotlin.time.Duration.Companion.seconds
@@ -82,8 +79,7 @@ private val COLUMNS = columns<Track> {
 }
 
 val ImportPage = FC<Props> {
-    val settings = useSettings().data
-    val import = useImport().data
+    val import = useImport()
     val reloadImport = useReloadImport()
 
     fun handleEditClick(row: Row<Track>) {
@@ -102,13 +98,12 @@ val ImportPage = FC<Props> {
         println("handleImport for $row")
     }
 
-    fun handleFilterClick(selected: ReadonlyArray<Row<*>>) {
-        println("handleFilter for $selected")
+    fun handleImportClick(selected: ReadonlyArray<Row<*>>) {
+        println("handleImport for $selected")
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun handleRefreshClick(selected: ReadonlyArray<Row<*>>) {
-        println("handleRefresh")
         reloadImport()
     }
 
@@ -119,17 +114,18 @@ val ImportPage = FC<Props> {
     )
 
     val toolbarActions = listOf(
-        ToolbarAction(name = "import", icon = GetApp, onClick = ::handleFilterClick, requiresSelection = true),
+        ToolbarAction(name = "import", icon = GetApp, onClick = ::handleImportClick, requiresSelection = true),
         ToolbarAction(name = "delete", icon = Delete, onClick = ::handleDeleteClick, requiresSelection = true),
-        ToolbarAction(name = "refresh", icon = Refresh, onClick = ::handleRefreshClick),
+        ToolbarAction(name = "refresh", icon = Refresh, onClick = ::handleRefreshClick, fetchingAnimation = import.isFetching),
     )
 
     val table = useTable<Track>(
         options = jso {
-            data = useMemo(import) { import?.toTypedArray() ?: emptyArray() }
+            data = useMemo(import.data) { import.data?.toTypedArray() ?: emptyArray() }
             columns = useMemo { COLUMNS }
         },
         useSortBy,
+        usePagination,
         useRowSelect,
         useCheckboxSelect,
         useColumnOrder,
@@ -138,75 +134,11 @@ val ImportPage = FC<Props> {
 
     Box {
         Paper {
-            TableContainer {
-                TableToolbar {
-                    title = "Import Table"
-                    actions = toolbarActions
-                    selected = table.selectedFlatRows
-                }
-
-                Table {
-                    size = Size.small
-
-                    +table.getTableProps()
-
-                    TableHead {
-                        table.headerGroups.forEach { headerGroup ->
-                            TableRow {
-                                +headerGroup.getHeaderGroupProps()
-
-                                headerGroup.headers.forEach { h ->
-                                    val originalHeader = h.placeholderOf
-                                    val header = originalHeader ?: h
-
-                                    TableCell {
-                                        val cellType = CellType.getCellType(header.id)
-
-                                        align = cellType.cellAlign
-
-                                        if (cellType == CellType.DEFAULT) {
-                                            sx {
-                                                minWidth = 120.px
-                                            }
-                                            +header.getHeaderProps(header.getSortByToggleProps())
-                                        } else {
-                                            +header.getHeaderProps()
-                                        }
-
-                                        +header.render(RenderType.Header)
-
-                                        if (cellType == CellType.DEFAULT) {
-                                            TableSortLabel {
-                                                active = header.isSorted
-                                                direction = if (header.isSortedDesc)
-                                                    TableSortLabelDirection.desc
-                                                else
-                                                    TableSortLabelDirection.asc
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    TableBody {
-                        table.rows.forEach { row ->
-                            table.prepareRow(row)
-
-                            TableRow {
-                                +row.getRowProps()
-
-                                row.cells.forEach { cell ->
-                                    TableCell {
-                                        +cell.getCellProps()
-                                        +cell.render(RenderType.Cell)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+            EnhancedTable {
+                title = "Import Table"
+                tableInstance = table.unsafeCast<TableInstance<Any>>()
+                this.toolbarActions = toolbarActions
+                selectedRows = tableInstance.selectedFlatRows
             }
         }
     }

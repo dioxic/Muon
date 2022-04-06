@@ -3,6 +3,7 @@ package uk.dioxic.muon.component.table.plugin
 import csstype.Display
 import kotlinx.js.jso
 import mui.material.Box
+import mui.material.IconButton
 import mui.material.Tooltip
 import mui.system.sx
 import react.FC
@@ -54,7 +55,7 @@ fun <T: Any> useRowActions(actions: List<RowAction<T>>) = PluginHook<T> {
         }
     }
 
-    allColumns += { columns, _ ->
+    visibleColumns += { columns, _ ->
         arrayOf(*columns, newColumn)
     }
 }
