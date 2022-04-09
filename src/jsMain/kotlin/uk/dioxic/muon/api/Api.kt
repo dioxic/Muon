@@ -7,6 +7,7 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.js.*
 import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
@@ -22,6 +23,7 @@ val client = HttpClient(Js) {
     defaultRequest {
         port = 8080
     }
+    expectSuccess = true
 }
 
 fun HttpRequestBuilder.localUrl(path: String) = url {

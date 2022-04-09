@@ -57,7 +57,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.serialization.core)
-                implementation(libs.ktor.client.core)
+                implementation(libs.koin.core)
                 implementation(libs.kotlin.datetime)
                 implementation(libs.kotlin.coroutines.test)
             }

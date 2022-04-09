@@ -4,6 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.server.sessions.*
 import io.ktor.util.*
 import uk.dioxic.muon.common.Global
+import uk.dioxic.muon.server.plugins.CsrfTokenProvider
 import java.io.File
 import kotlin.time.Duration.Companion.days
 
@@ -15,7 +16,7 @@ data class UserSession(
     val importFileLocations: FileLocations = emptyMap()
 )
 
-fun Sessions.Configuration.apiSessionCookie(memoryStorage: Boolean) {
+fun SessionsConfig.apiSessionCookie(memoryStorage: Boolean) {
     val secretSignKey = hex("6819b57a326945c1968f45236589")
     val sessionStorage = if (memoryStorage) {
         SessionStorageMemory()

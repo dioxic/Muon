@@ -7,7 +7,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
-import kotlinx.coroutines.delay
 import kotlinx.html.*
 import org.koin.core.context.GlobalContext
 import org.koin.core.parameter.ParametersDefinition
@@ -18,7 +17,7 @@ import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.route.Routes
 import uk.dioxic.muon.service.ImportService
 import uk.dioxic.muon.service.SearchService
-import kotlin.io.path.ExperimentalPathApi
+import java.io.File
 
 fun Routing.tracks() {
     val searchService by inject<SearchService>()
@@ -52,7 +51,6 @@ fun Routing.lucene() {
     }
 }
 
-@ExperimentalPathApi
 fun Routing.settings() {
     val settingsRepository by inject<SettingsRepository>()
 
@@ -60,7 +58,7 @@ fun Routing.settings() {
         get {
             call.respond(SettingsLoadResponse(settingsRepository.get()))
         }
-        post {
+        put {
             settingsRepository.save(call.receive())
             call.respond(HttpStatusCode.OK)
         }
@@ -78,10 +76,27 @@ fun Routing.import() {
             }
             call.respond(tracks)
         }
+        get("/{id}") {
+            val session = call.getUserSession()
+            val trackId = call.parameters["id"]
+            val trackFile = session.importFileLocations[trackId]?.decodeBase64String()
+
+            if (trackFile != null) {
+                call.respond(importService.getTrack(File(trackFile)))
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
+        }
         patch("/{id}") {
             val session = call.getUserSession()
             val trackId = call.parameters["id"]
-            val path = session.importFileLocations[trackId]
+            val trackFile = session.importFileLocations[trackId]?.decodeBase64String()
+
+            if (trackFile != null) {
+                call.respond(importService.updateTrack(File(trackFile), call.receive()))
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
         }
         get("/retrieve") {
             val userSession = call.getUserSession()
