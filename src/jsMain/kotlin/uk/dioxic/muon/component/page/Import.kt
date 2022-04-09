@@ -7,6 +7,7 @@ import mui.icons.material.Edit
 import mui.icons.material.GetApp
 import mui.icons.material.Refresh
 import mui.material.Box
+import mui.material.IconButtonColor
 import mui.material.Paper
 import react.FC
 import react.Props
@@ -109,12 +110,23 @@ val ImportPage = FC<Props> {
     val rowActions = listOf(
         RowAction(name = "edit", icon = Edit, onClick = ::handleEditClick),
         RowAction(name = "import", icon = GetApp, onClick = ::handleImportClick),
-        RowAction(name = "delete", icon = Delete, onClick = ::handleDeleteClick),
+        RowAction(name = "delete", icon = Delete, onClick = ::handleDeleteClick, iconColor = IconButtonColor.warning),
     )
 
     val toolbarActions = listOf(
-        ToolbarAction(name = "import", icon = GetApp, onClick = ::handleImportClick, requiresSelection = true),
-        ToolbarAction(name = "delete", icon = Delete, onClick = ::handleDeleteClick, requiresSelection = true),
+        ToolbarAction(
+            name = "import",
+            icon = GetApp,
+            onClick = ::handleImportClick,
+            requiresSelection = true
+        ),
+        ToolbarAction(
+            name = "delete",
+            icon = Delete,
+            onClick = ::handleDeleteClick,
+            requiresSelection = true,
+            iconColor = IconButtonColor.error
+        ),
         ToolbarAction(
             name = "refresh",
             icon = Refresh,

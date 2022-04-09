@@ -4,18 +4,17 @@ import csstype.Position
 import csstype.integer
 import csstype.number
 import csstype.px
-import emotion.react.css
 import kotlinx.js.ReadonlyArray
 import mui.icons.material.SvgIconComponent
 import mui.material.*
+import mui.material.styles.Theme
+import mui.material.styles.useTheme
 import mui.system.sx
 import react.FC
 import react.Props
 import react.ReactNode
 import react.dom.html.ReactHTML
 import react.table.Row
-import react.useContext
-import uk.dioxic.muon.context.ThemeContext
 import uk.dioxic.muon.external.chroma
 
 external interface TableToolbarProps : Props {
@@ -39,7 +38,7 @@ private operator fun TableToolbarProps.component3() = actions
 
 val TableToolbar = FC<TableToolbarProps> { (title, selected, actions) ->
 
-    val theme = useContext(ThemeContext)
+    val theme = useTheme<Theme>()
 
     Toolbar {
         sx {

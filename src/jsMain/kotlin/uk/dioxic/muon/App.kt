@@ -1,10 +1,10 @@
 package uk.dioxic.muon
 
-import csstype.Auto
-import csstype.Display
-import csstype.GridTemplateAreas
-import csstype.array
+import csstype.*
 import kotlinx.browser.document
+import mui.material.Backdrop
+import mui.material.CircularProgress
+import mui.material.CircularProgressColor
 import mui.system.Box
 import mui.system.sx
 import react.FC
@@ -21,6 +21,7 @@ import uk.dioxic.muon.component.*
 import uk.dioxic.muon.context.AlertModule
 import uk.dioxic.muon.context.PagesModule
 import uk.dioxic.muon.context.ThemeModule
+import uk.dioxic.muon.hook.useSettings
 
 fun main() {
     createRoot(document.createElement("div").also { document.body!!.appendChild(it) })
