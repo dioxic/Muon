@@ -47,3 +47,37 @@ fun <TData> defaultMutationOptions(queryKey: QueryKey): UseMutationOptions<Unit,
         }
     }
 }
+
+fun <TData : IdType> defaultListMutationOptions(queryKey: QueryKey): UseMutationOptions<Unit, ResponseException, TData, TData> {
+    val queryClient = useQueryClient()
+    val (_, addAlert) = useContext(AlertContext)
+
+    return jso {
+        onMutate = { newValue ->
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            queryClient.cancelQueries(queryKey)
+
+            // Snapshot the previous value
+            val previousValue = queryClient.getQueryData<List<TData>>(queryKey)
+                ?.first { it.id == newValue.id }
+
+            // Optimistically update to the new value
+            queryClient.setQueryData<List<TData>>(queryKey, { it.replace(newValue) }, jso())
+
+            // Set the previous settings value to the context
+            Promise.resolve(previousValue)
+        }
+        onError = { error, _, previousValue ->
+            addAlert(Alert.AlertError("Error saving $queryKey - ${error.response.status.description}"))
+            queryClient.setQueryData<List<TData>>(queryKey, { it.replace(previousValue) }, jso())
+            null
+        }
+    }
+}
+
+fun <T : IdType> List<T>?.replace(replacement: T?) =
+    if (replacement == null || this == null) {
+        emptyList()
+    } else {
+        this.map { item -> if (item.id == replacement.id) replacement else item }
+    }

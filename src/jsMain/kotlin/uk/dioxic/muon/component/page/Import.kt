@@ -8,11 +8,9 @@ import mui.icons.material.GetApp
 import mui.icons.material.Refresh
 import mui.material.Box
 import mui.material.Paper
-import react.FC
-import react.Props
-import react.ReactNode
+import react.*
 import react.table.*
-import react.useMemo
+import uk.dioxic.muon.component.dialog.TrackEditDialog
 import uk.dioxic.muon.component.table.EnhancedTable
 import uk.dioxic.muon.component.table.RowAction
 import uk.dioxic.muon.component.table.ToolbarAction
@@ -28,13 +26,9 @@ import kotlin.time.Duration.Companion.seconds
 
 private val COLUMNS = columns<Track> {
 
-    val editableCellFunction: (CellProps<Track, *>) -> ReactNode =
-        { cellProps -> useMemo { editableCell(cellProps) } }
-
     column<String> {
         header = "Title"
         accessorFunction = { it.title }
-        cellFunction = editableCellFunction
     }
     column<String> {
         header = "Artist"
@@ -81,9 +75,13 @@ private val COLUMNS = columns<Track> {
 val ImportPage = FC<Props> {
     val import = useImport()
     val reloadImport = useReloadImport()
+    val (dialogOpen, setDialogOpen) = useState(false)
+    val (currentTrack, setCurrentTrack) = useState<Track?>(null)
 
     fun handleEditClick(row: Row<Track>) {
         println("handleEdit for $row")
+        setCurrentTrack(row.original)
+        setDialogOpen(true)
     }
 
     fun handleDeleteClick(row: Row<Track>) {
@@ -116,10 +114,15 @@ val ImportPage = FC<Props> {
     val toolbarActions = listOf(
         ToolbarAction(name = "import", icon = GetApp, onClick = ::handleImportClick, requiresSelection = true),
         ToolbarAction(name = "delete", icon = Delete, onClick = ::handleDeleteClick, requiresSelection = true),
-        ToolbarAction(name = "refresh", icon = Refresh, onClick = ::handleRefreshClick, fetchingAnimation = import.isFetching),
+        ToolbarAction(
+            name = "refresh",
+            icon = Refresh,
+            onClick = ::handleRefreshClick,
+            fetchingAnimation = import.isFetching
+        ),
     )
 
-    val table = useTable<Track>(
+    val table = useTable(
         options = jso {
             data = useMemo(import.data) { import.data?.toTypedArray() ?: emptyArray() }
             columns = useMemo { COLUMNS }
@@ -140,6 +143,14 @@ val ImportPage = FC<Props> {
                 this.toolbarActions = toolbarActions
                 selectedRows = tableInstance.selectedFlatRows
             }
+        }
+    }
+
+    if (currentTrack != null) {
+        TrackEditDialog {
+            open = dialogOpen
+            handleClose = { setDialogOpen(false) }
+            track = currentTrack
         }
     }
 
