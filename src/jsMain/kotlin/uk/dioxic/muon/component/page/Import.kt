@@ -110,7 +110,7 @@ val ImportPage = FC<Props> {
     val rowActions = listOf(
         RowAction(name = "edit", icon = Edit, onClick = ::handleEditClick),
         RowAction(name = "import", icon = GetApp, onClick = ::handleImportClick),
-        RowAction(name = "delete", icon = Delete, onClick = ::handleDeleteClick, iconColor = IconButtonColor.warning),
+        RowAction(name = "delete", icon = Delete, onClick = ::handleDeleteClick, iconColor = IconButtonColor.error),
     )
 
     val toolbarActions = listOf(
