@@ -9,7 +9,6 @@ import react.Props
 import react.table.RenderType
 import react.table.Row
 import react.table.TableInstance
-import react.useMemo
 
 external interface EnhancedTableProps : Props {
     var title: String
@@ -75,20 +74,15 @@ val EnhancedTable = FC<EnhancedTableProps> { props ->
             TableBody {
 
                 props.tableInstance.rows.forEach { row ->
-//                    println("${row.id} - ${row.isSelected}")
+                    props.tableInstance.prepareRow(row)
+                    TableRow {
+                        +row.getRowProps()
 
-                    useMemo(row.isSelected, row.state, row.cells) {
-                        println("inside memo")
-                        props.tableInstance.prepareRow(row)
-                        TableRow {
-                            +row.getRowProps()
+                        row.cells.forEach { cell ->
+                            TableCell {
 
-                            row.cells.forEach { cell ->
-                                TableCell {
-
-                                    +cell.getCellProps()
-                                    +cell.render(RenderType.Cell)
-                                }
+                                +cell.getCellProps()
+                                +cell.render(RenderType.Cell)
                             }
                         }
                     }
@@ -97,29 +91,3 @@ val EnhancedTable = FC<EnhancedTableProps> { props ->
         }
     }
 }
-
-//external interface MyTableRowProps : Props {
-//    var row: Row<Any>
-//}
-//
-//val MyTableRow = FC<MyTableRowProps> { props ->
-//    TableRow {
-//
-//        +props.row.getRowProps()
-//
-//        props.row.cells.forEach { cell ->
-//            TableCell {
-//
-//                +cell.getCellProps()
-//                +cell.render(RenderType.Cell)
-//            }
-//        }
-//    }
-//}
-//
-//val MemoizedTableRow = memo(MyTableRow) { prevProp, nextProps ->
-//    println("Memo2: ${JSON.stringify(prevProp.row.cells[0].getCellProps())}" +
-//            "- ${JSON.stringify(prevProp.row.cells[1].getCellProps())} ")
-//    println("Memo: ${nextProps.row.id} - ${prevProp.row.isSelected} -> ${nextProps.row.isSelected}")
-//    prevProp.row.isSelected == nextProps.row.isSelected
-//}
