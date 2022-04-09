@@ -24,19 +24,29 @@ class ImportService(private val settingsRepository: SettingsRepository) {
 
         return dir.walk()
             .filter { it.isAudioFile }
-            .map {
-                try {
-                    it.toTrack()
-                } catch( e: Throwable) {
-                    logger.error("error on ${it.name}")
-                    throw e
-                }
-            }
+            .map(this::toTrack)
             .toList()
     }
 
-    fun updateTrack(path: Path, track: Track) {
+    fun getTrack(f: File): Track {
+        require(f.isAudioFile) { "${f.name} is not an audio file!" }
 
+        return toTrack(f)
     }
+
+    fun updateTrack(f: File, track: Track) {
+        println("updating track...")
+        throw IllegalStateException("blah blah blah")
+    }
+
+    private fun toTrack(f: File) =
+        try {
+            f.toTrack()
+        } catch (e: Throwable) {
+            logger.error("error on ${f.name}")
+            throw e
+        }
+
+
 
 }
