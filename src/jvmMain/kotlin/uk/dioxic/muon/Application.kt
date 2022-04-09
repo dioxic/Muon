@@ -24,7 +24,6 @@ import org.koin.dsl.onClose
 import org.koin.logger.slf4jLogger
 import uk.dioxic.muon.common.Global
 import uk.dioxic.muon.exceptions.IdNotFoundException
-import uk.dioxic.muon.exceptions.MusicImportException
 import uk.dioxic.muon.repository.LuceneRepository
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
@@ -99,9 +98,6 @@ fun Application.plugins() {
     install(StatusPages) {
         exception<IdNotFoundException> { call, cause ->
             call.respondText("file Id [${cause.id}] not found", status = HttpStatusCode.NotFound)
-        }
-        exception<MusicImportException> { call, cause ->
-            call.respond(HttpStatusCode.NotModified, cause.errors)
         }
         exception<IllegalStateException> { call, cause ->
             call.respondText(cause.message ?: "", status = HttpStatusCode.InternalServerError)

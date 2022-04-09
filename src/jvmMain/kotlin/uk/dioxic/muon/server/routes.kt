@@ -9,11 +9,10 @@ import kotlinx.html.*
 import org.koin.core.context.GlobalContext
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
-import uk.dioxic.muon.model.SettingsLoadResponse
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
-import uk.dioxic.muon.route.Routes
+import uk.dioxic.muon.Routes
 import uk.dioxic.muon.service.ImportService
 import uk.dioxic.muon.service.SearchService
 import java.io.File
@@ -55,7 +54,7 @@ fun Routing.settings() {
 
     route(Routes.settings) {
         get {
-            call.respond(SettingsLoadResponse(settingsRepository.get()))
+            call.respond(settingsRepository.get())
         }
         put {
             call.respond(settingsRepository.save(call.receive()))

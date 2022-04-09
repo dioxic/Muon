@@ -1,4 +1,4 @@
-package uk.dioxic.muon.route
+package uk.dioxic.muon
 
 object Routes {
     const val import = "/api/import"

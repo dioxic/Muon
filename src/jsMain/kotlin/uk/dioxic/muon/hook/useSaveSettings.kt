@@ -7,7 +7,7 @@ import react.query.useMutation
 import uk.dioxic.muon.api.Api
 import uk.dioxic.muon.common.QueryKey
 import uk.dioxic.muon.config.Settings
-import uk.dioxic.muon.route.Routes
+import uk.dioxic.muon.Routes
 import uk.dioxic.muon.utils.defaultMutationOptions
 import kotlin.js.Promise
 

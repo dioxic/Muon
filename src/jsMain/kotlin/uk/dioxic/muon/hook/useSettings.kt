@@ -5,8 +5,8 @@ import kotlinx.coroutines.promise
 import react.query.useQuery
 import uk.dioxic.muon.common.QueryKey
 import uk.dioxic.muon.api.Api
-import uk.dioxic.muon.model.SettingsLoadResponse
-import uk.dioxic.muon.route.Routes
+import uk.dioxic.muon.Routes
+import uk.dioxic.muon.config.Settings
 import uk.dioxic.muon.utils.defaultQueryOptions
 
 fun useSettings() =
@@ -18,7 +18,7 @@ fun useSettings() =
 
 private fun readSettings() =
     MainScope().promise {
-        Api.get<SettingsLoadResponse>(Routes.settings).settings
+        Api.get<Settings>(Routes.settings)
     }
 
 
