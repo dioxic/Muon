@@ -141,7 +141,6 @@ val ImportPage = FC<Props> {
             columns = useMemo { COLUMNS }
         },
         useSortBy,
-        usePagination,
         useRowSelect,
         useCheckboxSelect,
         useColumnOrder,
