@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalSerializationApi::class)
-@file:Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
 
 package uk.dioxic.muon.api
 
@@ -13,7 +11,6 @@ import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.window
-import kotlinx.serialization.ExperimentalSerializationApi
 import uk.dioxic.muon.utils.CsrfTokenHandler
 
 val client = HttpClient(Js) {
@@ -59,6 +56,22 @@ object Api {
     suspend inline fun <reified T> post(path: String, data: T): Unit =
         apiRequest {
             method = HttpMethod.Post
+            localUrl(path)
+            contentType(ContentType.Application.Json)
+            setBody(data)
+        }
+
+    suspend inline fun <reified T> put(path: String, data: T): Unit =
+        apiRequest {
+            method = HttpMethod.Put
+            localUrl(path)
+            contentType(ContentType.Application.Json)
+            setBody(data)
+        }
+
+    suspend inline fun <reified T> patch(path: String, data: T): Unit =
+        apiRequest {
+            method = HttpMethod.Patch
             localUrl(path)
             contentType(ContentType.Application.Json)
             setBody(data)
