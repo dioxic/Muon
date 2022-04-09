@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
 
 plugins {
-    kotlin("multiplatform") version "1.6.10"
-    kotlin("plugin.serialization") version "1.6.10"
+    kotlin("multiplatform") version "1.6.20"
+    kotlin("plugin.serialization") version "1.6.20"
 //    alias(libs.plugins.kotlin.serialization)
 //    alias(libs.plugins.axion)
 //    alias(libs.plugins.versions)
@@ -56,10 +56,10 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(kotlin("stdlib-common"))
                 implementation(libs.kotlin.serialization.core)
-                implementation(libs.ktor.client.core)
+                implementation(libs.koin.core)
                 implementation(libs.kotlin.datetime)
+                implementation(libs.kotlin.coroutines.test)
             }
         }
         commonTest {
@@ -86,7 +86,6 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation(libs.kotlin.test)
-                implementation(libs.kotlin.coroutines.test)
                 implementation(libs.assertj)
                 implementation(libs.mockk)
             }
@@ -94,7 +93,6 @@ kotlin {
 
         val jsMain by getting {
             dependencies {
-                implementation(kotlin("stdlib-js"))
                 implementation(libs.bundles.ktorClient)
 
                 implementation(
@@ -105,15 +103,15 @@ kotlin {
 
                 implementation(kotlinw("react"))
                 implementation(kotlinw("react-dom"))
-                implementation(kotlinw("react-css"))
                 implementation(kotlinw("react-query"))
+                implementation(kotlinw("react-table"))
                 implementation(kotlinw("react-router-dom"))
 
+                implementation(kotlinw("emotion"))
                 implementation(kotlinw("mui"))
                 implementation(kotlinw("mui-icons"))
 
-                implementation(npm("@emotion/react", libs.versions.emotion.get()))
-                implementation(npm("@emotion/styled", libs.versions.emotion.get()))
+                implementation(npm("chroma-js", "2.4.2"))
             }
         }
         val jsTest by getting
@@ -185,12 +183,21 @@ tasks.withType<Test> {
 
 tasks.getByName("distZip") {
     dependsOn(tasks.getByName("jsJar"))
-    dependsOn(tasks.getByName("metadataJar"))
+    dependsOn(tasks.getByName("allMetadataJar"))
 }
 
 tasks.getByName("distTar") {
     dependsOn(tasks.getByName("jsJar"))
-    dependsOn(tasks.getByName("metadataJar"))
+    dependsOn(tasks.getByName("allMetadataJar"))
+}
+
+tasks.getByName("jsBrowserDevelopmentWebpack") {
+    dependsOn(tasks.getByName("jsProductionExecutableCompileSync"))
+}
+
+tasks.getByName("jsBrowserProductionWebpack") {
+    dependsOn(tasks.getByName("jsProductionExecutableCompileSync"))
+    dependsOn(tasks.getByName("jsDevelopmentExecutableCompileSync"))
 }
 
 //tasks.withType<ShadowJar> {

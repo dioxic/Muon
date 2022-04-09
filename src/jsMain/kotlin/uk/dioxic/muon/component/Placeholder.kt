@@ -4,6 +4,7 @@ import csstype.*
 import emotion.react.css
 import mui.material.Box
 import mui.material.Typography
+import mui.material.TypographyAlign
 import mui.system.sx
 import react.FC
 import react.Props
@@ -19,8 +20,9 @@ val Placeholder = FC<Props> {
 
         Typography {
             variant = "h6"
+            align = TypographyAlign.center
 
-            +"To start the showcase please select a component"
+            +"Select something to do"
         }
 
         img {

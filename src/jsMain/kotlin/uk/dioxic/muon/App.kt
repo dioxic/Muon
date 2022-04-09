@@ -1,16 +1,16 @@
 package uk.dioxic.muon
 
-import csstype.Auto
-import csstype.Display
-import csstype.GridTemplateAreas
-import csstype.array
+import csstype.*
 import kotlinx.browser.document
+import mui.material.Backdrop
+import mui.material.CircularProgress
+import mui.material.CircularProgressColor
 import mui.system.Box
 import mui.system.sx
 import react.FC
 import react.Props
 import react.create
-import react.dom.render
+import react.dom.client.createRoot
 import react.query.QueryClient
 import react.query.QueryClientProvider
 import react.router.dom.HashRouter
@@ -21,12 +21,11 @@ import uk.dioxic.muon.component.*
 import uk.dioxic.muon.context.AlertModule
 import uk.dioxic.muon.context.PagesModule
 import uk.dioxic.muon.context.ThemeModule
+import uk.dioxic.muon.hook.useSettings
 
 fun main() {
-    render(
-        element = App.create(),
-        container = document.createElement("div").also { document.body!!.appendChild(it) },
-    )
+    createRoot(document.createElement("div").also { document.body!!.appendChild(it) })
+        .render(App.create())
 }
 
 private val App = FC<Props> {
@@ -63,17 +62,4 @@ private val App = FC<Props> {
     }
 }
 
-//private val defaultQueryOptions: UseQueryOptions<*, Error, *, *> =
-//    jso {
-//        refetchOnWindowFocus = false
-//    }
-
 private val queryClient = QueryClient()
-
-//jso {
-//    defaultOptions = jso { queries = null }
-//    defaultOptions = jso {
-//        set
-//        queries = defaultQueryOptions
-//    }
-//})

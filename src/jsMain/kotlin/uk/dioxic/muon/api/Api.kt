@@ -1,18 +1,15 @@
-@file:OptIn(ExperimentalSerializationApi::class)
-@file:Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
-
 package uk.dioxic.muon.api
 
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.js.*
 import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.window
-import kotlinx.serialization.ExperimentalSerializationApi
 import uk.dioxic.muon.utils.CsrfTokenHandler
 
 val client = HttpClient(Js) {
@@ -22,6 +19,7 @@ val client = HttpClient(Js) {
     defaultRequest {
         port = 8080
     }
+    expectSuccess = true
 }
 
 fun HttpRequestBuilder.localUrl(path: String) = url {
@@ -54,9 +52,25 @@ object Api {
             formData(formBuilder)
         }
 
-    suspend inline fun <reified T> post(path: String, data: T): Unit =
+    suspend inline fun <reified T> post(path: String, data: T): T =
         apiRequest {
             method = HttpMethod.Post
+            localUrl(path)
+            contentType(ContentType.Application.Json)
+            setBody(data)
+        }
+
+    suspend inline fun <reified T> put(path: String, data: T): T =
+        apiRequest {
+            method = HttpMethod.Put
+            localUrl(path)
+            contentType(ContentType.Application.Json)
+            setBody(data)
+        }
+
+    suspend inline fun <reified T> patch(path: String, data: T): T =
+        apiRequest {
+            method = HttpMethod.Patch
             localUrl(path)
             contentType(ContentType.Application.Json)
             setBody(data)

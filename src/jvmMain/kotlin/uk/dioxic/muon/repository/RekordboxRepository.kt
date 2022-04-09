@@ -2,6 +2,7 @@ package uk.dioxic.muon.repository
 
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDateTime
+import org.apache.logging.log4j.LogManager
 import uk.dioxic.muon.exceptions.IdNotFoundException
 import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.Track
@@ -9,10 +10,12 @@ import java.io.Closeable
 import java.nio.file.Path
 import java.sql.DriverManager
 import java.sql.ResultSet
+import java.sql.Statement
 import kotlin.io.path.name
 
 
-class RekordboxRepository(private val settingsRepository: SettingsRepository) : Closeable {
+class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
+    private val logger = LogManager.getLogger()
     private val cipherKey = "402fd482c38817c35ffa8ffb8c7d93143b749e7d315df7a81732a1ff43608497"
     private val baseQuery = """
                     SELECT
@@ -52,7 +55,7 @@ class RekordboxRepository(private val settingsRepository: SettingsRepository) : 
                     query += "\nWHERE track.created_at > '${oldestImportDate}'"
                 }
 
-                val rs = stmt.executeQuery(query)
+                val rs = stmt.executeAndLogQuery(query)
 
                 while (rs.next()) {
                     emit(rs.toTrack())
@@ -62,7 +65,7 @@ class RekordboxRepository(private val settingsRepository: SettingsRepository) : 
 
     fun getTrackById(id: String): Track {
         conn.createStatement().use { stmt ->
-            val rs = stmt.executeQuery("$baseQuery\nWHERE track.id = $id")
+            val rs = stmt.executeAndLogQuery("$baseQuery\nWHERE track.id = $id")
             if (rs.next()) {
                 return rs.toTrack()
             } else {
@@ -75,7 +78,7 @@ class RekordboxRepository(private val settingsRepository: SettingsRepository) : 
         conn.createStatement().use { stmt ->
             flow {
                 ids.forEach {
-                    val rs = stmt.executeQuery("$baseQuery\nWHERE track.id = $it")
+                    val rs = stmt.executeAndLogQuery("$baseQuery\nWHERE track.id = $it")
                     if (rs.next()) {
                         emit(rs.toTrack())
                     }
@@ -85,6 +88,11 @@ class RekordboxRepository(private val settingsRepository: SettingsRepository) : 
 
     override fun close() {
         conn.close()
+    }
+
+    private fun Statement.executeAndLogQuery(sql: String): ResultSet {
+        logger.debug(sql)
+        return executeQuery(sql)
     }
 
     private fun ResultSet.toTrack(): Track {

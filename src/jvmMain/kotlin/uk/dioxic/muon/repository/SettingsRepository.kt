@@ -18,10 +18,11 @@ class SettingsRepository(path: Path) {
 
     fun get() = settings
 
-    fun save(settings: Settings) {
+    fun save(settings: Settings): Settings {
         log.debug("Saving settings")
         Files.writeString(settingsFile, Json.encodeToString(settings))
         this.settings = settings
+        return settings
     }
 
     private fun loadSettings(): Settings {

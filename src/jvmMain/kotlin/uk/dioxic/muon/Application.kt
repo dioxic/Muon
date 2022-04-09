@@ -6,14 +6,16 @@ import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
-import io.ktor.server.engine.*
 import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
-import io.ktor.server.plugins.*
+import io.ktor.server.plugins.cachingheaders.*
+import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.compression.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
-import kotlinx.coroutines.FlowPreview
 import kotlinx.serialization.json.Json
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.singleOf
@@ -22,16 +24,15 @@ import org.koin.dsl.onClose
 import org.koin.logger.slf4jLogger
 import uk.dioxic.muon.common.Global
 import uk.dioxic.muon.exceptions.IdNotFoundException
-import uk.dioxic.muon.exceptions.MusicImportException
 import uk.dioxic.muon.repository.LuceneRepository
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.server.*
+import uk.dioxic.muon.server.plugins.CsrfPlugin
+import uk.dioxic.muon.server.plugins.KoinPlugin
 import uk.dioxic.muon.service.ImportService
 import uk.dioxic.muon.service.SearchService
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.time.Duration.Companion.days
-import kotlin.time.ExperimentalTime
 
 private val appModule = module {
     single { LuceneRepository(Global.homePath.resolve("index")) } onClose {
@@ -47,13 +48,10 @@ private val appModule = module {
 
 fun main(args: Array<String>) {
     System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
-    embeddedServer(Netty, commandLineEnvironment(args)).start(wait = true)
+    EngineMain.main(args)
 }
 
-@FlowPreview
-@ExperimentalTime
-@ExperimentalPathApi
-fun Application.main() {
+fun Application.plugins() {
     val env = environment.config.property("ktor.environment").getString()
     val isDevelopment = env == "dev"
 
@@ -63,16 +61,16 @@ fun Application.main() {
             prettyPrint = isDevelopment
         })
     }
-    install(CORS) {
+//    install(CORS) {
 //        host("0.0.0.0:5000")
-        anyHost()
-        header(HttpHeaders.ContentType)
-    }
+//        anyHost()
+//        header(HttpHeaders.ContentType)
+//    }
     install(Compression) {
         gzip()
     }
     install(CachingHeaders) {
-        options { outgoingContent ->
+        options { _, outgoingContent ->
             if (!isDevelopment) {
                 when (outgoingContent.contentType?.withoutParameters()) {
                     ContentType.Image.XIcon, ContentType.Image.PNG, ContentType.Image.JPEG,
@@ -85,27 +83,31 @@ fun Application.main() {
             }
         }
     }
-    install(Koin) {
-        slf4jLogger(level = Level.ERROR)
-        modules(appModule)
+    install(KoinPlugin) {
+        appDeclaration = {
+            slf4jLogger(level = Level.ERROR)
+            modules(appModule)
+        }
     }
     install(Sessions) {
         apiSessionCookie(isDevelopment)
     }
-    install(Csrf) {
+    install(CsrfPlugin) {
         validateHeader("X-CSRF") { it.call.getCsrfToken() }
     }
     install(StatusPages) {
         exception<IdNotFoundException> { call, cause ->
             call.respondText("file Id [${cause.id}] not found", status = HttpStatusCode.NotFound)
         }
-        exception<MusicImportException> { call, cause ->
-            call.respond(HttpStatusCode.NotModified, cause.errors)
-        }
         exception<IllegalStateException> { call, cause ->
-            call.respondText(cause.message ?: "", status = HttpStatusCode.BadRequest)
+            call.respondText(cause.message ?: "", status = HttpStatusCode.InternalServerError)
         }
     }
+
+}
+
+fun Application.routes() {
+    val env = environment.config.property("ktor.environment").getString()
 
     routing {
         settings()

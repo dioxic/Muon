@@ -1,24 +1,21 @@
 package uk.dioxic.muon.server
 
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.util.*
-import kotlinx.coroutines.delay
 import kotlinx.html.*
 import org.koin.core.context.GlobalContext
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
-import uk.dioxic.muon.model.SettingsLoadResponse
+import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
-import uk.dioxic.muon.route.Routes
+import uk.dioxic.muon.Routes
 import uk.dioxic.muon.service.ImportService
 import uk.dioxic.muon.service.SearchService
-import kotlin.io.path.ExperimentalPathApi
+import java.io.File
 
 fun Routing.tracks() {
     val searchService by inject<SearchService>()
@@ -52,18 +49,15 @@ fun Routing.lucene() {
     }
 }
 
-@ExperimentalPathApi
 fun Routing.settings() {
     val settingsRepository by inject<SettingsRepository>()
 
     route(Routes.settings) {
         get {
-            delay(1000)
-            call.respond(SettingsLoadResponse(settingsRepository.get()))
+            call.respond(settingsRepository.get())
         }
-        post {
-            settingsRepository.save(call.receive())
-            call.respond(HttpStatusCode.OK)
+        put {
+            call.respond(settingsRepository.save(call.receive()))
         }
     }
 }
@@ -73,25 +67,11 @@ fun Routing.import() {
 
     route(Routes.import) {
         get {
-            val tracks = importService.getTracks()
-            call.updateApiSession { currentSession ->
-                currentSession.copy(importFileLocations = tracks.associate { it.id to it.path.encodeBase64() })
-            }
-            call.respond(tracks)
+            call.respond(importService.getTracks())
         }
-        patch("/{id}") {
-            val session = call.getUserSession()
-            val trackId = call.parameters["id"]
-            val path = session.importFileLocations[trackId]
-        }
-        get("/retrieve") {
-            val userSession = call.getUserSession()
-            if (userSession.importFileLocations.isNotEmpty()) {
-                val decodedImportFiles = userSession.importFileLocations.mapValues { (_, v) -> v.decodeBase64String() }
-                call.respondText("Import files: $decodedImportFiles")
-            } else {
-                call.respondText("Your import list is empty.")
-            }
+        patch {
+            val requestTrack = call.receive<Track>()
+            call.respond(importService.updateTrack(File(requestTrack.path), requestTrack))
         }
     }
 }

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Track(
-    val id: String,
+    override val id: String,
     val title: String,
     val artist: String,
     val genre: String,
@@ -18,4 +18,8 @@ data class Track(
     val year: String,
     val fileSize: Int,
     val type: FileType
-)
+): IdType
+
+interface IdType {
+    val id: String
+}

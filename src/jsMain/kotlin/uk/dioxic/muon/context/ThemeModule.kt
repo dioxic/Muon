@@ -11,11 +11,24 @@ import mui.material.styles.ThemeProvider
 import mui.system.sx
 import react.FC
 import react.PropsWithChildren
+import react.createContext
 import uk.dioxic.muon.common.Themes
+import uk.dioxic.muon.hook.useSaveSettings
 import uk.dioxic.muon.hook.useSettings
+
+val ThemeContext = createContext<() -> Unit>()
 
 val ThemeModule = FC<PropsWithChildren> { props ->
     val settings = useSettings()
+    val saveSettings = useSaveSettings()
+
+    fun toggleColorMode() {
+        saveSettings(
+            settings.data!!.copy(
+                theme = if (settings.data!!.theme == "dark") "light" else "dark"
+            )
+        )
+    }
 
     Backdrop {
         open = settings.isLoading
@@ -30,11 +43,13 @@ val ThemeModule = FC<PropsWithChildren> { props ->
     }
 
     if (settings.isSuccess) {
-        ThemeProvider {
-            this.theme = settings.data?.let { getTheme(it.theme) } ?: Themes.Light
+        ThemeContext.Provider(::toggleColorMode) {
+            ThemeProvider {
+                this.theme = settings.data?.let { getTheme(it.theme) } ?: Themes.Light
 
-            CssBaseline()
-            +props.children
+                CssBaseline()
+                +props.children
+            }
         }
     }
 }
