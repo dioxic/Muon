@@ -42,7 +42,7 @@ val TableToolbar = FC<TableToolbarProps> { (title, selected, actions) ->
     val theme = useContext(ThemeContext)
 
     Toolbar {
-        css {
+        sx {
             if (selected.isNotEmpty()) {
                 backgroundColor = chroma(theme.palette.primary.main)
                     .alpha(theme.palette.action.activatedOpacity)
