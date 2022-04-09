@@ -56,7 +56,6 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(kotlin("stdlib-common"))
                 implementation(libs.kotlin.serialization.core)
                 implementation(libs.ktor.client.core)
                 implementation(libs.kotlin.datetime)
@@ -94,7 +93,6 @@ kotlin {
 
         val jsMain by getting {
             dependencies {
-                implementation(kotlin("stdlib-js"))
                 implementation(libs.bundles.ktorClient)
 
                 implementation(
