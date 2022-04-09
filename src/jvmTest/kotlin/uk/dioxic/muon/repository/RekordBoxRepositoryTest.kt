@@ -3,7 +3,9 @@ package uk.dioxic.muon.repository
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
@@ -50,10 +52,9 @@ class RekordBoxRepositoryTest {
     @Test
     @DisplayName("Tracks by Id")
     fun getTracksById() {
-        val ids = arrayOf("104605110", "127296874")
+        val ids = arrayOf("153668562", "75468231")
         runTest {
             val actual = rekordboxRepository.getTracksById(ids.toList())
-                .onEach { println(it) }
                 .map { track -> track.id }
                 .toList(mutableListOf())
 
