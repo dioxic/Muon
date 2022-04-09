@@ -31,7 +31,7 @@ fun kotlinw(target: String): String =
 kotlin {
     jvm {
         compilations.all {
-            kotlinOptions.jvmTarget = "13"
+            kotlinOptions.jvmTarget = "17"
         }
         withJava()
         testRuns["test"].executionTask.configure {
