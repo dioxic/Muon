@@ -1,4 +1,4 @@
-package uk.dioxic.muon.rekordbox
+package uk.dioxic.muon.repository
 
 import io.mockk.every
 import io.mockk.mockk
@@ -9,30 +9,29 @@ import kotlinx.datetime.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import uk.dioxic.muon.config.Settings
-import uk.dioxic.muon.repository.RekordboxRepository
-import uk.dioxic.muon.repository.SettingsRepository
 import kotlin.test.Test
 
 @ExperimentalCoroutinesApi
 class RekordBoxRepositoryTest {
 
+    private val settings = Settings.DEFAULT.copy(
+        rekordboxDatabase = RekordBoxRepositoryTest::class.java.getResource("/rekordbox.db")?.file
+    )
+
     private val settingsRepository = mockk<SettingsRepository> {
-        every { get() } returns Settings.DEFAULT.copy(
-            rekordboxDatabase = "J:\\rekordbox\\master.backup3.db"
-        )
+        every { get() } returns settings
     }
     private val rekordboxRepository = RekordboxRepository(settingsRepository)
 
     @Test
     @DisplayName("Track count")
     fun getTrackCount() {
-        every { settingsRepository.get() } returns Settings.DEFAULT.copy(
-            rekordboxDatabase = "J:\\rekordbox\\master.backup3.db"
-        )
+        every { settingsRepository.get() } returns settings
+
         runTest {
             val count = rekordboxRepository.getTracks()
                 .count()
-            println(count)
+            assertThat(count).isEqualTo(65)
         }
     }
 
@@ -40,11 +39,11 @@ class RekordBoxRepositoryTest {
     @DisplayName("Tracks filter by updateDate")
     fun takeSomeTracks() {
         runTest {
-            rekordboxRepository.getTracks(LocalDateTime(2021, 1, 1, 0, 0, 0))
-                .take(20)
-                .collect {
-                    println(it)
-                }
+            val count = rekordboxRepository
+                .getTracks(LocalDateTime(2022, 4, 9, 0, 0, 0))
+                .count()
+
+            assertThat(count).isEqualTo(3)
         }
     }
 

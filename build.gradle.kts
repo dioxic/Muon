@@ -60,6 +60,7 @@ kotlin {
                 implementation(libs.kotlin.serialization.core)
                 implementation(libs.ktor.client.core)
                 implementation(libs.kotlin.datetime)
+                implementation(libs.kotlin.coroutines.test)
             }
         }
         commonTest {
@@ -86,7 +87,6 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation(libs.kotlin.test)
-                implementation(libs.kotlin.coroutines.test)
                 implementation(libs.assertj)
                 implementation(libs.mockk)
             }
