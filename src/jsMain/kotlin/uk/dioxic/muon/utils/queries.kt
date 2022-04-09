@@ -22,7 +22,7 @@ fun <TData> defaultQueryOptions(queryKey: QueryKey): UseQueryOptions<TData, Resp
     }
 }
 
-fun <TData> defaultMutationOptions(queryKey: QueryKey): UseMutationOptions<Unit, ResponseException, TData, TData> {
+fun <TData> defaultMutationOptions(queryKey: QueryKey): UseMutationOptions<TData, ResponseException, TData, TData> {
     val queryClient = useQueryClient()
     val (_, addAlert) = useContext(AlertContext)
 
@@ -45,10 +45,14 @@ fun <TData> defaultMutationOptions(queryKey: QueryKey): UseMutationOptions<Unit,
             queryClient.setQueryData<TData>(queryKey, { previousValue!! }, jso())
             null
         }
+        onSuccess = { newValue, _, _ ->
+            queryClient.setQueryData<TData>(queryKey, { newValue }, jso())
+            null
+        }
     }
 }
 
-fun <TData : IdType> defaultListMutationOptions(queryKey: QueryKey): UseMutationOptions<Unit, ResponseException, TData, TData> {
+fun <TData : IdType> defaultListMutationOptions(queryKey: QueryKey): UseMutationOptions<TData, ResponseException, TData, TData> {
     val queryClient = useQueryClient()
     val (_, addAlert) = useContext(AlertContext)
 
@@ -70,6 +74,10 @@ fun <TData : IdType> defaultListMutationOptions(queryKey: QueryKey): UseMutation
         onError = { error, _, previousValue ->
             addAlert(Alert.AlertError("Error saving $queryKey - ${error.response.status.description}"))
             queryClient.setQueryData<List<TData>>(queryKey, { it.replace(previousValue) }, jso())
+            null
+        }
+        onSuccess = { newValue, _, _ ->
+            queryClient.setQueryData<List<TData>>(queryKey, { it.replace(newValue) }, jso())
             null
         }
     }

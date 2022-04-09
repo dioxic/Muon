@@ -81,7 +81,6 @@ val ImportPage = FC<Props> {
     val (currentTrack, setCurrentTrack) = useState<Track?>(null)
 
     fun handleEditClick(row: Row<Track>) {
-        println("handleEdit for $row")
         setCurrentTrack(row.original)
         setDialogOpen(true)
     }

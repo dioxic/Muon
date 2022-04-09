@@ -1,4 +1,3 @@
-
 package uk.dioxic.muon.api
 
 import io.ktor.client.*
@@ -53,7 +52,7 @@ object Api {
             formData(formBuilder)
         }
 
-    suspend inline fun <reified T> post(path: String, data: T): Unit =
+    suspend inline fun <reified T> post(path: String, data: T): T =
         apiRequest {
             method = HttpMethod.Post
             localUrl(path)
@@ -61,7 +60,7 @@ object Api {
             setBody(data)
         }
 
-    suspend inline fun <reified T> put(path: String, data: T): Unit =
+    suspend inline fun <reified T> put(path: String, data: T): T =
         apiRequest {
             method = HttpMethod.Put
             localUrl(path)
@@ -69,7 +68,7 @@ object Api {
             setBody(data)
         }
 
-    suspend inline fun <reified T> patch(path: String, data: T): Unit =
+    suspend inline fun <reified T> patch(path: String, data: T): T =
         apiRequest {
             method = HttpMethod.Patch
             localUrl(path)

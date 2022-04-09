@@ -83,8 +83,27 @@ private fun getArtistAndTitleFromFilename(filename: String): Pair<String, String
     return Pair("", "")
 }
 
+fun File.updateTags(track: Track) {
+    require(this.exists()) { "File must exist!" }
+    require(this.isAudioFile) { "Require an audio file!" }
+    val audioFile = AudioFileIO.read(this)
+
+    audioFile.tagOrCreateDefault.apply {
+        album = track.album
+        artist = track.artist
+        title = track.title
+        comment = track.comment
+        genre = track.genre
+        lyricist = track.lyricist
+        year = track.year
+    }
+
+    audioFile.commit()
+}
+
 fun File.toTrack(): Track {
-    require(this.isAudioFile)
+    require(this.exists()) { "File must exist!" }
+    require(this.isAudioFile) { "Require an audio file!" }
     val audioFile = AudioFileIO.read(this)
     val (artist, title) = getArtistAndTitleFromFilename(this.nameWithoutExtension)
 

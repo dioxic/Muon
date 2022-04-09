@@ -3,10 +3,13 @@ package uk.dioxic.muon.service
 import org.apache.logging.log4j.LogManager
 import uk.dioxic.muon.import.isAudioFile
 import uk.dioxic.muon.import.toTrack
+import uk.dioxic.muon.import.updateTags
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.repository.SettingsRepository
 import java.io.File
-import java.nio.file.Path
+import java.nio.file.Files
+import kotlin.io.path.extension
+import kotlin.io.path.pathString
 
 class ImportService(private val settingsRepository: SettingsRepository) {
 
@@ -34,9 +37,20 @@ class ImportService(private val settingsRepository: SettingsRepository) {
         return toTrack(f)
     }
 
-    fun updateTrack(f: File, track: Track) {
-        println("updating track...")
-        throw IllegalStateException("blah blah blah")
+    fun updateTrack(f: File, track: Track): Track {
+        logger.info("updating tags for ${track.path}")
+
+        f.updateTags(track)
+
+        // rename file
+        if (f.nameWithoutExtension != track.filename) {
+            logger.info("renaming filename for ${track.path}")
+            val originalPath = f.toPath()
+            val newPath = originalPath.parent.resolve("${track.filename}.${originalPath.extension}")
+            Files.move(originalPath, newPath)
+            return track.copy(path = newPath.pathString)
+        }
+        return track
     }
 
     private fun toTrack(f: File) =
@@ -46,7 +60,6 @@ class ImportService(private val settingsRepository: SettingsRepository) {
             logger.error("error on ${f.name}")
             throw e
         }
-
 
 
 }
