@@ -1,6 +1,5 @@
 package uk.dioxic.muon.component.page
 
-import kotlinx.js.ReadonlyArray
 import kotlinx.js.jso
 import mui.icons.material.Delete
 import mui.icons.material.Edit
@@ -16,12 +15,13 @@ import react.useMemo
 import react.useState
 import uk.dioxic.muon.component.dialog.TrackEditDialog
 import uk.dioxic.muon.component.table.EnhancedTable
-import uk.dioxic.muon.component.table.RowAction
-import uk.dioxic.muon.component.table.ToolbarAction
+import uk.dioxic.muon.component.table.actions.RowAction
+import uk.dioxic.muon.component.table.actions.ToolbarAction
 import uk.dioxic.muon.component.table.plugin.useCheckboxSelect
 import uk.dioxic.muon.component.table.plugin.useRowActions
-import uk.dioxic.muon.hook.useImport
-import uk.dioxic.muon.hook.useReloadImport
+import uk.dioxic.muon.hook.useImportDelete
+import uk.dioxic.muon.hook.useImportFetch
+import uk.dioxic.muon.hook.useImportReload
 import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.Track
 import kotlin.time.Duration.Companion.seconds
@@ -76,8 +76,9 @@ private val COLUMNS = columns<Track> {
 }
 
 val ImportPage = FC<Props> {
-    val import = useImport()
-    val reloadImport = useReloadImport()
+    val tracks = useImportFetch()
+    val reload = useImportReload()
+    val delete = useImportDelete()
     val (dialogOpen, setDialogOpen) = useState(false)
     val (currentTrack, setCurrentTrack) = useState<Track?>(null)
 
@@ -86,25 +87,17 @@ val ImportPage = FC<Props> {
         setDialogOpen(true)
     }
 
-    fun handleDeleteClick(row: Row<Track>) {
-        println("handleDelete for $row")
+    fun handleDeleteClick(vararg rows: Row<Track>) {
+        rows.forEach { delete(it.original) }
     }
 
-    fun handleDeleteClick(selected: ReadonlyArray<Row<*>>) {
-        println("handleDelete for $selected")
-    }
-
-    fun handleImportClick(row: Row<Track>) {
-        println("handleImport for $row")
-    }
-
-    fun handleImportClick(selected: ReadonlyArray<Row<*>>) {
-        println("handleImport for $selected")
+    fun handleImportClick(vararg rows: Row<Track>) {
+        println("handleImport for $rows")
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun handleRefreshClick(selected: ReadonlyArray<Row<*>>) {
-        reloadImport()
+    fun handleRefreshClick(vararg rows: Row<Track>) {
+        reload()
     }
 
     val rowActions = listOf(
@@ -131,13 +124,13 @@ val ImportPage = FC<Props> {
             name = "refresh",
             icon = Refresh,
             onClick = ::handleRefreshClick,
-            fetchingAnimation = import.isFetching
+            fetchingAnimation = tracks.isFetching
         ),
     )
 
     val table = useTable(
         options = jso {
-            data = useMemo(import.data) { import.data?.toTypedArray() ?: emptyArray() }
+            data = useMemo(tracks.data) { tracks.data?.toTypedArray() ?: emptyArray() }
             columns = useMemo { COLUMNS }
         },
         useSortBy,
@@ -151,7 +144,7 @@ val ImportPage = FC<Props> {
         Paper {
             EnhancedTable {
                 title = "Import Table"
-                tableInstance = table.unsafeCast<TableInstance<Any>>()
+                tableInstance = table
                 this.toolbarActions = toolbarActions
                 selectedRows = tableInstance.selectedFlatRows
             }

@@ -4,6 +4,7 @@ import csstype.Display
 import kotlinx.js.jso
 import mui.material.Box
 import mui.material.IconButton
+import mui.material.Size
 import mui.material.Tooltip
 import mui.system.sx
 import react.FC
@@ -14,7 +15,7 @@ import react.dom.html.ReactHTML
 import react.table.PluginHook
 import react.table.SimpleColumn
 import uk.dioxic.muon.component.table.CellType
-import uk.dioxic.muon.component.table.RowAction
+import uk.dioxic.muon.component.table.actions.RowAction
 
 fun <T: Any> useRowActions(actions: List<RowAction<T>>) = PluginHook<T> {
 
@@ -39,7 +40,7 @@ fun <T: Any> useRowActions(actions: List<RowAction<T>>) = PluginHook<T> {
                                 action.iconColor?.let {
                                     color = it
                                 }
-                                size = action.size
+                                size = Size.small
                                 onClick = { event ->
                                     event.stopPropagation()
                                     action.onClick(cell.row)

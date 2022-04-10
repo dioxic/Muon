@@ -37,6 +37,24 @@ class ImportService(private val settingsRepository: SettingsRepository) {
         return toTrack(f)
     }
 
+    fun importTrack(track: Track) {
+        logger.info("importing track ${track.path}")
+
+        val settings = settingsRepository.get()
+        val file = File(track.path)
+
+        require(file.isFile) { "${track.path} is not a file!" }
+
+        val originalPath = file.toPath()
+
+        requireNotNull(settings.importPath) { "import path is not set!" }
+
+        val importDir = Path(settings.importPath)
+        val newPath = importDir.resolve(originalPath.fileName)
+
+        Files.move(originalPath, newPath)
+    }
+
     fun deleteTrack(track: Track) {
         logger.info("deleting track ${track.path}")
 

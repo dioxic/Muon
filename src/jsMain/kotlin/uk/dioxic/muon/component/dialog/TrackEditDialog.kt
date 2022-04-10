@@ -11,7 +11,7 @@ import react.dom.html.ButtonType
 import react.dom.html.InputType
 import react.dom.html.ReactHTML.form
 import react.dom.onChange
-import uk.dioxic.muon.hook.useSaveTrack
+import uk.dioxic.muon.hook.useImportSave
 import uk.dioxic.muon.model.Track
 
 external interface TrackDialogProps : Props {
@@ -21,7 +21,7 @@ external interface TrackDialogProps : Props {
 }
 
 val TrackEditDialog = FC<TrackDialogProps> { props ->
-    val saveTrack = useSaveTrack()
+    val saveTrack = useImportSave()
     var track = props.track.copy()
 
     Dialog {

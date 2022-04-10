@@ -5,7 +5,6 @@ import csstype.integer
 import csstype.number
 import csstype.px
 import kotlinx.js.ReadonlyArray
-import mui.icons.material.SvgIconComponent
 import mui.material.*
 import mui.material.styles.Theme
 import mui.material.styles.useTheme
@@ -15,28 +14,22 @@ import react.Props
 import react.ReactNode
 import react.dom.html.ReactHTML
 import react.table.Row
+import uk.dioxic.muon.component.table.actions.ToolbarAction
 import uk.dioxic.muon.external.chroma
+import uk.dioxic.muon.model.Track
 
-external interface TableToolbarProps : Props {
+external interface TableToolbarProps<T: Any> : Props {
     var title: String
-    var selected: ReadonlyArray<Row<*>>
-    var actions: List<ToolbarAction>
+    var selected: ReadonlyArray<Row<T>>
+    var actions: List<ToolbarAction<T>>
 }
 
-data class ToolbarAction(
-    val name: String,
-    val icon: SvgIconComponent,
-    val iconColor: IconButtonColor? = null,
-    val requiresSelection: Boolean = false,
-    val onClick: (ReadonlyArray<Row<*>>) -> Unit,
-    val fetchingAnimation: Boolean = false,
-)
+// TODO use proper types when wrapper supports it - https://github.com/JetBrains/kotlin-wrappers/issues/1129
+private operator fun TableToolbarProps<Track>.component1() = title
+private operator fun TableToolbarProps<Track>.component2() = selected
+private operator fun TableToolbarProps<Track>.component3() = actions
 
-private operator fun TableToolbarProps.component1() = title
-private operator fun TableToolbarProps.component2() = selected
-private operator fun TableToolbarProps.component3() = actions
-
-val TableToolbar = FC<TableToolbarProps> { (title, selected, actions) ->
+val TableToolbar = FC<TableToolbarProps<Track>> { (title, selected, actions) ->
 
     val theme = useTheme<Theme>()
 

@@ -13,14 +13,14 @@ import react.FC
 import react.PropsWithChildren
 import react.createContext
 import uk.dioxic.muon.common.Themes
-import uk.dioxic.muon.hook.useSaveSettings
-import uk.dioxic.muon.hook.useSettings
+import uk.dioxic.muon.hook.useSettingsFetch
+import uk.dioxic.muon.hook.useSettingsSave
 
 val ThemeContext = createContext<() -> Unit>()
 
 val ThemeModule = FC<PropsWithChildren> { props ->
-    val settings = useSettings()
-    val saveSettings = useSaveSettings()
+    val settings = useSettingsFetch()
+    val saveSettings = useSettingsSave()
 
     fun toggleColorMode() {
         saveSettings(

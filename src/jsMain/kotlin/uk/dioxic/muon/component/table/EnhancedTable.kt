@@ -9,15 +9,18 @@ import react.Props
 import react.table.RenderType
 import react.table.Row
 import react.table.TableInstance
+import uk.dioxic.muon.component.table.actions.ToolbarAction
+import uk.dioxic.muon.model.Track
 
-external interface EnhancedTableProps : Props {
+external interface EnhancedTableProps<T: Any> : Props {
     var title: String
-    var tableInstance: TableInstance<Any>
-    var toolbarActions: List<ToolbarAction>
-    var selectedRows: ReadonlyArray<Row<Any>>
+    var tableInstance: TableInstance<T>
+    var toolbarActions: List<ToolbarAction<T>>
+    var selectedRows: ReadonlyArray<Row<T>>
 }
 
-val EnhancedTable = FC<EnhancedTableProps> { props ->
+// TODO use proper types when wrapper supports it - https://github.com/JetBrains/kotlin-wrappers/issues/1129
+val EnhancedTable = FC<EnhancedTableProps<Track>> { props ->
 
     TableContainer {
         TableToolbar {

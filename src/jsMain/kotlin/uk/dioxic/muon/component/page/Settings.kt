@@ -10,7 +10,7 @@ import mui.system.sx
 import react.FC
 import react.Props
 import react.dom.html.ReactHTML
-import uk.dioxic.muon.hook.useSettings
+import uk.dioxic.muon.hook.useSettingsFetch
 
 private val json = Json {
     prettyPrint = true
@@ -18,8 +18,7 @@ private val json = Json {
 }
 
 val SettingsPage = FC<Props> {
-
-    val settings = useSettings()
+    val settings = useSettingsFetch()
 
     Box {
         Paper {

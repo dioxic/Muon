@@ -17,7 +17,7 @@ data class Settings(
             theme = "dark",
             rekordboxDatabase = "J:\\rekordbox\\master.db", //TODO remove this
             importPath = "J:\\import\\complete",  //TODO remove this
-            deletePath = "J:\\import\\deleted",
+            deletePath = "J:\\import\\deleted",  //TODO remove this
             lastRekordboxRefresh = LocalDateTime(1985, 1, 1, 0, 0, 0),
         )
     }

@@ -52,7 +52,7 @@ fun <TData> defaultMutationOptions(queryKey: QueryKey): UseMutationOptions<TData
     }
 }
 
-fun <TData : IdType> defaultListMutationOptions(queryKey: QueryKey): UseMutationOptions<TData, ResponseException, TData, TData> {
+fun <TData : IdType> listModifyMutationOptions(queryKey: QueryKey): UseMutationOptions<TData, ResponseException, TData, TData> {
     val queryClient = useQueryClient()
     val (_, addAlert) = useContext(AlertContext)
 
@@ -83,9 +83,54 @@ fun <TData : IdType> defaultListMutationOptions(queryKey: QueryKey): UseMutation
     }
 }
 
+fun <TData : IdType> listDeleteMutationOptions(queryKey: QueryKey): UseMutationOptions<TData, ResponseException, TData, TData> {
+    val queryClient = useQueryClient()
+    val (_, addAlert) = useContext(AlertContext)
+
+    return jso {
+        onMutate = { newValue ->
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            queryClient.cancelQueries(queryKey)
+
+            // Snapshot the previous value
+            val previousValue = queryClient.getQueryData<List<TData>>(queryKey)
+                ?.first { it.id == newValue.id }
+
+            // Optimistically remove the list element
+            queryClient.setQueryData<List<TData>>(queryKey, { it - newValue }, jso())
+
+            // Set the previous settings value to the context
+            Promise.resolve(previousValue)
+        }
+        onError = { error, _, previousValue ->
+            addAlert(Alert.AlertError("Error deleting $queryKey - ${error.response.status.description}"))
+            queryClient.setQueryData<List<TData>>(queryKey, { it + previousValue }, jso())
+            null
+        }
+        onSuccess = { newValue, _, _ ->
+            queryClient.setQueryData<List<TData>>(queryKey, { it + newValue }, jso())
+            null
+        }
+    }
+}
+
+private operator fun <T : IdType> List<T>?.plus(item: T?) =
+    if (item == null || this == null) {
+        emptyList()
+    } else {
+        this.filterNot { it.id == item.id }
+    }
+
+private operator fun <T : IdType> List<T>?.minus(item: T?) =
+    if (item == null || this == null) {
+        emptyList()
+    } else {
+        this.filterNot { it.id == item.id }
+    }
+
 fun <T : IdType> List<T>?.replace(replacement: T?) =
     if (replacement == null || this == null) {
         emptyList()
     } else {
-        this.map { item -> if (item.id == replacement.id) replacement else item }
+        this.map { if (it.id == replacement.id) replacement else it }
     }

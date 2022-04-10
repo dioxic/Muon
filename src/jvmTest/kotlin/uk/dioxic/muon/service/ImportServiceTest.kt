@@ -4,6 +4,7 @@ import com.appmattus.kotlinfixture.kotlinFixture
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.assertThrows
 import uk.dioxic.muon.config.Settings
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.repository.SettingsRepository
@@ -32,14 +33,14 @@ class ImportServiceTest {
         // create file
         val f = Files.createTempFile("track_", ".mp3")
 
-        val track = fixture<Track>().copy(
-            path = f.absolutePathString()
-        )
-
         // check file has been created
         assertThat(f).exists()
 
-        service.deleteTrack(track)
+        service.deleteTrack(
+            fixture<Track>().copy(
+                path = f.absolutePathString()
+            )
+        )
 
         // check file has been deleted
         assertThat(f).doesNotExist()
@@ -58,20 +59,75 @@ class ImportServiceTest {
         // create file
         val f = Files.createTempFile("track_", ".mp3")
 
-        val track = fixture<Track>().copy(
-            path = f.absolutePathString()
+        // check file has been created
+        assertThat(f).exists()
+
+        service.deleteTrack(
+            fixture<Track>().copy(
+                path = f.absolutePathString()
+            )
         )
+
+        // check file has been moved
+        assertThat(f).doesNotExist()
+        assertThat(tmpDir.resolve(f.fileName)).exists()
+    }
+
+    @Test
+    fun `import track`() {
+        val tmpDir = Files.createTempDirectory("import_")
+        val service = setupService(
+            Settings.DEFAULT.copy(
+                importPath = tmpDir.absolutePathString()
+            )
+        )
+
+        // create file
+        val f = Files.createTempFile("track_", ".mp3")
 
         // check file has been created
         assertThat(f).exists()
 
-        service.deleteTrack(track)
+        service.importTrack(
+            fixture<Track>().copy(
+                path = f.absolutePathString()
+            )
+        )
 
-        // check file has been deleted
+        // check file has been moved
         assertThat(f).doesNotExist()
-
-        // check file has been moved to the soft delete dir
         assertThat(tmpDir.resolve(f.fileName)).exists()
+    }
+
+    @Test
+    fun `import track fails when file already exists`() {
+        val tmpDir = Files.createTempDirectory("import_")
+        val service = setupService(
+            Settings.DEFAULT.copy(
+                importPath = tmpDir.absolutePathString()
+            )
+        )
+
+        // create file
+        val f = Files.createTempFile("track_", ".mp3")
+
+        // create existing
+        val existing = Files.createFile(tmpDir.resolve(f.fileName))
+
+        // check files have been created
+        assertThat(f).exists()
+        assertThat(existing).exists()
+
+        val exception = assertThrows<java.nio.file.FileAlreadyExistsException> {
+            service.importTrack(
+                fixture<Track>().copy(
+                    path = f.absolutePathString()
+                )
+            )
+        }
+
+        // check file hasn't been deleted
+        assertThat(f).exists()
     }
 
 }

@@ -1,5 +1,6 @@
 package uk.dioxic.muon.server
 
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import io.ktor.server.request.*
@@ -9,10 +10,10 @@ import kotlinx.html.*
 import org.koin.core.context.GlobalContext
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
+import uk.dioxic.muon.Routes
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
-import uk.dioxic.muon.Routes
 import uk.dioxic.muon.service.ImportService
 import uk.dioxic.muon.service.SearchService
 import java.io.File
@@ -72,6 +73,13 @@ fun Routing.import() {
         patch {
             val requestTrack = call.receive<Track>()
             call.respond(importService.updateTrack(File(requestTrack.path), requestTrack))
+        }
+        delete {
+            importService.deleteTrack(call.receive())
+            call.respond(HttpStatusCode.OK)
+        }
+        post {
+
         }
     }
 }

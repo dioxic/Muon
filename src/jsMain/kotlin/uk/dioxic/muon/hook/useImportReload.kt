@@ -5,7 +5,7 @@ import uk.dioxic.muon.common.QueryKey
 
 typealias ReloadImport = () -> Unit
 
-fun useReloadImport(): ReloadImport {
+fun useImportReload(): ReloadImport {
     val queryClient = useQueryClient()
     return {
         queryClient.invalidateQueries<Nothing>(QueryKey.IMPORT)

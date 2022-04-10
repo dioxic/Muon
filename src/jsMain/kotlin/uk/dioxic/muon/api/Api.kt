@@ -76,4 +76,12 @@ object Api {
             setBody(data)
         }
 
+    suspend inline fun <reified T> delete(path: String, data: T): Unit =
+        apiRequest {
+            method = HttpMethod.Delete
+            localUrl(path)
+            contentType(ContentType.Application.Json)
+            setBody(data)
+        }
+
 }
