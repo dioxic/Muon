@@ -99,7 +99,10 @@ class ImportService(private val settingsRepository: SettingsRepository) {
             val originalPath = file.toPath()
             val newPath = originalPath.parent.resolve(track.targetFilename)
             Files.move(originalPath, newPath)
-            return track.copy(path = newPath.pathString)
+            return track.copy(
+                path = newPath.pathString,
+                filename = track.targetFilename,
+            )
         }
         return track
     }
