@@ -33,6 +33,7 @@ fun List<Track>.merge(): Track {
             lyricist = merge(track, it) { lyricist },
             album = merge(track, it) { album },
             comment = merge(track, it) { comment },
+            genre = merge(track, it) { genre },
             filename = merge(track, it) { filename },
         )
     }
@@ -42,8 +43,19 @@ fun List<Track>.merge(): Track {
 fun merge(a: Track, b: Track, accessor: Track.() -> String) =
     if (accessor.invoke(a) == accessor.invoke(b)) accessor.invoke(a) else MULTIPLE
 
-fun Track.overwrite(edit: Track, accessor: Track.() -> String) =
-    if (accessor.invoke(edit) == MULTIPLE) accessor.invoke(this) else accessor.invoke(edit)
+fun assign(target: Track, source: Track, accessor: Track.() -> String) =
+    if (accessor.invoke(source) == MULTIPLE) accessor.invoke(target) else accessor.invoke(source)
+
+fun assign(target: Track, source: Track) =
+    target.copy(
+        artist = assign(target, source) { artist },
+        title = assign(target, source) { title },
+        lyricist = assign(target, source) { lyricist },
+        album = assign(target, source) { album },
+        comment = assign(target, source) { comment },
+        genre = assign(target, source) { genre },
+        filename = assign(target, source) { filename },
+    )
 
 val TrackEditDialog = FC<TrackDialogProps> { props ->
     val saveTrack = useImportSave()
@@ -51,16 +63,7 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
 
     fun handleSave() {
         props.tracks.forEach { original ->
-            saveTrack(
-                original.copy(
-                    artist = original.overwrite(editTrack) { artist },
-                    title = original.overwrite(editTrack) { title },
-                    lyricist = original.overwrite(editTrack) { lyricist },
-                    album = original.overwrite(editTrack) { album },
-                    comment = original.overwrite(editTrack) { comment },
-                    filename = original.overwrite(editTrack) { filename },
-                )
-            )
+            saveTrack(assign(original, editTrack))
         }
         props.handleClose()
     }
@@ -136,6 +139,16 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                     defaultValue = editTrack.comment
                     onChange =
                         { event -> editTrack = editTrack.copy(comment = (event.target as HTMLInputElement).value) }
+                    fullWidth = true
+                }
+                TextField {
+                    id = "genre"
+                    label = ReactNode("Genre")
+                    type = InputType.text
+                    variant = FormControlVariant.outlined
+                    defaultValue = editTrack.genre
+                    onChange =
+                        { event -> editTrack = editTrack.copy(genre = (event.target as HTMLInputElement).value) }
                     fullWidth = true
                 }
                 if (props.tracks.size == 1) {
