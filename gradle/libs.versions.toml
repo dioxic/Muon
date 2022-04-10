@@ -34,6 +34,7 @@ spek = "2.0.16"
 sqlcipher = "3.37.2"
 statistics = "1.2.1"
 versionsPlugin = "0.42.0"
+fixture = "1.2.0"
 
 [libraries]
 #gradle-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -102,6 +103,7 @@ slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-core = { module = "org.slf4j:slf4j-core", version.ref = "slf4j" }
 sqlcipher = { module = "io.github.willena:sqlite-jdbc", version.ref = "sqlcipher" }
 statistics = { module = "org.nield:kotlin-statistics", version.ref = "statistics" }
+fixture = { module = "com.appmattus.fixture:fixture", version.ref = "fixture" }
 
 [bundles]
 logging = ["log4j-core", "log4j-api", "log4j-slf4j", "log4j-jul"]

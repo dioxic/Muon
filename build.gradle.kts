@@ -88,6 +88,7 @@ kotlin {
                 implementation(libs.kotlin.test)
                 implementation(libs.assertj)
                 implementation(libs.mockk)
+                implementation(libs.fixture)
             }
         }
 

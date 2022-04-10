@@ -8,8 +8,8 @@ import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.repository.SettingsRepository
 import java.io.File
 import java.nio.file.Files
-import kotlin.io.path.extension
-import kotlin.io.path.pathString
+import java.nio.file.Path
+import kotlin.io.path.*
 
 class ImportService(private val settingsRepository: SettingsRepository) {
 
@@ -21,9 +21,9 @@ class ImportService(private val settingsRepository: SettingsRepository) {
             File(it)
         }
 
-        require(dir.isDirectory) { "${dir.name} is not a directory!" }
+        require(dir.isDirectory) { "${dir.absolutePath} is not a directory!" }
 
-        logger.info("Reading import files from ${dir.name}...")
+        logger.info("Reading import files from ${dir.absolutePath}...")
 
         return dir.walk()
             .filter { it.isAudioFile }
@@ -36,6 +36,45 @@ class ImportService(private val settingsRepository: SettingsRepository) {
 
         return toTrack(f)
     }
+
+    fun deleteTrack(track: Track) {
+        logger.info("deleting track ${track.path}")
+
+        val settings = settingsRepository.get()
+        val file = File(track.path)
+
+        require(file.isFile) { "${track.path} is not a file!" }
+
+        if (settings.softDelete) {
+            requireNotNull(settings.deletePath) { "delete path is not set!" }
+            val deleteDir = Path(settings.deletePath)
+            if (!deleteDir.exists()) {
+                deleteDir.createDirectories()
+            }
+            val originalPath = file.toPath()
+            val newPath = getNonExistingPath(deleteDir.resolve(originalPath.fileName))
+
+            Files.move(originalPath, newPath)
+        } else {
+            file.delete()
+        }
+    }
+
+    /**
+     * Check if the file exists already. If it does, find a new filename that doesn't exist.
+     *
+     * **Example:**
+     *
+     *     existingfile.txt -> existingfile (1).txt
+     *
+     */
+    private tailrec fun getNonExistingPath(p: Path, counter: Int = 1): Path =
+        if (!p.exists()) {
+            p
+        } else {
+            val dir = p.parent
+            getNonExistingPath(dir.resolve("${p.nameWithoutExtension} ($counter).${p.extension}"), counter + 1)
+        }
 
     fun updateTrack(f: File, track: Track): Track {
         logger.info("updating tags for ${track.path}")
