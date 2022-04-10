@@ -13,6 +13,7 @@ import react.dom.html.InputType
 import react.dom.html.ReactHTML.form
 import react.dom.onChange
 import uk.dioxic.muon.hook.useImportSave
+import uk.dioxic.muon.hook.useSettingsFetch
 import uk.dioxic.muon.model.Track
 
 external interface TrackDialogProps : Props {
@@ -33,6 +34,7 @@ val defaultTextProps: BaseTextFieldProps = jso {
 
 val TrackEditDialog = FC<TrackDialogProps> { props ->
     val saveTrack = useImportSave()
+    val settings = useSettingsFetch().data
     var editTrack = props.tracks.merge()
 
     fun handleSave() {
@@ -124,6 +126,7 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                         id = "filename"
                         label = ReactNode("Filename")
                         defaultValue = editTrack.filename
+                        disabled = settings?.standardiseFilenames
                         onChange =
                             { event -> editTrack = editTrack.copy(filename = (event.target as HTMLInputElement).value) }
 

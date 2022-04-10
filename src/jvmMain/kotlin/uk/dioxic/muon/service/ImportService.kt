@@ -5,10 +5,12 @@ import uk.dioxic.muon.import.isAudioFile
 import uk.dioxic.muon.import.toTrack
 import uk.dioxic.muon.import.updateTags
 import uk.dioxic.muon.model.Track
+import uk.dioxic.muon.removeIllegalFileCharacters
 import uk.dioxic.muon.repository.SettingsRepository
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.*
 
 class ImportService(private val settingsRepository: SettingsRepository) {
@@ -53,7 +55,7 @@ class ImportService(private val settingsRepository: SettingsRepository) {
         requireNotNull(settings.importDir) { "import directory is not set!" }
 
         val importDir = Path(settings.importDir)
-        val newPath = importDir.resolve(originalPath.fileName)
+        val newPath = importDir.resolve(track.targetFilename)
 
         importDir.createDirectories()
 
@@ -83,6 +85,33 @@ class ImportService(private val settingsRepository: SettingsRepository) {
         }
     }
 
+
+    fun updateTrack(track: Track): Track {
+        logger.info("updating tags for ${track.path}")
+
+        val file = File(track.path)
+
+        file.updateTags(track)
+
+        // rename file
+        if (file.name != track.targetFilename) {
+            logger.info("renaming filename for ${track.path}")
+            val originalPath = file.toPath()
+            val newPath = originalPath.parent.resolve(track.targetFilename)
+            Files.move(originalPath, newPath)
+            return track.copy(path = newPath.pathString)
+        }
+        return track
+    }
+
+    private fun toTrack(f: File) =
+        try {
+            f.toTrack()
+        } catch (e: Throwable) {
+            logger.error("error on ${f.name}")
+            throw e
+        }
+
     /**
      * Check if the file exists already. If it does, find a new filename that doesn't exist.
      *
@@ -99,31 +128,11 @@ class ImportService(private val settingsRepository: SettingsRepository) {
             getNonExistingPath(dir.resolve("${p.nameWithoutExtension} ($counter).${p.extension}"), counter + 1)
         }
 
-    fun updateTrack(track: Track): Track {
-        logger.info("updating tags for ${track.path}")
-
-        val file = File(track.path)
-
-        file.updateTags(track)
-
-        // rename file
-        if (file.nameWithoutExtension != track.filename) {
-            logger.info("renaming filename for ${track.path}")
-            val originalPath = file.toPath()
-            val newPath = originalPath.parent.resolve("${track.filename}.${originalPath.extension}")
-            Files.move(originalPath, newPath)
-            return track.copy(path = newPath.pathString)
-        }
-        return track
-    }
-
-    private fun toTrack(f: File) =
-        try {
-            f.toTrack()
-        } catch (e: Throwable) {
-            logger.error("error on ${f.name}")
-            throw e
-        }
-
+    private val Track.targetFilename: String
+        get() = if (settingsRepository.get().standardiseFilenames) {
+            "$artist - ${title}.${Paths.get(path).extension}"
+        } else {
+            filename
+        }.removeIllegalFileCharacters()
 
 }

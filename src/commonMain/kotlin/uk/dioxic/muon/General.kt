@@ -51,12 +51,14 @@ fun <T> coalesce(vararg items: T) = coalesce("", items)
 //fun List<AudioFile>.filterFiles(files: List<AudioFile>) =
 //    this.filterIds(files.map { it.id })
 
-fun String.removeProblemCharacters() =
+fun String.removeIllegalFileCharacters() =
     this
-        .replace("[", "")
-        .replace("]", "")
-        .replace(".", "")
-        .replace("_", "")
+        .replace("<", "")
+        .replace(">", "")
+        .replace("?", "")
+        .replace("*", "")
+        .replace(":", "")
+        .replace("\"", "")
         .replace("/", "")
         .replace("\\", "")
 

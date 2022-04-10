@@ -50,7 +50,7 @@ val EnhancedTable = FC<EnhancedTableProps<Track>> { props ->
 
                                 if (cellType == CellType.DEFAULT) {
                                     sx {
-                                        minWidth = 120.px
+                                        minWidth = 121.px
                                     }
                                     +header.getHeaderProps(header.getSortByToggleProps())
                                 } else {
