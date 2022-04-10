@@ -7,10 +7,11 @@ import mui.material.AccordionSummary
 import mui.material.Typography
 import react.FC
 import react.Props
+import react.VFC
 import react.create
 import react.dom.aria.ariaControls
 
-val LibraryPage = FC<Props> {
+val LibraryPage = VFC {
     Accordion {
         AccordionSummary {
             id = "panel1a-header"

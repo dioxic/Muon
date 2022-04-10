@@ -8,11 +8,8 @@ import mui.icons.material.Refresh
 import mui.material.Box
 import mui.material.IconButtonColor
 import mui.material.Paper
-import react.FC
-import react.Props
+import react.*
 import react.table.*
-import react.useMemo
-import react.useState
 import uk.dioxic.muon.component.dialog.TrackEditDialog
 import uk.dioxic.muon.component.table.EnhancedTable
 import uk.dioxic.muon.component.table.actions.RowAction
@@ -29,7 +26,6 @@ import kotlin.time.Duration.Companion.seconds
 
 
 private val COLUMNS = columns<Track> {
-
     column<String> {
         header = "Title"
         accessorFunction = { it.title }
@@ -76,7 +72,7 @@ private val COLUMNS = columns<Track> {
     }
 }
 
-val ImportPage = FC<Props> {
+val ImportPage = VFC {
     val tracks = useImportFetch()
     val reload = useImportReload()
     val delete = useImportDelete()

@@ -9,6 +9,7 @@ import mui.material.Paper
 import mui.system.sx
 import react.FC
 import react.Props
+import react.VFC
 import react.dom.html.ReactHTML
 import uk.dioxic.muon.hook.useSettingsFetch
 
@@ -17,7 +18,7 @@ private val json = Json {
     isLenient = true
 }
 
-val SettingsPage = FC<Props> {
+val SettingsPage = VFC {
     val settings = useSettingsFetch()
 
     Box {
