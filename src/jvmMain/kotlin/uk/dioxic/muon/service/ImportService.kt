@@ -2,10 +2,10 @@ package uk.dioxic.muon.service
 
 import org.apache.logging.log4j.LogManager
 import uk.dioxic.muon.import.isAudioFile
+import uk.dioxic.muon.import.removeIllegalFileCharacters
 import uk.dioxic.muon.import.toTrack
 import uk.dioxic.muon.import.updateTags
 import uk.dioxic.muon.model.Track
-import uk.dioxic.muon.removeIllegalFileCharacters
 import uk.dioxic.muon.repository.SettingsRepository
 import java.io.File
 import java.nio.file.Files

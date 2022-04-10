@@ -1,14 +1,14 @@
 package uk.dioxic.muon.import
 
-import uk.dioxic.muon.audio.Tags
 import uk.dioxic.muon.fileExtension
+import uk.dioxic.muon.model.Track
 
-fun formatFilename(filename: String, tags: Tags): String {
+fun formatFilename(filename: String, track: Track): String {
 
     val extension = filename.fileExtension()
 
-    val artist = tags.artist.trim()
-    val title = tags.title.originalMix().trim()
+    val artist = track.artist.trim()
+    val title = track.title.originalMix().trim()
 
     if (artist.isNotBlank() && title.isNotBlank()) {
         return "$artist - $title.$extension"
@@ -48,3 +48,11 @@ private fun String.ampersand() = Regex("""\s+(and)\s+""").replace(this, " & ")
 private fun String.doubleDash() = this.replace("--", "-")
 
 private fun String.originalMix() = Regex("""[(\[]original mix[)\]]""", RegexOption.IGNORE_CASE).replace(this, "")
+
+private val illegalCharsPattern = Regex("[\\\\/:*?\"<>|]")
+
+fun String.removeIllegalFileCharacters() =
+    this.replace(illegalCharsPattern, "")
+
+fun String?.nullIfBlank() =
+    if (this.isNullOrBlank()) null else this

@@ -4,15 +4,11 @@ import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.audio.SupportedFileFormat
 import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.Tag
-import uk.dioxic.muon.audio.AudioFile
 import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.Track
-import uk.dioxic.muon.nullIfBlank
 import java.io.File
 import java.nio.file.Files
-import java.nio.file.Path
 import java.util.*
-import kotlin.io.path.Path
 
 var Tag.artist: String
     get() = getFirst(FieldKey.ARTIST) //.split("/")
@@ -56,22 +52,6 @@ private fun Tag.setOrRemoveField(fieldKey: FieldKey, value: String) {
 
 val File.isAudioFile: Boolean
     get() = this.isFile && SupportedFileFormat.values().map { it.filesuffix }.contains(this.extension)
-
-fun AudioFile.getPath(): Path = Path(this.location.path).resolve(this.location.filename)
-
-fun org.jaudiotagger.audio.AudioFile.merge(audioFile: AudioFile) {
-    if (this.tag == null) {
-        this.tag = this.createDefaultTag()
-    }
-
-    this.tag.artist = audioFile.tags.artist
-    this.tag.title = audioFile.tags.title
-    this.tag.comment = audioFile.tags.comment
-    this.tag.album = audioFile.tags.album
-    this.tag.lyricist = audioFile.tags.lyricist
-    this.tag.genre = audioFile.tags.genre
-    this.tag.year = audioFile.tags.year
-}
 
 private fun getArtistAndTitleFromFilename(filename: String): Pair<String, String> {
     val regex = Regex("(.*)-(.*)")

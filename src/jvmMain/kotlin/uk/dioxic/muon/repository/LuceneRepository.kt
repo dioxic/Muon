@@ -1,7 +1,6 @@
 package uk.dioxic.muon.repository
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import org.apache.logging.log4j.LogManager
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.index.IndexWriter

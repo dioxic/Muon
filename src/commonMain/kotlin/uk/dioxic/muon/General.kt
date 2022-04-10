@@ -51,19 +51,7 @@ fun <T> coalesce(vararg items: T) = coalesce("", items)
 //fun List<AudioFile>.filterFiles(files: List<AudioFile>) =
 //    this.filterIds(files.map { it.id })
 
-fun String.removeIllegalFileCharacters() =
-    this
-        .replace("<", "")
-        .replace(">", "")
-        .replace("?", "")
-        .replace("*", "")
-        .replace(":", "")
-        .replace("\"", "")
-        .replace("/", "")
-        .replace("\\", "")
 
-fun String?.nullIfBlank() =
-    if (this.isNullOrBlank()) null else this
 
 //fun <t> MutableList<t>.swap(a: Int, b: Int): List<t> = this
 //    .also {
