@@ -1,6 +1,7 @@
 package uk.dioxic.muon.component.dialog
 
 import csstype.px
+import kotlinx.js.jso
 import mui.material.*
 import mui.system.sx
 import org.w3c.dom.HTMLInputElement
@@ -22,40 +23,13 @@ external interface TrackDialogProps : Props {
 
 const val MULTIPLE: String = "MULTIPLE"
 
-fun List<Track>.merge(): Track {
-    require(isNotEmpty())
-    var track = first()
-
-    forEach {
-        track = track.copy(
-            artist = merge(track, it) { artist },
-            title = merge(track, it) { title },
-            lyricist = merge(track, it) { lyricist },
-            album = merge(track, it) { album },
-            comment = merge(track, it) { comment },
-            genre = merge(track, it) { genre },
-            filename = merge(track, it) { filename },
-        )
-    }
-    return track
+val defaultTextProps: BaseTextFieldProps = jso {
+    type = InputType.text
+    spellCheck = false
+    variant = FormControlVariant.outlined
+    fullWidth = true
+    autoComplete = "off"
 }
-
-fun merge(a: Track, b: Track, accessor: Track.() -> String) =
-    if (accessor.invoke(a) == accessor.invoke(b)) accessor.invoke(a) else MULTIPLE
-
-fun assign(target: Track, source: Track, accessor: Track.() -> String) =
-    if (accessor.invoke(source) == MULTIPLE) accessor.invoke(target) else accessor.invoke(source)
-
-fun assign(target: Track, source: Track) =
-    target.copy(
-        artist = assign(target, source) { artist },
-        title = assign(target, source) { title },
-        lyricist = assign(target, source) { lyricist },
-        album = assign(target, source) { album },
-        comment = assign(target, source) { comment },
-        genre = assign(target, source) { genre },
-        filename = assign(target, source) { filename },
-    )
 
 val TrackEditDialog = FC<TrackDialogProps> { props ->
     val saveTrack = useImportSave()
@@ -96,71 +70,64 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                 TextField {
                     id = "title"
                     label = ReactNode("Title")
-                    type = InputType.text
-                    variant = FormControlVariant.outlined
                     defaultValue = editTrack.title
                     onChange = { event -> editTrack = editTrack.copy(title = (event.target as HTMLInputElement).value) }
-                    fullWidth = true
+
+                    +defaultTextProps
                 }
                 TextField {
                     id = "artist"
                     label = ReactNode("Artist")
-                    type = InputType.text
-                    variant = FormControlVariant.outlined
                     defaultValue = editTrack.artist
                     onChange =
                         { event -> editTrack = editTrack.copy(artist = (event.target as HTMLInputElement).value) }
-                    fullWidth = true
+
+                    +defaultTextProps
                 }
                 TextField {
                     id = "lyricist"
                     label = ReactNode("Lyricist")
-                    type = InputType.text
-                    variant = FormControlVariant.outlined
                     defaultValue = editTrack.lyricist
                     onChange =
                         { event -> editTrack = editTrack.copy(lyricist = (event.target as HTMLInputElement).value) }
-                    fullWidth = true
+
+                    +defaultTextProps
                 }
                 TextField {
                     id = "album"
                     label = ReactNode("Album")
-                    type = InputType.text
-                    variant = FormControlVariant.outlined
                     defaultValue = editTrack.album
                     onChange = { event -> editTrack = editTrack.copy(album = (event.target as HTMLInputElement).value) }
-                    fullWidth = true
+
+                    +defaultTextProps
                 }
                 TextField {
                     id = "comment"
                     label = ReactNode("Comment")
-                    type = InputType.text
-                    variant = FormControlVariant.outlined
                     defaultValue = editTrack.comment
                     onChange =
                         { event -> editTrack = editTrack.copy(comment = (event.target as HTMLInputElement).value) }
-                    fullWidth = true
+
+                    +defaultTextProps
                 }
                 TextField {
                     id = "genre"
                     label = ReactNode("Genre")
-                    type = InputType.text
-                    variant = FormControlVariant.outlined
                     defaultValue = editTrack.genre
                     onChange =
                         { event -> editTrack = editTrack.copy(genre = (event.target as HTMLInputElement).value) }
-                    fullWidth = true
+
+                    +defaultTextProps
                 }
                 if (props.tracks.size == 1) {
                     TextField {
                         id = "filename"
                         label = ReactNode("Filename")
-                        type = InputType.text
-                        variant = FormControlVariant.outlined
                         defaultValue = editTrack.filename
                         onChange =
                             { event -> editTrack = editTrack.copy(filename = (event.target as HTMLInputElement).value) }
-                        fullWidth = true
+
+                        +defaultTextProps
                     }
                 }
             }
@@ -181,3 +148,38 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
         }
     }
 }
+
+private fun List<Track>.merge(): Track {
+    require(isNotEmpty())
+    var track = first()
+
+    forEach {
+        track = track.copy(
+            artist = merge(track, it) { artist },
+            title = merge(track, it) { title },
+            lyricist = merge(track, it) { lyricist },
+            album = merge(track, it) { album },
+            comment = merge(track, it) { comment },
+            genre = merge(track, it) { genre },
+            filename = merge(track, it) { filename },
+        )
+    }
+    return track
+}
+
+private fun merge(a: Track, b: Track, accessor: Track.() -> String) =
+    if (accessor.invoke(a) == accessor.invoke(b)) accessor.invoke(a) else MULTIPLE
+
+private fun assign(target: Track, source: Track, accessor: Track.() -> String) =
+    if (accessor.invoke(source) == MULTIPLE) accessor.invoke(target) else accessor.invoke(source)
+
+private fun assign(target: Track, source: Track) =
+    target.copy(
+        artist = assign(target, source) { artist },
+        title = assign(target, source) { title },
+        lyricist = assign(target, source) { lyricist },
+        album = assign(target, source) { album },
+        comment = assign(target, source) { comment },
+        genre = assign(target, source) { genre },
+        filename = assign(target, source) { filename },
+    )
