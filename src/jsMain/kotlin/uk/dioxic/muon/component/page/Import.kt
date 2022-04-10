@@ -80,10 +80,10 @@ val ImportPage = FC<Props> {
     val reload = useImportReload()
     val delete = useImportDelete()
     val (dialogOpen, setDialogOpen) = useState(false)
-    val (currentTrack, setCurrentTrack) = useState<Track?>(null)
+    val (selected, setSelected) = useState<List<Track>>(emptyList())
 
-    fun handleEditClick(row: Row<Track>) {
-        setCurrentTrack(row.original)
+    fun handleEditClick(vararg rows: Row<Track>) {
+        setSelected(rows.map { it.original })
         setDialogOpen(true)
     }
 
@@ -107,6 +107,12 @@ val ImportPage = FC<Props> {
     )
 
     val toolbarActions = listOf(
+        ToolbarAction(
+            name = "edit",
+            icon = Edit,
+            onClick = ::handleEditClick,
+            requiresSelection = true
+        ),
         ToolbarAction(
             name = "import",
             icon = GetApp,
@@ -151,11 +157,11 @@ val ImportPage = FC<Props> {
         }
     }
 
-    if (currentTrack != null) {
+    if (selected.isNotEmpty()) {
         TrackEditDialog {
             open = dialogOpen
             handleClose = { setDialogOpen(false) }
-            track = currentTrack
+            this.tracks = selected
         }
     }
 

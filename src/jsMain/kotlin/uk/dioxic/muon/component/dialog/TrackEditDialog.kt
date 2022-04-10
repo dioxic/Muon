@@ -15,14 +15,55 @@ import uk.dioxic.muon.hook.useImportSave
 import uk.dioxic.muon.model.Track
 
 external interface TrackDialogProps : Props {
-    var track: Track
+    var tracks: List<Track>
     var open: Boolean
     var handleClose: () -> Unit
 }
 
+const val MULTIPLE: String = "MULTIPLE"
+
+fun List<Track>.merge(): Track {
+    require(isNotEmpty())
+    var track = first()
+
+    forEach {
+        track = track.copy(
+            artist = merge(track, it) { artist },
+            title = merge(track, it) { title },
+            lyricist = merge(track, it) { lyricist },
+            album = merge(track, it) { album },
+            comment = merge(track, it) { comment },
+            filename = merge(track, it) { filename },
+        )
+    }
+    return track
+}
+
+fun merge(a: Track, b: Track, accessor: Track.() -> String) =
+    if (accessor.invoke(a) == accessor.invoke(b)) accessor.invoke(a) else MULTIPLE
+
+fun Track.overwrite(edit: Track, accessor: Track.() -> String) =
+    if (accessor.invoke(edit) == MULTIPLE) accessor.invoke(this) else accessor.invoke(edit)
+
 val TrackEditDialog = FC<TrackDialogProps> { props ->
     val saveTrack = useImportSave()
-    var track = props.track.copy()
+    var editTrack = props.tracks.merge()
+
+    fun handleSave() {
+        props.tracks.forEach { original ->
+            saveTrack(
+                original.copy(
+                    artist = original.overwrite(editTrack) { artist },
+                    title = original.overwrite(editTrack) { title },
+                    lyricist = original.overwrite(editTrack) { lyricist },
+                    album = original.overwrite(editTrack) { album },
+                    comment = original.overwrite(editTrack) { comment },
+                    filename = original.overwrite(editTrack) { filename },
+                )
+            )
+        }
+        props.handleClose()
+    }
 
     Dialog {
         open = props.open
@@ -46,8 +87,7 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                 id = "myForm"
                 onSubmit = { event ->
                     event.preventDefault()
-                    saveTrack(track)
-                    props.handleClose()
+                    handleSave()
                 }
 
                 TextField {
@@ -55,8 +95,8 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                     label = ReactNode("Title")
                     type = InputType.text
                     variant = FormControlVariant.outlined
-                    defaultValue = track.title
-                    onChange = { event -> track = track.copy(title = (event.target as HTMLInputElement).value) }
+                    defaultValue = editTrack.title
+                    onChange = { event -> editTrack = editTrack.copy(title = (event.target as HTMLInputElement).value) }
                     fullWidth = true
                 }
                 TextField {
@@ -64,8 +104,9 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                     label = ReactNode("Artist")
                     type = InputType.text
                     variant = FormControlVariant.outlined
-                    defaultValue = track.artist
-                    onChange = { event -> track = track.copy(artist = (event.target as HTMLInputElement).value) }
+                    defaultValue = editTrack.artist
+                    onChange =
+                        { event -> editTrack = editTrack.copy(artist = (event.target as HTMLInputElement).value) }
                     fullWidth = true
                 }
                 TextField {
@@ -73,8 +114,9 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                     label = ReactNode("Lyricist")
                     type = InputType.text
                     variant = FormControlVariant.outlined
-                    defaultValue = track.lyricist
-                    onChange = { event -> track = track.copy(lyricist = (event.target as HTMLInputElement).value) }
+                    defaultValue = editTrack.lyricist
+                    onChange =
+                        { event -> editTrack = editTrack.copy(lyricist = (event.target as HTMLInputElement).value) }
                     fullWidth = true
                 }
                 TextField {
@@ -82,8 +124,8 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                     label = ReactNode("Album")
                     type = InputType.text
                     variant = FormControlVariant.outlined
-                    defaultValue = track.album
-                    onChange = { event -> track = track.copy(album = (event.target as HTMLInputElement).value) }
+                    defaultValue = editTrack.album
+                    onChange = { event -> editTrack = editTrack.copy(album = (event.target as HTMLInputElement).value) }
                     fullWidth = true
                 }
                 TextField {
@@ -91,18 +133,22 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                     label = ReactNode("Comment")
                     type = InputType.text
                     variant = FormControlVariant.outlined
-                    defaultValue = track.comment
-                    onChange = { event -> track = track.copy(comment = (event.target as HTMLInputElement).value) }
+                    defaultValue = editTrack.comment
+                    onChange =
+                        { event -> editTrack = editTrack.copy(comment = (event.target as HTMLInputElement).value) }
                     fullWidth = true
                 }
-                TextField {
-                    id = "filename"
-                    label = ReactNode("Filename")
-                    type = InputType.text
-                    variant = FormControlVariant.outlined
-                    defaultValue = track.filename
-                    onChange = { event -> track = track.copy(filename = (event.target as HTMLInputElement).value) }
-                    fullWidth = true
+                if (props.tracks.size == 1) {
+                    TextField {
+                        id = "filename"
+                        label = ReactNode("Filename")
+                        type = InputType.text
+                        variant = FormControlVariant.outlined
+                        defaultValue = editTrack.filename
+                        onChange =
+                            { event -> editTrack = editTrack.copy(filename = (event.target as HTMLInputElement).value) }
+                        fullWidth = true
+                    }
                 }
             }
         }

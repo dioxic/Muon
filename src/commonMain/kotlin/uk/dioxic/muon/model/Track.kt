@@ -20,6 +20,3 @@ data class Track(
     val type: FileType
 ): IdType
 
-interface IdType {
-    val id: String
-}
