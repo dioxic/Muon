@@ -20,8 +20,6 @@ import react.router.useLocation
 import uk.dioxic.muon.common.Area
 import uk.dioxic.muon.common.Themes
 import uk.dioxic.muon.context.ThemeContext
-import uk.dioxic.muon.hook.useSaveSettings
-import uk.dioxic.muon.hook.useSettings
 
 val Header = FC<Props> {
     val theme = useTheme<Theme>()
