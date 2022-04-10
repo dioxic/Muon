@@ -39,7 +39,6 @@ val TableToolbar = FC<TableToolbarProps<Track>> { (title, selected, actions) ->
                 backgroundColor = chroma(theme.palette.primary.main)
                     .alpha(theme.palette.action.activatedOpacity)
                     .hex()
-
             }
         }
 

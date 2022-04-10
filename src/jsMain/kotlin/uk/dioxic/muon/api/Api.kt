@@ -7,10 +7,18 @@ import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.window
 import uk.dioxic.muon.utils.CsrfTokenHandler
+
+class InternalServerException(
+    response: HttpResponse,
+    cachedResponseText: String
+) : ResponseException(response, cachedResponseText) {
+    override val message: String = cachedResponseText
+}
 
 val client = HttpClient(Js) {
     install(ContentNegotiation) {
@@ -20,6 +28,17 @@ val client = HttpClient(Js) {
         port = 8080
     }
     expectSuccess = true
+    HttpResponseValidator {
+        handleResponseExceptionWithRequest { exception, _ ->
+            // the default response validator only throw ResponseExceptions
+            val responseException = exception as? ResponseException ?: return@handleResponseExceptionWithRequest
+
+            val exceptionResponse = responseException.response
+            if (exceptionResponse.status == HttpStatusCode.InternalServerError) {
+                throw InternalServerException(exceptionResponse, exceptionResponse.bodyAsText())
+            }
+        }
+    }
 }
 
 fun HttpRequestBuilder.localUrl(path: String) = url {

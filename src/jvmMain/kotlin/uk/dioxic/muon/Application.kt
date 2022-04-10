@@ -99,6 +99,9 @@ fun Application.plugins() {
         exception<IdNotFoundException> { call, cause ->
             call.respondText("file Id [${cause.id}] not found", status = HttpStatusCode.NotFound)
         }
+        exception<IllegalArgumentException> { call, cause ->
+            call.respondText(cause.message ?: "", status = HttpStatusCode.InternalServerError)
+        }
         exception<IllegalStateException> { call, cause ->
             call.respondText(cause.message ?: "", status = HttpStatusCode.InternalServerError)
         }

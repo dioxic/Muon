@@ -4,6 +4,7 @@ import io.ktor.client.plugins.*
 import kotlinx.js.jso
 import react.query.*
 import react.useContext
+import uk.dioxic.muon.api.InternalServerException
 import uk.dioxic.muon.context.Alert
 import uk.dioxic.muon.context.AlertContext
 import uk.dioxic.muon.model.IdType
@@ -41,12 +42,12 @@ fun <TData> defaultMutationOptions(queryKey: QueryKey): UseMutationOptions<TData
             Promise.resolve(previousValue)
         }
         onError = { error, _, previousValue ->
-            addAlert(Alert.AlertError("Error saving $queryKey - ${error.response.status.description}"))
+            addAlert(Alert.AlertError(errMsg("saving", queryKey, error)))
             queryClient.setQueryData<TData>(queryKey, { previousValue!! }, jso())
             null
         }
-        onSuccess = { newValue, _, _ ->
-            queryClient.setQueryData<TData>(queryKey, { newValue }, jso())
+        onSuccess = { responseValue, _, _ ->
+            queryClient.setQueryData<TData>(queryKey, { responseValue }, jso())
             null
         }
     }
@@ -72,12 +73,12 @@ fun <TData : IdType> listModifyMutationOptions(queryKey: QueryKey): UseMutationO
             Promise.resolve(previousValue)
         }
         onError = { error, _, previousValue ->
-            addAlert(Alert.AlertError("Error saving $queryKey - ${error.response.status.description}"))
+            addAlert(Alert.AlertError(errMsg("saving", queryKey, error)))
             queryClient.setQueryData<List<TData>>(queryKey, { it.replace(previousValue) }, jso())
             null
         }
-        onSuccess = { newValue, _, _ ->
-            queryClient.setQueryData<List<TData>>(queryKey, { it.replace(newValue) }, jso())
+        onSuccess = { responseValue, _, _ ->
+            queryClient.setQueryData<List<TData>>(queryKey, { it.replace(responseValue) }, jso())
             null
         }
     }
@@ -103,34 +104,46 @@ fun <TData : IdType> listDeleteMutationOptions(queryKey: QueryKey): UseMutationO
             Promise.resolve(previousValue)
         }
         onError = { error, _, previousValue ->
-            addAlert(Alert.AlertError("Error deleting $queryKey - ${error.response.status.description}"))
+            addAlert(Alert.AlertError(errMsg("deleting", queryKey, error)))
             queryClient.setQueryData<List<TData>>(queryKey, { it + previousValue }, jso())
-            null
-        }
-        onSuccess = { newValue, _, _ ->
-            queryClient.setQueryData<List<TData>>(queryKey, { it + newValue }, jso())
             null
         }
     }
 }
 
-private operator fun <T : IdType> List<T>?.plus(item: T?) =
-    if (item == null || this == null) {
-        emptyList()
+private fun errMsg(action: String, queryKey: QueryKey, error: ResponseException): String {
+    val baseMsg = "Error $action $queryKey -"
+
+    return if (error is InternalServerException && error.message.isNotBlank()) {
+        "$baseMsg ${error.message}"
     } else {
-        this.filterNot { it.id == item.id }
+        "$baseMsg ${error.response.status.description}"
+    }
+}
+
+private operator fun <T : IdType> List<T>?.plus(item: T?) =
+    when {
+        item == null && this != null -> this
+        item != null && this == null -> listOf(item)
+        item != null && this != null -> {
+            val result = ArrayList<T>(size + 1)
+            result.addAll(this)
+            result.add(item)
+            result
+        }
+        else -> emptyList()
     }
 
 private operator fun <T : IdType> List<T>?.minus(item: T?) =
-    if (item == null || this == null) {
-        emptyList()
-    } else {
-        this.filterNot { it.id == item.id }
+    when {
+        item == null && this != null -> this
+        item != null && this != null -> this.filterNot { it.id == item.id }
+        else -> emptyList()
     }
 
 fun <T : IdType> List<T>?.replace(replacement: T?) =
-    if (replacement == null || this == null) {
-        emptyList()
-    } else {
-        this.map { if (it.id == replacement.id) replacement else it }
+    when {
+        replacement == null && this != null -> this
+        replacement != null && this != null -> this.map { if (it.id == replacement.id) replacement else it }
+        else -> emptyList()
     }
