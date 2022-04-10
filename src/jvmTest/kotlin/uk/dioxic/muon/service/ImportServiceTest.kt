@@ -52,7 +52,7 @@ class ImportServiceTest {
         val service = setupService(
             Settings.DEFAULT.copy(
                 softDelete = true,
-                deletePath = tmpDir.absolutePathString()
+                deleteDirs = tmpDir.absolutePathString()
             )
         )
 
@@ -78,7 +78,7 @@ class ImportServiceTest {
         val tmpDir = Files.createTempDirectory("import_")
         val service = setupService(
             Settings.DEFAULT.copy(
-                importPath = tmpDir.absolutePathString()
+                downloadDirs = tmpDir.absolutePathString()
             )
         )
 
@@ -104,7 +104,7 @@ class ImportServiceTest {
         val tmpDir = Files.createTempDirectory("import_")
         val service = setupService(
             Settings.DEFAULT.copy(
-                importPath = tmpDir.absolutePathString()
+                downloadDirs = tmpDir.absolutePathString()
             )
         )
 

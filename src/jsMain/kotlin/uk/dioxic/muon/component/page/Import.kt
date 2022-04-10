@@ -21,6 +21,7 @@ import uk.dioxic.muon.component.table.plugin.useCheckboxSelect
 import uk.dioxic.muon.component.table.plugin.useRowActions
 import uk.dioxic.muon.hook.useImportDelete
 import uk.dioxic.muon.hook.useImportFetch
+import uk.dioxic.muon.hook.useImportImport
 import uk.dioxic.muon.hook.useImportReload
 import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.Track
@@ -79,6 +80,7 @@ val ImportPage = FC<Props> {
     val tracks = useImportFetch()
     val reload = useImportReload()
     val delete = useImportDelete()
+    val import = useImportImport()
     val (dialogOpen, setDialogOpen) = useState(false)
     val (selected, setSelected) = useState<List<Track>>(emptyList())
 
@@ -92,7 +94,7 @@ val ImportPage = FC<Props> {
     }
 
     fun handleImportClick(vararg rows: Row<Track>) {
-        println("handleImport for $rows")
+        rows.forEach { import(it.original) }
     }
 
     @Suppress("UNUSED_PARAMETER")

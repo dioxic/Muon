@@ -16,14 +16,17 @@ class ImportService(private val settingsRepository: SettingsRepository) {
     private val logger = LogManager.getLogger()
 
     fun getTracks(): List<Track> {
-        val dir = settingsRepository.get().importPath.let {
-            requireNotNull(it) { "Import path not set!" }
-            File(it)
-        }
+        val dirs = settingsRepository.get().downloadDirs
+        require(dirs.isNotEmpty()) { "download directory not set!" }
 
+        return dirs.map { File(it) }
+            .flatMap(::getTracks)
+    }
+
+    private fun getTracks(dir: File): List<Track> {
         require(dir.isDirectory) { "${dir.absolutePath} is not a directory!" }
 
-        logger.info("Reading import files from ${dir.absolutePath}...")
+        logger.info("Reading files from ${dir.absolutePath}...")
 
         return dir.walk()
             .filter { it.isAudioFile }
@@ -47,10 +50,12 @@ class ImportService(private val settingsRepository: SettingsRepository) {
 
         val originalPath = file.toPath()
 
-        requireNotNull(settings.importPath) { "import path is not set!" }
+        requireNotNull(settings.importDir) { "import directory is not set!" }
 
-        val importDir = Path(settings.importPath)
+        val importDir = Path(settings.importDir)
         val newPath = importDir.resolve(originalPath.fileName)
+
+        importDir.createDirectories()
 
         Files.move(originalPath, newPath)
     }
@@ -64,8 +69,8 @@ class ImportService(private val settingsRepository: SettingsRepository) {
         require(file.isFile) { "${track.path} is not a file!" }
 
         if (settings.softDelete) {
-            requireNotNull(settings.deletePath) { "delete path is not set!" }
-            val deleteDir = Path(settings.deletePath)
+            requireNotNull(settings.deleteDir) { "delete directory is not set!" }
+            val deleteDir = Path(settings.deleteDir)
             if (!deleteDir.exists()) {
                 deleteDir.createDirectories()
             }
@@ -94,15 +99,17 @@ class ImportService(private val settingsRepository: SettingsRepository) {
             getNonExistingPath(dir.resolve("${p.nameWithoutExtension} ($counter).${p.extension}"), counter + 1)
         }
 
-    fun updateTrack(f: File, track: Track): Track {
+    fun updateTrack(track: Track): Track {
         logger.info("updating tags for ${track.path}")
 
-        f.updateTags(track)
+        val file = File(track.path)
+
+        file.updateTags(track)
 
         // rename file
-        if (f.nameWithoutExtension != track.filename) {
+        if (file.nameWithoutExtension != track.filename) {
             logger.info("renaming filename for ${track.path}")
-            val originalPath = f.toPath()
+            val originalPath = file.toPath()
             val newPath = originalPath.parent.resolve("${track.filename}.${originalPath.extension}")
             Files.move(originalPath, newPath)
             return track.copy(path = newPath.pathString)

@@ -71,15 +71,15 @@ fun Routing.import() {
             call.respond(importService.getTracks())
         }
         patch {
-            val requestTrack = call.receive<Track>()
-            call.respond(importService.updateTrack(File(requestTrack.path), requestTrack))
+            call.respond(importService.updateTrack(call.receive()))
         }
         delete {
             importService.deleteTrack(call.receive())
             call.respond(HttpStatusCode.OK)
         }
         post {
-
+            importService.importTrack(call.receive())
+            call.respond(HttpStatusCode.OK)
         }
     }
 }

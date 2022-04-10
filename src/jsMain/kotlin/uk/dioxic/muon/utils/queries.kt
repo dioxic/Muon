@@ -42,7 +42,7 @@ fun <TData> defaultMutationOptions(queryKey: QueryKey): UseMutationOptions<TData
             Promise.resolve(previousValue)
         }
         onError = { error, _, previousValue ->
-            addAlert(Alert.AlertError(errMsg("saving", queryKey, error)))
+            addAlert(Alert.AlertError(errMsg(queryKey, error)))
             queryClient.setQueryData<TData>(queryKey, { previousValue!! }, jso())
             null
         }
@@ -73,7 +73,7 @@ fun <TData : IdType> listModifyMutationOptions(queryKey: QueryKey): UseMutationO
             Promise.resolve(previousValue)
         }
         onError = { error, _, previousValue ->
-            addAlert(Alert.AlertError(errMsg("saving", queryKey, error)))
+            addAlert(Alert.AlertError(errMsg(queryKey, error)))
             queryClient.setQueryData<List<TData>>(queryKey, { it.replace(previousValue) }, jso())
             null
         }
@@ -104,15 +104,15 @@ fun <TData : IdType> listDeleteMutationOptions(queryKey: QueryKey): UseMutationO
             Promise.resolve(previousValue)
         }
         onError = { error, _, previousValue ->
-            addAlert(Alert.AlertError(errMsg("deleting", queryKey, error)))
+            addAlert(Alert.AlertError(errMsg(queryKey, error)))
             queryClient.setQueryData<List<TData>>(queryKey, { it + previousValue }, jso())
             null
         }
     }
 }
 
-private fun errMsg(action: String, queryKey: QueryKey, error: ResponseException): String {
-    val baseMsg = "Error $action $queryKey -"
+private fun errMsg(queryKey: QueryKey, error: ResponseException): String {
+    val baseMsg = "[${queryKey.toString().uppercase()}] -"
 
     return if (error is InternalServerException && error.message.isNotBlank()) {
         "$baseMsg ${error.message}"
