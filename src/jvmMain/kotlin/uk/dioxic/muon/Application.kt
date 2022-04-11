@@ -24,6 +24,7 @@ import org.koin.dsl.module
 import org.koin.dsl.onClose
 import org.koin.logger.slf4jLogger
 import uk.dioxic.muon.common.Global
+import uk.dioxic.muon.exceptions.CsrfInvalidException
 import uk.dioxic.muon.exceptions.IdNotFoundException
 import uk.dioxic.muon.repository.LuceneRepository
 import uk.dioxic.muon.repository.RekordboxRepository
@@ -90,7 +91,7 @@ fun Application.plugins() {
     }
     install(KoinPlugin) {
         appDeclaration = {
-            slf4jLogger(level = Level.ERROR)
+            slf4jLogger(level = Level.INFO)
             modules(appModule)
         }
     }
@@ -101,14 +102,25 @@ fun Application.plugins() {
         validateHeader("X-CSRF") { it.call.getCsrfToken() }
     }
     install(StatusPages) {
-        exception<IdNotFoundException> { call, cause ->
-            call.respondText("file Id [${cause.id}] not found", status = HttpStatusCode.NotFound)
-        }
-        exception<IllegalArgumentException> { call, cause ->
-            call.respondText(cause.message.orEmpty(), status = HttpStatusCode.InternalServerError)
-        }
-        exception<IllegalStateException> { call, cause ->
-            call.respondText(cause.message.orEmpty(), status = HttpStatusCode.InternalServerError)
+        exception<Throwable> { call, cause ->
+            when (cause) {
+                is IdNotFoundException -> call.respondText(
+                    "file Id [${cause.id}] not found",
+                    status = HttpStatusCode.NotFound
+                )
+                is CsrfInvalidException -> call.respond(HttpStatusCode.Forbidden)
+                is java.nio.file.FileAlreadyExistsException -> call.respondText(
+                    "file already exists: ${cause.message}",
+                    status = HttpStatusCode.InternalServerError
+                )
+                else -> {
+                    cause.printStackTrace()
+                    call.respondText(
+                        cause.message.orEmpty(),
+                        status = HttpStatusCode.InternalServerError
+                    )
+                }
+            }
         }
     }
 

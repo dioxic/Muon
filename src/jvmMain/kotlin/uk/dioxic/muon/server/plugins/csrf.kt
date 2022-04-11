@@ -3,18 +3,11 @@ package uk.dioxic.muon.server.plugins
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
-import io.ktor.server.response.*
+import uk.dioxic.muon.exceptions.CsrfInvalidException
 import java.security.SecureRandom
 import java.util.*
 
 typealias CsrfValidator = (ApplicationRequest) -> Boolean
-
-fun validateHeader(headerName: String, calculateExpectedContent: (ApplicationRequest) -> String?): CsrfValidator =
-    { request ->
-        calculateExpectedContent(request)
-            ?.let { request.headers[headerName] == it }
-            ?: true
-    }
 
 val CsrfPlugin = createApplicationPlugin(
     name = "Csrf",
@@ -24,7 +17,7 @@ val CsrfPlugin = createApplicationPlugin(
         pluginConfig.apply {
             if (call.request.httpMethod != HttpMethod.Get) {
                 if (validators.any { !it(call.request) }) {
-                    call.respond(HttpStatusCode.Forbidden)
+                    throw CsrfInvalidException("token not recognoised")
                 }
             }
         }
