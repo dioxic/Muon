@@ -5,7 +5,7 @@ import org.apache.lucene.analysis.CharArraySet
 import org.apache.lucene.document.*
 import org.apache.lucene.index.IndexOptions
 import org.apache.lucene.util.BytesRef
-import uk.dioxic.muon.model.Track
+import uk.dioxic.muon.model.RbTrack
 
 fun charArraySetOf(vararg item: String) =
     CharArraySet(item.toList(), false)
@@ -16,7 +16,7 @@ private val searchFieldType = FieldType().apply {
     freeze()
 }
 
-fun Track.toDocument(searchAnalyser: Analyzer): Document = Document().apply {
+fun RbTrack.toDocument(searchAnalyser: Analyzer): Document = Document().apply {
     add(
         Field(
         "search",

@@ -13,7 +13,7 @@ import org.apache.lucene.store.MMapDirectory
 import uk.dioxic.muon.lucene.NGramAnalyzer
 import uk.dioxic.muon.lucene.charArraySetOf
 import uk.dioxic.muon.lucene.toDocument
-import uk.dioxic.muon.model.Track
+import uk.dioxic.muon.model.RbTrack
 import java.io.Closeable
 import java.nio.file.Path
 
@@ -40,10 +40,9 @@ class LuceneRepository(indexPath: Path) : Closeable {
         searcher.search(query(text), maxResults)
             .scoreDocs
             .map { searcher.doc(it.doc, setOf("id")).get("id") }
-//            .map { searcher.doc(it.doc, setOf("id")).get("id") to it.score }
     }
 
-    suspend fun upsert(tracks: Flow<Track>): Int {
+    suspend fun upsert(tracks: Flow<RbTrack>): Int {
         var count = 0
         tracks.collect { track ->
             logger.trace("upserting lucene index with ${track.filename}")
@@ -56,11 +55,10 @@ class LuceneRepository(indexPath: Path) : Closeable {
         return count
     }
 
-//    fun dropIndex() {
-//        indexDirectory.deletePendingFiles()
-//        indexDirectory.listAll()
-//            .forEach(indexDirectory::deleteFile)
-//    }
+    fun deleteAll() {
+        indexWriter.deleteAll()
+        indexWriter.commit()
+    }
 
     override fun close() {
         searcherManager.close()

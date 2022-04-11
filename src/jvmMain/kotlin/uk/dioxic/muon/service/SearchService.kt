@@ -5,7 +5,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import uk.dioxic.muon.model.Track
+import uk.dioxic.muon.model.RbTrack
 import uk.dioxic.muon.repository.LuceneRepository
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
@@ -16,13 +16,16 @@ class SearchService(
     private val settingsRepository: SettingsRepository
 ) {
 
-    suspend fun search(text: String?, maxResults: Int): List<Track> {
+    suspend fun search(text: String?, maxResults: Int): List<RbTrack> {
         val trackIds = luceneRepository.search(text, maxResults)
         return rekordboxRepository.getTracksById(trackIds)
             .toList(mutableListOf())
     }
 
-    suspend fun rebuildIndex() = buildIndex()
+    suspend fun rebuildIndex() {
+        luceneRepository.deleteAll()
+        buildIndex()
+    }
 
     suspend fun refreshIndex() = buildIndex(settingsRepository.get().lastRekordboxRefresh)
 

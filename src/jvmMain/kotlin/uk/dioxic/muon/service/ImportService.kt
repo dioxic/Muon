@@ -28,7 +28,7 @@ class ImportService(private val settingsRepository: SettingsRepository) {
     private fun getTracks(dir: File): List<Track> {
         require(dir.isDirectory) { "${dir.absolutePath} is not a directory!" }
 
-        logger.info("Reading files from ${dir.absolutePath}...")
+        logger.debug("Reading files from ${dir.absolutePath}...")
 
         return dir.walk()
             .filter { it.isAudioFile }
@@ -43,7 +43,7 @@ class ImportService(private val settingsRepository: SettingsRepository) {
     }
 
     fun importTrack(track: Track) {
-        logger.info("importing track ${track.path}")
+        logger.debug("importing track ${track.path}")
 
         val settings = settingsRepository.get()
         val file = File(track.path)
@@ -63,7 +63,7 @@ class ImportService(private val settingsRepository: SettingsRepository) {
     }
 
     fun deleteTrack(track: Track) {
-        logger.info("deleting track ${track.path}")
+        logger.debug("deleting track ${track.path}")
 
         val settings = settingsRepository.get()
         val file = File(track.path)
@@ -87,7 +87,7 @@ class ImportService(private val settingsRepository: SettingsRepository) {
 
 
     fun updateTrack(track: Track): Track {
-        logger.info("updating tags for ${track.path}")
+        logger.debug("updating tags for ${track.path}")
 
         val file = File(track.path)
 
@@ -95,7 +95,7 @@ class ImportService(private val settingsRepository: SettingsRepository) {
 
         // rename file
         if (file.name != track.targetFilename) {
-            logger.info("renaming filename for ${track.path}")
+            logger.debug("renaming filename for ${track.path}")
             val originalPath = file.toPath()
             val newPath = originalPath.parent.resolve(track.targetFilename)
             Files.move(originalPath, newPath)

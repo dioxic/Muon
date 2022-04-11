@@ -42,7 +42,7 @@ fun <TData> defaultMutationOptions(queryKey: QueryKey): UseMutationOptions<TData
             Promise.resolve(previousValue)
         }
         onError = { error, _, previousValue ->
-            addAlert(Alert.AlertError(errMsg(queryKey, error)))
+            addAlert(Alert.AlertError(errMsg(error)))
             queryClient.setQueryData<TData>(queryKey, { previousValue!! }, jso())
             null
         }
@@ -73,7 +73,7 @@ fun <TData : IdType> listModifyMutationOptions(queryKey: QueryKey): UseMutationO
             Promise.resolve(previousValue)
         }
         onError = { error, _, previousValue ->
-            addAlert(Alert.AlertError(errMsg(queryKey, error)))
+            addAlert(Alert.AlertError(errMsg(error)))
             queryClient.setQueryData<List<TData>>(queryKey, { it.replace(previousValue) }, jso())
             null
         }
@@ -104,22 +104,20 @@ fun <TData : IdType> listDeleteMutationOptions(queryKey: QueryKey): UseMutationO
             Promise.resolve(previousValue)
         }
         onError = { error, _, previousValue ->
-            addAlert(Alert.AlertError(errMsg(queryKey, error)))
+            addAlert(Alert.AlertError(errMsg(error)))
             queryClient.setQueryData<List<TData>>(queryKey, { it + previousValue }, jso())
             null
         }
     }
 }
 
-private fun errMsg(queryKey: QueryKey, error: ResponseException): String {
-    val baseMsg = "[${queryKey.toString().uppercase()}] -"
-
-    return if (error is InternalServerException && error.message.isNotBlank()) {
-        "$baseMsg ${error.message}"
+private fun errMsg(error: ResponseException) =
+    if (error is InternalServerException && error.message.isNotBlank()) {
+        error.message
     } else {
-        "$baseMsg ${error.response.status.description}"
+        error.response.status.description
     }
-}
+
 
 private operator fun <T : IdType> List<T>?.plus(item: T?) =
     when {
