@@ -135,7 +135,7 @@ class ImportService(private val settingsRepository: SettingsRepository) {
         get() = if (settingsRepository.get().standardiseFilenames) {
             "$artist - ${title}.${Paths.get(path).extension}"
         } else {
-            filename
+            "$filename.${Paths.get(path).extension}"
         }.removeIllegalFileCharacters()
 
 }

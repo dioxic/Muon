@@ -10,6 +10,7 @@ import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.repository.SettingsRepository
 import java.nio.file.Files
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.nameWithoutExtension
 import kotlin.test.Test
 
 class ImportServiceTest {
@@ -52,7 +53,7 @@ class ImportServiceTest {
         val service = setupService(
             Settings.DEFAULT.copy(
                 softDelete = true,
-                deleteDirs = tmpDir.absolutePathString()
+                deleteDir = tmpDir.absolutePathString()
             )
         )
 
@@ -74,11 +75,12 @@ class ImportServiceTest {
     }
 
     @Test
-    fun `import track`() {
-        val tmpDir = Files.createTempDirectory("import_")
+    fun `import track successful`() {
+        val importDir = Files.createTempDirectory("import_")
         val service = setupService(
             Settings.DEFAULT.copy(
-                downloadDirs = tmpDir.absolutePathString()
+                importDir = importDir.absolutePathString(),
+                standardiseFilenames = false
             )
         )
 
@@ -90,21 +92,45 @@ class ImportServiceTest {
 
         service.importTrack(
             fixture<Track>().copy(
+                filename = f.nameWithoutExtension,
                 path = f.absolutePathString()
             )
         )
 
         // check file has been moved
         assertThat(f).doesNotExist()
-        assertThat(tmpDir.resolve(f.fileName)).exists()
+        assertThat(importDir.resolve(f.fileName)).exists()
     }
 
     @Test
-    fun `import track fails when file already exists`() {
-        val tmpDir = Files.createTempDirectory("import_")
+    fun `import fails when missing import dir`() {
+        val service = setupService(
+            Settings.DEFAULT
+        )
+
+        // create file
+        val f = Files.createTempFile("track_", ".mp3")
+
+        val exception = assertThrows<IllegalArgumentException> {
+            service.importTrack(
+                fixture<Track>().copy(
+                    path = f.absolutePathString()
+                )
+            )
+        }
+
+        assertThat(exception.message)
+            .describedAs("exception message")
+            .contains("import directory is not set")
+    }
+
+    @Test
+    fun `import fails when file already exists`() {
+        val importDir = Files.createTempDirectory("import_")
         val service = setupService(
             Settings.DEFAULT.copy(
-                downloadDirs = tmpDir.absolutePathString()
+                importDir = importDir.absolutePathString(),
+                standardiseFilenames = false
             )
         )
 
@@ -112,7 +138,7 @@ class ImportServiceTest {
         val f = Files.createTempFile("track_", ".mp3")
 
         // create existing
-        val existing = Files.createFile(tmpDir.resolve(f.fileName))
+        val existing = Files.createFile(importDir.resolve(f.fileName))
 
         // check files have been created
         assertThat(f).exists()
@@ -121,7 +147,8 @@ class ImportServiceTest {
         val exception = assertThrows<java.nio.file.FileAlreadyExistsException> {
             service.importTrack(
                 fixture<Track>().copy(
-                    path = f.absolutePathString()
+                    path = f.absolutePathString(),
+                    filename = f.nameWithoutExtension
                 )
             )
         }
