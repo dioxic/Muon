@@ -56,6 +56,7 @@ fun main(args: Array<String>) {
 fun Application.plugins() {
     val env = environment.config.property("ktor.environment").getString()
     val isDevelopment = env == "dev"
+    val useCsrf = environment.config.property("ktor.useCsrf").getString().toBoolean()
 
     install(CallLogging) {
         filter { call ->
@@ -98,8 +99,10 @@ fun Application.plugins() {
     install(Sessions) {
         apiSessionCookie(isDevelopment)
     }
-    install(CsrfPlugin) {
-        validateHeader("X-CSRF") { it.call.getCsrfToken() }
+    if (useCsrf) {
+        install(CsrfPlugin) {
+            validateHeader("X-CSRF") { it.call.getCsrfToken() }
+        }
     }
     install(StatusPages) {
         exception<Throwable> { call, cause ->
