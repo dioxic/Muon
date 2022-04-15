@@ -70,7 +70,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
 
     private fun Statement.executeAndLogQuery(where: String?): ResultSet {
         val sql = query(where)
-        logger.debug(sql)
+        logger.trace(sql)
         return executeQuery(sql)
     }
 
@@ -141,7 +141,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
 					LEFT JOIN djmdColor as COLOR ON TRACK.ColorID = COLOR.ID
 					LEFT JOIN djmdSongMyTag as SONG_MYTAG ON TRACK.ID = SONG_MYTAG.ContentID
 					LEFT JOIN djmdMyTag as MYTAG ON SONG_MYTAG.MyTagID = MYTAG.ID
-                    ${where?.let { "WHERE $it" }}
+                    ${where?.let { "WHERE $it" } ?: ""}
 					GROUP BY TRACK.ID
                 """.trimIndent()
 }
