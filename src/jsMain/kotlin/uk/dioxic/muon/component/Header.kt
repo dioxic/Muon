@@ -9,6 +9,7 @@ import mui.icons.material.GitHub
 import mui.icons.material.MenuBook
 import mui.material.*
 import mui.material.styles.Theme
+import mui.material.styles.TypographyVariant
 import mui.material.styles.useTheme
 import mui.system.sx
 import react.*
@@ -36,7 +37,7 @@ val Header = FC<Props> {
         Toolbar {
             Typography {
                 sx { flexGrow = number(1.0) }
-                variant = "h6"
+                variant = TypographyVariant.h6
                 noWrap = true
                 component = ReactHTML.div
 

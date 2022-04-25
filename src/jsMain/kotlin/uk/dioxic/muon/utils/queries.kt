@@ -18,6 +18,10 @@ fun <TData> defaultQueryOptions(queryKey: QueryKey): UseQueryOptions<TData, Resp
         retry = { failureCount, _ -> (failureCount < 1) }
         staleTime = JsDuration.MAX_VALUE
         onError = { error ->
+            if (error.response.asDynamic() == undefined) {
+                println(error.cause)
+                addAlert(Alert.AlertError("Error fetching $queryKey - connection failed"))
+            }
             addAlert(Alert.AlertError("Error fetching $queryKey - ${error.response.status.description}"))
         }
     }
@@ -84,7 +88,7 @@ fun <TData : IdType> listModifyMutationOptions(queryKey: QueryKey): UseMutationO
     }
 }
 
-fun <TData : IdType> listDeleteMutationOptions(queryKey: QueryKey): UseMutationOptions<TData, ResponseException, TData, TData> {
+fun <TData : IdType> listDeleteMutationOptions(queryKey: QueryKey): UseMutationOptions<Unit, ResponseException, TData, TData> {
     val queryClient = useQueryClient()
     val (_, addAlert) = useContext(AlertContext)
 
@@ -111,7 +115,7 @@ fun <TData : IdType> listDeleteMutationOptions(queryKey: QueryKey): UseMutationO
     }
 }
 
-private fun errMsg(error: ResponseException) =
+fun errMsg(error: ResponseException) =
     if (error is InternalServerException && error.message.isNotBlank()) {
         error.message
     } else {
@@ -119,7 +123,7 @@ private fun errMsg(error: ResponseException) =
     }
 
 
-private operator fun <T : IdType> List<T>?.plus(item: T?) =
+operator fun <T : IdType> List<T>?.plus(item: T?) =
     when {
         item == null && this != null -> this
         item != null && this == null -> listOf(item)
@@ -132,10 +136,20 @@ private operator fun <T : IdType> List<T>?.plus(item: T?) =
         else -> emptyList()
     }
 
-private operator fun <T : IdType> List<T>?.minus(item: T?) =
+operator fun <T : IdType> List<T>?.minus(item: T?) =
     when {
         item == null && this != null -> this
         item != null && this != null -> this.filterNot { it.id == item.id }
+        else -> emptyList()
+    }
+
+operator fun <T : IdType> List<T>?.minus(list: List<T>?) =
+    when {
+        list == null && this != null -> this
+        list != null && this != null -> {
+            val ids = list.map { it.id }
+            this.filterNot { ids.contains(it.id) }
+        }
         else -> emptyList()
     }
 

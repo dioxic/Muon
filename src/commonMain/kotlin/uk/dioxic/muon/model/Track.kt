@@ -17,6 +17,12 @@ data class Track(
     val length: Int,
     val year: String,
     val fileSize: Int,
-    val type: FileType
-): IdType
+    val type: FileType,
+    val bpm: Int? = null,
+    val key: String? = null,
+    val rating: Int? = null,
+    val color: RbColor? = null,
+    val tags: List<String>? = null,
+    val duplicates: List<Track>? = null,
+) : IdType
 

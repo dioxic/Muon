@@ -6,22 +6,21 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
 import org.apache.lucene.index.Term
-import org.apache.lucene.queryparser.classic.QueryParser
 import org.apache.lucene.search.*
 import org.apache.lucene.search.BooleanClause.Occur
 import org.apache.lucene.store.MMapDirectory
-import uk.dioxic.muon.lucene.NGramAnalyzer
+import uk.dioxic.muon.lucene.analyze
 import uk.dioxic.muon.lucene.charArraySetOf
 import uk.dioxic.muon.lucene.toDocument
-import uk.dioxic.muon.model.RbTrack
+import uk.dioxic.muon.model.Track
 import java.io.Closeable
 import java.nio.file.Path
 
 
 class LuceneRepository(indexPath: Path) : Closeable {
     private val logger = LogManager.getLogger()
-    private val stopWords = charArraySetOf("and", "ft", "feat")
-    private val searchAnalyser = NGramAnalyzer(stopWords)
+    private val stopWords = charArraySetOf("and", "ft", "feat", "dj")
+    private val searchAnalyser = StandardAnalyzer(stopWords)
     private val directory = MMapDirectory.open(indexPath)
     private val indexWriter: IndexWriter = IndexWriter(
         directory,
@@ -34,6 +33,15 @@ class LuceneRepository(indexPath: Path) : Closeable {
     }
 
     fun search(
+        track: Track,
+        maxResults: Int
+    ) = searcherManager.use { searcher ->
+        searcher.search(query(track), maxResults)
+            .scoreDocs
+            .map { searcher.doc(it.doc, setOf("id")).get("id") }
+    }
+
+    fun search(
         text: String?,
         maxResults: Int
     ) = searcherManager.use { searcher ->
@@ -42,7 +50,7 @@ class LuceneRepository(indexPath: Path) : Closeable {
             .map { searcher.doc(it.doc, setOf("id")).get("id") }
     }
 
-    suspend fun upsert(tracks: Flow<RbTrack>): Int {
+    suspend fun upsert(tracks: Flow<Track>): Int {
         var count = 0
         tracks.collect { track ->
             logger.trace("upserting lucene index with ${track.filename}")
@@ -67,9 +75,6 @@ class LuceneRepository(indexPath: Path) : Closeable {
     }
 
     private inline fun <T> SearcherManager.use(block: (IndexSearcher) -> T): T {
-//        contract {
-//            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-//        }
         val searcher = this.acquire()
         try {
             return block(searcher)
@@ -78,19 +83,50 @@ class LuceneRepository(indexPath: Path) : Closeable {
         }
     }
 
-    private fun query(
-        text: String? = null
-    ): Query =
+    private fun query(track: Track) =
+        with(BooleanQuery.Builder()) {
+            add(PhraseQuery(1, "artist", *analyze(track.artist, searchAnalyser).toTypedArray()), Occur.MUST)
+            add(PhraseQuery(1, "title", *analyze(track.title, searchAnalyser).toTypedArray()), Occur.MUST)
+            add(PhraseQuery(1, "lyricist", *analyze(track.lyricist, searchAnalyser).toTypedArray()), Occur.SHOULD)
+//            analyze(track.artist, searchAnalyser).forEach {
+//                add(FuzzyQuery(Term("artist", it), 1), Occur.MUST)
+//            }
+//            analyze(track.title, searchAnalyser).forEach {
+//                add(FuzzyQuery(Term("title", it), 1), Occur.MUST)
+//            }
+//            analyze(track.lyricist, searchAnalyser).forEach {
+//                add(FuzzyQuery(Term("lyricist", it), 1), Occur.SHOULD)
+//            }
+
+            build()
+        }
+
+    private fun query(text: String? = null): Query =
         if (text == null || text.isBlank()) {
             MatchAllDocsQuery()
         } else {
-            BooleanQuery.Builder()
-                .add(
-                    QueryParser("search", searchAnalyser).parse(QueryParser.escape(text)),
-                    Occur.MUST
-                )
-                .add(FuzzyQuery(Term("search", text)), Occur.SHOULD)
-                .build()
+//            with(PhraseQuery.Builder()) {
+//                setSlop(2)
+//                text.split(Regex("\\s+")).forEach {
+//                    logger.info("token: $it")
+//                    add(Term("search", it))
+//                }
+//                build()
+//            }
+
+            with(BooleanQuery.Builder()) {
+//                add(
+//                    QueryParser("search", searchAnalyser).parse(QueryParser.escape(text)),
+//                    Occur.SHOULD
+//                )
+                analyze(text, searchAnalyser).forEach {
+                    logger.info("token: $it")
+                    add(FuzzyQuery(Term("search", it), 2), Occur.MUST)
+                }
+
+
+                build()
+            }
         }
 
 }

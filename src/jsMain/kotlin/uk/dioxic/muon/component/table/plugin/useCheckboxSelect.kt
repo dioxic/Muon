@@ -14,6 +14,7 @@ import uk.dioxic.muon.component.table.CellType
 val useCheckboxSelect = PluginHook<Any> {
     val newColumn = jso<SimpleColumn<Any, *>> {
         id = CellType.CHECKBOX.id
+
         headerFunction = { header ->
             val component = FC<TableToggleAllRowsSelectedProps> { props ->
                 Checkbox {

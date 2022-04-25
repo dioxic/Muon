@@ -13,11 +13,13 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.*
 
-class ImportService(private val settingsRepository: SettingsRepository) {
+class TrackService(
+    private val settingsRepository: SettingsRepository,
+) {
 
     private val logger = LogManager.getLogger()
 
-    fun getTracks(): List<Track> {
+    fun getImportTracks(): List<Track> {
         val dirs = settingsRepository.get().downloadDirs
         require(dirs.isNotEmpty()) { "download directory not set!" }
 
@@ -45,21 +47,18 @@ class ImportService(private val settingsRepository: SettingsRepository) {
     fun importTrack(track: Track) {
         logger.debug("importing track ${track.path}")
 
-        val settings = settingsRepository.get()
-        val file = File(track.path)
+        val importDir = settingsRepository.get().importDir
+        requireNotNull(importDir) { "import directory is not set!" }
 
+        val file = File(track.path)
         require(file.isFile) { "${track.path} is not a file!" }
 
-        val originalPath = file.toPath()
+        val importPath = Path(importDir)
+        val newPath = importPath.resolve(track.targetFilename)
 
-        requireNotNull(settings.importDir) { "import directory is not set!" }
+        importPath.createDirectories()
 
-        val importDir = Path(settings.importDir)
-        val newPath = importDir.resolve(track.targetFilename)
-
-        importDir.createDirectories()
-
-        Files.move(originalPath, newPath)
+        Files.move(file.toPath(), newPath)
     }
 
     fun deleteTrack(track: Track) {
@@ -84,7 +83,6 @@ class ImportService(private val settingsRepository: SettingsRepository) {
             file.delete()
         }
     }
-
 
     fun updateTrack(track: Track): Track {
         logger.debug("updating tags for ${track.path}")

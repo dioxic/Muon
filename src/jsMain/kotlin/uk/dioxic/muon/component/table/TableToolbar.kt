@@ -7,6 +7,7 @@ import csstype.px
 import kotlinx.js.ReadonlyArray
 import mui.material.*
 import mui.material.styles.Theme
+import mui.material.styles.TypographyVariant
 import mui.material.styles.useTheme
 import mui.system.sx
 import react.FC
@@ -49,10 +50,10 @@ val TableToolbar = FC<TableToolbarProps<Track>> { (title, selected, actions) ->
             component = ReactHTML.div
 
             if (selected.isNotEmpty()) {
-                variant = "subtitle1"
+                variant = TypographyVariant.subtitle1
                 +"${selected.size} selected"
             } else {
-                variant = "h6"
+                variant = TypographyVariant.h6
                 +title
             }
         }
@@ -71,7 +72,7 @@ val TableToolbar = FC<TableToolbarProps<Track>> { (title, selected, actions) ->
                             action.iconColor?.let {
                                 color = it
                             }
-                            onClick = { _ -> action.onClick(selected) }
+                            onClick = { _ -> action.onClick(selected.map { it.original }) }
 
                             action.icon()
                         }
@@ -87,7 +88,6 @@ val TableToolbar = FC<TableToolbarProps<Track>> { (title, selected, actions) ->
                                 top = 4.px
                                 left = 4.px
                                 zIndex = integer(1)
-//                                color = kotlinx.css.Color.green.value.asDynamic().unsafeCast<ColorProperty>()
                             }
 
                             variant = CircularProgressVariant.indeterminate

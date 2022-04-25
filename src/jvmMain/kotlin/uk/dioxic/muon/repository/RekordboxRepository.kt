@@ -4,9 +4,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDateTime
 import org.apache.logging.log4j.LogManager
 import uk.dioxic.muon.exceptions.IdNotFoundException
-import uk.dioxic.muon.model.Color
 import uk.dioxic.muon.model.FileType
-import uk.dioxic.muon.model.RbTrack
+import uk.dioxic.muon.model.RbColor
+import uk.dioxic.muon.model.Track
 import java.io.Closeable
 import java.nio.file.Path
 import java.sql.DriverManager
@@ -41,7 +41,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
             }
         }
 
-    fun getTrackById(id: String): RbTrack {
+    fun getTrackById(id: String): Track {
         conn.createStatement().use { stmt ->
             val rs = stmt.executeAndLogQuery("TRACK.ID = $id")
             if (rs.next()) {
@@ -74,9 +74,9 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
         return executeQuery(sql)
     }
 
-    private fun ResultSet.toTrack(): RbTrack {
+    private fun ResultSet.toTrack(): Track {
         val fullPath = Path.of(getString("fullPath"))
-        return RbTrack(
+        return Track(
             title = getString("title").orEmpty(),
             artist = getString("artist").orEmpty(),
             genre = getString("genre").orEmpty(),
@@ -98,7 +98,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
             fileSize = getInt("fileSize"),
             bpm = getInt("bpm") / 100,
             key = getString("key"),
-            color = getString("color")?.let { Color.valueOf(it.uppercase()) },
+            color = getString("color")?.let { RbColor.valueOf(it.uppercase()) },
             rating = getInt("rating"),
             tags = getString("tags")?.split(",") ?: emptyList(),
         )

@@ -5,6 +5,7 @@ import emotion.react.css
 import mui.material.Box
 import mui.material.Typography
 import mui.material.TypographyAlign
+import mui.material.styles.TypographyVariant
 import mui.system.sx
 import react.FC
 import react.Props
@@ -19,7 +20,7 @@ val Placeholder = FC<Props> {
         }
 
         Typography {
-            variant = "h6"
+            variant = TypographyVariant.h6
             align = TypographyAlign.center
 
             +"Select something to do"

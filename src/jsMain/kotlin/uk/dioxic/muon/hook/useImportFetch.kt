@@ -6,10 +6,8 @@ import react.query.useQuery
 import uk.dioxic.muon.Routes
 import uk.dioxic.muon.api.Api
 import uk.dioxic.muon.common.QueryKey
-import uk.dioxic.muon.model.Track
+import uk.dioxic.muon.model.Tracks
 import uk.dioxic.muon.utils.defaultQueryOptions
-
-typealias Tracks = List<Track>
 
 fun useImportFetch() = useQuery(
     queryKey = QueryKey.IMPORT,

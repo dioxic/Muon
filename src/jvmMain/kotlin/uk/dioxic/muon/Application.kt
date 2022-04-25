@@ -32,8 +32,8 @@ import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.server.*
 import uk.dioxic.muon.server.plugins.CsrfPlugin
 import uk.dioxic.muon.server.plugins.KoinPlugin
-import uk.dioxic.muon.service.ImportService
 import uk.dioxic.muon.service.SearchService
+import uk.dioxic.muon.service.TrackService
 import kotlin.time.Duration.Companion.days
 
 private val appModule = module {
@@ -45,7 +45,7 @@ private val appModule = module {
     }
     singleOf(::SearchService)
     single { SettingsRepository(Global.homePath) }
-    singleOf(::ImportService)
+    singleOf(::TrackService)
 }
 
 fun main(args: Array<String>) {
@@ -66,6 +66,7 @@ fun Application.plugins() {
     install(ContentNegotiation) {
         json(Json {
             prettyPrint = isDevelopment
+            encodeDefaults = true
         })
     }
 //    install(CORS) {

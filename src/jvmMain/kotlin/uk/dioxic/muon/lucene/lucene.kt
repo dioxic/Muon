@@ -2,10 +2,11 @@ package uk.dioxic.muon.lucene
 
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.CharArraySet
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 import org.apache.lucene.document.*
 import org.apache.lucene.index.IndexOptions
-import org.apache.lucene.util.BytesRef
-import uk.dioxic.muon.model.RbTrack
+import uk.dioxic.muon.model.Track
+
 
 fun charArraySetOf(vararg item: String) =
     CharArraySet(item.toList(), false)
@@ -16,11 +17,12 @@ private val searchFieldType = FieldType().apply {
     freeze()
 }
 
-fun RbTrack.toDocument(searchAnalyser: Analyzer): Document = Document().apply {
+fun Track.toDocument(searchAnalyser: Analyzer): Document = Document().apply {
     add(
         Field(
-        "search",
-        searchAnalyser.tokenStream("search", "$artist $title $lyricist"), searchFieldType)
+            "search",
+            searchAnalyser.tokenStream("search", "$artist $title $lyricist"), searchFieldType
+        )
     )
     add(StringField("id", id, Field.Store.YES))
     add(TextField("artist", artist, Field.Store.NO))
@@ -36,9 +38,20 @@ fun RbTrack.toDocument(searchAnalyser: Analyzer): Document = Document().apply {
     add(StringField("path", path, Field.Store.NO))
     add(StringField("filename", filename, Field.Store.NO))
     add(IntPoint("filesize", fileSize))
+    add(StringField("key", key, Field.Store.NO))
+    rating?.let { add(IntPoint("rating", it))}
+    bpm?.let { add(IntPoint("bpm", it))}
+    color?.apply { add(StringField("color", name, Field.Store.NO)) }
+}
 
-    add(SortedDocValuesField("artist_sort", BytesRef(artist)))
-    add(SortedDocValuesField("title_sort", BytesRef(title)))
-    add(SortedDocValuesField("lyricist_sort", BytesRef(lyricist)))
-    add(SortedDocValuesField("album_sort", BytesRef(album)))
+fun analyze(text: String, analyzer: Analyzer): List<String> {
+    val result = mutableListOf<String>()
+    analyzer.tokenStream("FIELD_NAME", text).use { tokenStream ->
+        val attr = tokenStream.addAttribute(CharTermAttribute::class.java)
+        tokenStream.reset()
+        while (tokenStream.incrementToken()) {
+            result.add(attr.toString())
+        }
+        return result
+    }
 }

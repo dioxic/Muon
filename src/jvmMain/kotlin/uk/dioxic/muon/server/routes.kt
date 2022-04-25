@@ -6,18 +6,26 @@ import io.ktor.server.html.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.html.*
 import org.koin.core.context.GlobalContext
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
 import uk.dioxic.muon.Routes
+import uk.dioxic.muon.model.FileType
+import uk.dioxic.muon.model.ImportResponse
+import uk.dioxic.muon.model.Track
+import uk.dioxic.muon.model.Tracks
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
-import uk.dioxic.muon.service.ImportService
 import uk.dioxic.muon.service.SearchService
+import uk.dioxic.muon.service.TrackService
+import java.util.*
 
 fun Routing.tracks() {
     val searchService by inject<SearchService>()
+    val trackService by inject<TrackService>()
     val rekordboxRepository by inject<RekordboxRepository>()
 
     route(Routes.track) {
@@ -26,9 +34,42 @@ fun Routing.tracks() {
             call.respond(rekordboxRepository.getTrackById(id!!))
         }
         get {
-            val maxResults = call.request.queryParameters["maxResults"]?.toIntOrNull() ?: 500
+            val maxResults = call.request.queryParameters["maxResults"]?.toIntOrNull() ?: 100
             val query = call.request.queryParameters["q"]
             call.respond(searchService.search(query, maxResults))
+        }
+        get("trackSearch") {
+            val maxResults = call.request.queryParameters["maxResults"]?.toIntOrNull() ?: 100
+            val track = Track(
+                id = UUID.randomUUID().toString(),
+                artist = call.request.queryParameters["artist"] ?: "",
+                title = call.request.queryParameters["title"] ?: "",
+                lyricist = call.request.queryParameters["lyricist"] ?: "",
+                genre = "",
+                filename = "",
+                comment = "",
+                length = 0,
+                path = "",
+                bitrate = 0,
+                album = "",
+                year = "",
+                fileSize = 0,
+                type = FileType.UNKNOWN
+            )
+
+            call.respond(searchService.search(track, maxResults))
+        }
+        post("trackSearch") {
+            val maxResults = call.request.queryParameters["maxResults"]?.toIntOrNull() ?: 100
+            val track = call.receive<Track>()
+            call.respond(searchService.search(track, maxResults))
+        }
+        patch {
+            call.respond(trackService.updateTrack(call.receive()))
+        }
+        delete {
+            trackService.deleteTrack(call.receive())
+            call.respond(HttpStatusCode.OK)
         }
     }
 }
@@ -62,22 +103,42 @@ fun Routing.settings() {
 }
 
 fun Routing.import() {
-    val importService by inject<ImportService>()
+    val trackService by inject<TrackService>()
+    val searchService by inject<SearchService>()
 
     route(Routes.import) {
         get {
-            call.respond(importService.getTracks())
-        }
-        patch {
-            call.respond(importService.updateTrack(call.receive()))
-        }
-        delete {
-            importService.deleteTrack(call.receive())
-            call.respond(HttpStatusCode.OK)
+            var tracks = trackService.getImportTracks()
+
+            if (!call.request.queryParameters["exDuplicates"].toBoolean()) {
+                tracks = tracks.map { track ->
+                    val duplicates = searchService.search(track, 5)
+                    if (duplicates.isNotEmpty()) {
+                        track.copy(duplicates = duplicates)
+                    } else {
+                        track
+                    }
+                }
+            }
+            call.respond(tracks)
         }
         post {
-            importService.importTrack(call.receive())
-            call.respond(HttpStatusCode.OK)
+            val tracks = call.receive<Tracks>()
+
+            val successes = mutableListOf<String>()
+            val errors = mutableMapOf<String, String>()
+
+            tracks.forEach { track ->
+                withContext(Dispatchers.IO) {
+                    try {
+                        trackService.importTrack(track)
+                        successes.add(track.id)
+                    } catch (e: Throwable) {
+                        errors[track.id] = "${e::class.simpleName} - ${e.message}"
+                    }
+                }
+            }
+            call.respond(message = ImportResponse(successes, errors))
         }
     }
 }
@@ -129,13 +190,13 @@ fun Routing.indexHtml() {
 
 private inline fun <reified T : Any> Routing.inject(
     qualifier: Qualifier? = null,
-    noinline parameters: ParametersDefinition? = null
+    noinline parameters: ParametersDefinition? = null,
 ) =
     lazy { get<T>(qualifier, parameters) }
 
 private inline fun <reified T : Any> Routing.get(
     qualifier: Qualifier? = null,
-    noinline parameters: ParametersDefinition? = null
+    noinline parameters: ParametersDefinition? = null,
 ) =
     getKoin().get<T>(qualifier, parameters)
 

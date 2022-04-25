@@ -8,23 +8,22 @@ import uk.dioxic.muon.Routes
 import uk.dioxic.muon.api.Api
 import uk.dioxic.muon.common.QueryKey
 import uk.dioxic.muon.model.Track
-import uk.dioxic.muon.utils.listDeleteMutationOptions
+import uk.dioxic.muon.utils.listModifyMutationOptions
 import kotlin.js.Promise
 
-typealias ImportTrack = (Track) -> Unit
+typealias SaveTrack = (Track) -> Unit
 
-fun useImportImport(): ImportTrack {
+fun useTrackSave(): SaveTrack {
     val mutation = useMutation(
-        mutationFn = ::importTrack,
-        options = listDeleteMutationOptions(QueryKey.IMPORT)
+        mutationFn = ::saveTrack,
+        options = listModifyMutationOptions(QueryKey.IMPORT)
     )
     return { track ->
         mutation.mutate(track, jso())
     }
 }
 
-private fun importTrack(track: Track): Promise<Track> =
+private fun saveTrack(track: Track): Promise<Track> =
     MainScope().promise {
-        Api.post(Routes.import, track)
-        track
+        Api.patch(Routes.track, track)
     }

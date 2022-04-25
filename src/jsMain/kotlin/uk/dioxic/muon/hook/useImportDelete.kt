@@ -23,8 +23,7 @@ fun useImportDelete(): DeleteTrack {
     }
 }
 
-private fun deleteTrack(track: Track): Promise<Track> =
+private fun deleteTrack(track: Track): Promise<Unit> =
     MainScope().promise {
         Api.delete(Routes.import, track)
-        track
     }

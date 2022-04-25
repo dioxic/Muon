@@ -15,10 +15,8 @@ import uk.dioxic.muon.utils.CsrfTokenHandler
 
 class InternalServerException(
     response: HttpResponse,
-    cachedResponseText: String
-) : ResponseException(response, cachedResponseText) {
-    override val message: String = cachedResponseText
-}
+    override val message: String
+) : ResponseException(response, message)
 
 val client = HttpClient(Js) {
     install(ContentNegotiation) {
@@ -33,9 +31,10 @@ val client = HttpClient(Js) {
             // the default response validator only throw ResponseExceptions
             val responseException = exception as? ResponseException ?: return@handleResponseExceptionWithRequest
 
-            val exceptionResponse = responseException.response
-            if (exceptionResponse.status == HttpStatusCode.InternalServerError) {
-                throw InternalServerException(exceptionResponse, exceptionResponse.bodyAsText())
+            with(responseException.response) {
+                when (status) {
+                    HttpStatusCode.InternalServerError -> throw InternalServerException(this, bodyAsText())
+                }
             }
         }
     }
@@ -71,15 +70,23 @@ object Api {
             formData(formBuilder)
         }
 
-    suspend inline fun <reified T> post(path: String, data: T): T =
+    suspend inline fun <reified T, reified TResult> post(
+        path: String,
+        data: T,
+        vararg parameters: Pair<String, String>
+    ): TResult =
         apiRequest {
             method = HttpMethod.Post
             localUrl(path)
+            parameters.forEach { (k, v) ->
+                parameter(k, v)
+            }
+
             contentType(ContentType.Application.Json)
             setBody(data)
         }
 
-    suspend inline fun <reified T> put(path: String, data: T): T =
+    suspend inline fun <reified T, reified TResult> put(path: String, data: T): TResult =
         apiRequest {
             method = HttpMethod.Put
             localUrl(path)

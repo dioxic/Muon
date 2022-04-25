@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
 
 plugins {
-    kotlin("multiplatform") version "1.6.20"
-    kotlin("plugin.serialization") version "1.6.20"
+    kotlin("multiplatform") version "1.6.21"
+    kotlin("plugin.serialization") version "1.6.21"
 //    alias(libs.plugins.kotlin.serialization)
 //    alias(libs.plugins.axion)
 //    alias(libs.plugins.versions)
@@ -88,7 +88,7 @@ kotlin {
                 implementation(libs.kotlin.test)
                 implementation(libs.assertj)
                 implementation(libs.mockk)
-                implementation(libs.fixture)
+                implementation(libs.bundles.fixture)
             }
         }
 
@@ -143,16 +143,6 @@ tasks.getByName<Jar>("jvmJar") {
     }
 }
 
-//tasks.withType<KotlinCompile> {
-//    kotlinOptions.jvmTarget = "17"
-//}
-
-//tasks.withType<Test> {
-//    useJUnitPlatform {
-//        includeEngines("spek2")
-//    }
-//}
-
 distributions {
     main {
         contents {
@@ -164,15 +154,6 @@ distributions {
     }
 }
 
-// Alias "installDist" as "stage" (for cloud providers)
-//tasks.create("stage") {
-//    dependsOn(tasks.getByName("installDist"))
-//}
-
-//tasks.named<Copy>("jvmProcessResources") {
-//    val jsBrowserDistribution = tasks.named("jsBrowserDistribution")
-//    from(jsBrowserDistribution)
-//}
 
 tasks.named<JavaExec>("run") {
     classpath(tasks.named<Jar>("jvmJar"))

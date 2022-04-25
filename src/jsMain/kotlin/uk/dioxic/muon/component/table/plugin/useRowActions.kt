@@ -43,7 +43,7 @@ fun <T: Any> useRowActions(actions: List<RowAction<T>>) = PluginHook<T> {
                                 size = Size.small
                                 onClick = { event ->
                                     event.stopPropagation()
-                                    action.onClick(cell.row)
+                                    action.onClick(cell.row.original)
                                 }
 
                                 action.icon()

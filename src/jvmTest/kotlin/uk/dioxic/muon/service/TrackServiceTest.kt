@@ -1,5 +1,7 @@
 package uk.dioxic.muon.service
 
+import com.appmattus.kotlinfixture.decorator.optional.AlwaysOptionalStrategy
+import com.appmattus.kotlinfixture.decorator.optional.optionalStrategy
 import com.appmattus.kotlinfixture.kotlinFixture
 import io.mockk.every
 import io.mockk.mockk
@@ -13,14 +15,17 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.nameWithoutExtension
 import kotlin.test.Test
 
-class ImportServiceTest {
+class TrackServiceTest {
 
     private val settingsRepository = mockk<SettingsRepository>()
-    private val fixture = kotlinFixture()
+    private val fixture = kotlinFixture {
+        optionalStrategy(AlwaysOptionalStrategy)
+        property(Track::duplicates) { emptyList() }
+    }
 
-    private fun setupService(settings: Settings): ImportService {
+    private fun setupService(settings: Settings): TrackService {
         every { settingsRepository.get() } returns settings
-        return ImportService(settingsRepository)
+        return TrackService(settingsRepository)
     }
 
     @Test

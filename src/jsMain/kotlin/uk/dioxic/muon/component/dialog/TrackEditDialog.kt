@@ -12,19 +12,20 @@ import react.dom.html.ButtonType
 import react.dom.html.InputType
 import react.dom.html.ReactHTML.form
 import react.dom.onChange
-import uk.dioxic.muon.hook.useImportSave
 import uk.dioxic.muon.hook.useSettingsFetch
+import uk.dioxic.muon.hook.useTrackSave
 import uk.dioxic.muon.model.Track
+import uk.dioxic.muon.model.Tracks
 
 external interface TrackDialogProps : Props {
-    var tracks: List<Track>
+    var tracks: Tracks
     var open: Boolean
     var handleClose: () -> Unit
 }
 
 const val MULTIPLE: String = "MULTIPLE"
 
-val defaultTextProps: BaseTextFieldProps = jso {
+private val defaultTextProps: BaseTextFieldProps = jso {
     type = InputType.text
     spellCheck = false
     variant = FormControlVariant.outlined
@@ -33,7 +34,7 @@ val defaultTextProps: BaseTextFieldProps = jso {
 }
 
 val TrackEditDialog = FC<TrackDialogProps> { props ->
-    val saveTrack = useImportSave()
+    val saveTrack = useTrackSave()
     val settings = useSettingsFetch().data
     var editTrack = props.tracks.merge()
 
