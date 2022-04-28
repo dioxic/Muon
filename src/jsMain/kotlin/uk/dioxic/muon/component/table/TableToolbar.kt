@@ -69,6 +69,7 @@ val TableToolbar = FC<TableToolbarProps<Track>> { (title, selected, actions) ->
                         this.title = ReactNode(action.name)
 
                         IconButton {
+                            disabled = action.fetchingAnimation
                             action.iconColor?.let {
                                 color = it
                             }
