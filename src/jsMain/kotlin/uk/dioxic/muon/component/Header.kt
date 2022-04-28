@@ -1,12 +1,13 @@
 package uk.dioxic.muon.component
 
+import csstype.Position
 import csstype.integer
 import csstype.number
+import csstype.px
 import kotlinx.browser.window
-import mui.icons.material.Brightness4
-import mui.icons.material.Brightness7
-import mui.icons.material.GitHub
-import mui.icons.material.MenuBook
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.promise
+import mui.icons.material.*
 import mui.material.*
 import mui.material.styles.Theme
 import mui.material.styles.TypographyVariant
@@ -18,14 +19,19 @@ import react.dom.aria.ariaHasPopup
 import react.dom.aria.ariaLabel
 import react.dom.html.ReactHTML
 import react.router.useLocation
+import uk.dioxic.muon.Routes
+import uk.dioxic.muon.api.Api
 import uk.dioxic.muon.common.Area
 import uk.dioxic.muon.common.Themes
+import uk.dioxic.muon.context.AlertContext
 import uk.dioxic.muon.context.ThemeContext
 
 val Header = FC<Props> {
     val theme = useTheme<Theme>()
+    val (_, addAlert) = useContext(AlertContext)
     val toggleColorMode = useContext(ThemeContext)
     val lastPathname = useLocation().pathname.substringAfterLast("/")
+    val (indexing, setIndexing) = useState(false)
 
     AppBar {
         position = AppBarPosition.fixed
@@ -95,6 +101,48 @@ val Header = FC<Props> {
                     }
 
                     GitHub()
+                }
+            }
+            Box {
+                sx {
+                    position = Position.relative
+                }
+                Tooltip {
+                    title = ReactNode("Reindex Rekordbox Database")
+
+                    IconButton {
+                        ariaLabel = "reindex"
+                        ariaHasPopup = `false`
+                        size = Size.large
+                        color = IconButtonColor.inherit
+                        disabled = indexing == true
+                        onClick = {
+                            setIndexing(true)
+                            MainScope().promise {
+                                Api.get<String>("${Routes.index}/refresh")
+                            }.then {
+                                addAlert(uk.dioxic.muon.context.Alert.AlertSuccess(it))
+                                setIndexing(false)
+                            }
+                        }
+
+                        LibraryMusic()
+                    }
+                }
+                if (indexing) {
+                    CircularProgress {
+                        size = 38.px
+                        color = CircularProgressColor.success
+
+                        sx {
+                            position = Position.absolute
+                            top = 5.px
+                            left = 5.px
+                            zIndex = integer(1)
+                        }
+
+                        variant = CircularProgressVariant.indeterminate
+                    }
                 }
             }
         }
