@@ -164,8 +164,8 @@ val ImportPage = VFC {
         Paper {
             EnhancedTable {
                 title = "Import Table"
-                tableInstance = table //.unsafeCast<TableInstance<Track>>()
-                this.toolbarActions = toolbarActions //.unsafeCast<List<ToolbarAction<Track>>>()
+                tableInstance = table
+                this.toolbarActions = toolbarActions
                 selectedRows = tableInstance.selectedFlatRows
                 columnCount = columnDefinitions.size + 3 // check, expand + actions column
             }

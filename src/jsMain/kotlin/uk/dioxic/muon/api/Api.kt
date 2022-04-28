@@ -57,10 +57,13 @@ suspend inline fun <reified T> apiRequest(requestConfigurator: HttpRequestBuilde
 
 object Api {
 
-    suspend inline fun <reified T> get(path: String): T =
+    suspend inline fun <reified T> get(path: String, vararg parameters: Pair<String, String>): T =
         apiRequest {
             method = HttpMethod.Get
             localUrl(path)
+            parameters.forEach { (k, v) ->
+                parameter(k, v)
+            }
         }
 
     suspend inline fun <reified T> rawPost(path: String, noinline formBuilder: FormBuilder.() -> Unit): T =
