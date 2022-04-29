@@ -13,11 +13,9 @@ import mui.material.styles.useTheme
 import mui.system.sx
 import org.w3c.dom.HTMLInputElement
 import react.*
-import react.dom.html.ButtonType
 import react.dom.html.ReactHTML
 import react.table.*
 import uk.dioxic.muon.common.debounce
-import uk.dioxic.muon.context.AlertContext
 import uk.dioxic.muon.external.chroma
 import uk.dioxic.muon.hook.useTrackSearch
 import uk.dioxic.muon.model.Track
@@ -107,12 +105,6 @@ private val columnDefinitions = columns<Track> {
             createElement(Rating, jso {
                 value = it.value ?: 0
                 readOnly = true
-//                    icon = createElement(Star, jso {
-//                        color = chroma(theme.palette.primary.main)
-//                            .alpha(theme.palette.action.activatedOpacity)
-//                            .hex()
-//                    })
-//                    emptyIcon = StarOutline.create()
             })
         },
     )
@@ -139,9 +131,8 @@ private val columnDefinitions = columns<Track> {
 
 val LibraryPage = VFC {
     val theme = useTheme<Theme>()
-    val (searchText, setSearchText) = useState<String?>(null)
-    val tracks = useTrackSearch(searchText ?: "")
-    val (_, addAlert) = useContext(AlertContext)
+    val (searchText, setSearchText) = useState("")
+    val tracks = useTrackSearch(searchText)
 
     val table = useTable<Track>(
         options = jso {
@@ -151,13 +142,6 @@ val LibraryPage = VFC {
         useSortBy,
         useColumnOrder
     )
-
-    fun handleSearch() {
-        searchText?.let {
-//            setSearchText(it)
-            addAlert(uk.dioxic.muon.context.Alert.AlertSuccess(it))
-        }
-    }
 
     Box {
         Paper {
@@ -181,12 +165,6 @@ val LibraryPage = VFC {
                                 .hex()
                         }
 
-                        component = ReactHTML.form
-                        onSubmit = { event ->
-                            event.preventDefault()
-                            handleSearch()
-                        }
-
                         InputBase {
                             sx {
                                 flex = Flex.fitContent
@@ -194,81 +172,89 @@ val LibraryPage = VFC {
                             }
                             placeholder = "Search Library"
                             onChange = { event ->
-                                debounce((event.target as HTMLInputElement).value, 800) {
-                                    if (it != searchText && it.length > 3) {
+                                debounce((event.target as HTMLInputElement).value, 500) {
+                                    if (it != searchText && (it.length > 3 || it.isEmpty())) {
                                         setSearchText(it)
                                     }
                                 }
                             }
                         }
-                        IconButton {
-                            type = ButtonType.submit
-
-                            Search()
-                        }
-                    }
-                }
-                LibraryTable {
-                    tableInstance = table
-                }
-            }
-        }
-    }
-
-}
-
-external interface LibraryTableProps : Props {
-    var tableInstance: TableInstance<Track>
-}
-
-val LibraryTable = FC<LibraryTableProps> { props ->
-    val theme = useTheme<Theme>()
-
-    Table {
-        sx {
-            MuiRating.root {
-                color = theme.palette.primary.main
-            }
-        }
-        size = Size.small
-
-        +props.tableInstance.getTableProps()
-
-        TableHead {
-            props.tableInstance.headerGroups.forEach { headerGroup ->
-                TableRow {
-                    +headerGroup.getHeaderGroupProps()
-
-                    headerGroup.headers.forEach { header ->
-                        TableCell {
+                        Box {
                             sx {
-                                minWidth = minimumWidths[header.id]!!.px
+                                position = Position.relative
+                                padding = 8.px
+                                MuiSvgIcon.root {
+                                    verticalAlign = VerticalAlign.middle
+                                }
                             }
+                            Search()
 
-                            +header.getHeaderProps(header.getSortByToggleProps())
-                            +header.render(RenderType.Header)
+                            if (tracks.isFetching) {
+                                CircularProgress {
+                                    size = 36.px
+                                    color = CircularProgressColor.success
 
-                            TableSortLabel {
-                                active = header.isSorted
-                                direction = if (header.isSortedDesc)
-                                    TableSortLabelDirection.desc
-                                else
-                                    TableSortLabelDirection.asc
+                                    sx {
+                                        position = Position.absolute
+                                        top = 2.px
+                                        left = 2.px
+                                        zIndex = integer(1)
+                                    }
+
+                                    variant = CircularProgressVariant.indeterminate
+                                }
                             }
                         }
                     }
                 }
-            }
-        }
+                Table {
+                    sx {
+                        MuiRating.root {
+                            color = theme.palette.primary.main
+                        }
+                    }
+                    size = Size.small
 
-        TableBody {
-            props.tableInstance.rows.forEach { row ->
-                props.tableInstance.prepareRow(row)
-                TableRow {
-                    row.cells.forEach { cell ->
-                        TableCell {
-                            +cell.getCellProps()
-                            +cell.render(RenderType.Cell)
+                    +table.getTableProps()
+
+                    TableHead {
+                        table.headerGroups.forEach { headerGroup ->
+                            TableRow {
+                                +headerGroup.getHeaderGroupProps()
+
+                                headerGroup.headers.forEach { header ->
+                                    TableCell {
+                                        sx {
+                                            minWidth = minimumWidths[header.id]!!.px
+                                        }
+
+                                        +header.getHeaderProps(header.getSortByToggleProps())
+                                        +header.render(RenderType.Header)
+
+                                        TableSortLabel {
+                                            active = header.isSorted
+                                            direction = if (header.isSortedDesc)
+                                                TableSortLabelDirection.desc
+                                            else
+                                                TableSortLabelDirection.asc
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    TableBody {
+                        table.rows.forEach { row ->
+                            table.prepareRow(row)
+                            TableRow {
+                                row.cells.forEach { cell ->
+                                    TableCell {
+                                        +cell.getCellProps()
+                                        +cell.render(RenderType.Cell)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
