@@ -39,14 +39,14 @@ import uk.dioxic.muon.service.TrackService
 import kotlin.time.Duration.Companion.days
 
 private val appModule = module {
-    single { LuceneRepository(Global.homePath.resolve("index")) } onClose {
+    single { LuceneRepository(Global.configPath.resolve("index")) } onClose {
         it?.close()
     }
     singleOf(::RekordboxRepository) onClose {
         it?.close()
     }
     singleOf(::SearchService)
-    single { SettingsRepository(Global.homePath) }
+    single { SettingsRepository(Global.configPath) }
     singleOf(::TrackService)
 }
 

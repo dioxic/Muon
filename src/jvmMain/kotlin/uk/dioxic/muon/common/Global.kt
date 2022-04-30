@@ -5,15 +5,12 @@ import java.nio.file.Paths
 import kotlin.io.path.*
 
 object Global {
-    val homePath: Path = initHomePath()
-//    var settings: Settings = loadSettings()
-//        set(value) {
-//            saveSettings(value)
-//            field = value
-//        }
+    val configPath: Path = initHomePath()
 
     private fun initHomePath(): Path {
-        val configPath = Paths.get("${System.getenv("HOMEPATH")}/.muon")
+        // assume that HOMEPATH env exists or a docker build
+        val homePath = System.getenv("HOMEPATH") ?: "/app"
+        val configPath = Paths.get("$homePath/.muon")
 
         // create the muon directory if it doesn't exist
         if (!configPath.exists()) {

@@ -17,9 +17,6 @@ data class Settings(
     companion object {
         val DEFAULT = Settings(
             theme = "dark",
-            rekordboxDatabase = "J:\\rekordbox\\master.db", //TODO remove this
-            downloadDirs = listOf("J:\\import\\complete"),  //TODO remove this
-            deleteDir = "J:\\import\\deleted",  //TODO remove this
             lastRekordboxRefresh = LocalDateTime(1985, 1, 1, 0, 0, 0),
         )
     }

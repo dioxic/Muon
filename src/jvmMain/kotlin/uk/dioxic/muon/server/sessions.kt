@@ -21,7 +21,7 @@ fun SessionsConfig.apiSessionCookie(memoryStorage: Boolean) {
     val sessionStorage = if (memoryStorage) {
         SessionStorageMemory()
     } else {
-        directorySessionStorage(File("${Global.homePath}/.sessions"))
+        directorySessionStorage(File("${Global.configPath}/.sessions"))
     }
     cookie<UserSession>("session", sessionStorage) {
         transform(SessionTransportTransformerMessageAuthentication(secretSignKey))

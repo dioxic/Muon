@@ -78,7 +78,7 @@ val SettingsPage = VFC {
         TextField {
             id = "downloadDir"
             label = ReactNode("Download Folder")
-            defaultValue = settings.downloadDirs.first()
+            defaultValue = settings.downloadDirs.firstOrNull()
             onBlur = { event ->
                 saveSettings(settings.copy(
                     downloadDirs = listOf((event.target as HTMLInputElement).value)
@@ -107,10 +107,6 @@ val SettingsPage = VFC {
                 saveSettings(settings.copy(
                     deleteDir = (event.target as HTMLInputElement).value
                 ))
-            }
-
-            Chip {
-                label = ReactNode("Chip")
             }
 
             +defaultTextProps
