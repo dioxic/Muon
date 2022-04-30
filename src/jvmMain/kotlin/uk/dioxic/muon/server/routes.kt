@@ -21,6 +21,7 @@ import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.service.SearchService
 import uk.dioxic.muon.service.TrackService
+import java.io.File
 import java.util.*
 
 fun Routing.tracks() {
@@ -32,6 +33,11 @@ fun Routing.tracks() {
         get("/{id}") {
             val id = call.parameters["id"]
             call.respond(rekordboxRepository.getTrackById(id!!))
+        }
+        get("/{id}/audio") {
+            val id = call.parameters["id"]
+            val audioFile = File(rekordboxRepository.getTrackById(id!!).path)
+            call.respondFile(audioFile)
         }
         get {
             val maxResults = call.request.queryParameters["maxResults"]?.toIntOrNull() ?: 100

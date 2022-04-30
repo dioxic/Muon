@@ -71,11 +71,9 @@ val EnhancedTable = FC<EnhancedTableProps<Track>> { props ->
                                     }
                                     +header.getHeaderProps(header.getSortByToggleProps())
                                 } else {
-                                    if (cellType != CellType.DEFAULT) {
-                                        sx {
-                                            paddingLeft = 1.px
-                                            paddingRight = 1.px
-                                        }
+                                    sx {
+                                        paddingLeft = 1.px
+                                        paddingRight = 1.px
                                     }
                                     +header.getHeaderProps()
                                 }

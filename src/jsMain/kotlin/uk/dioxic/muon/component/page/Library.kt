@@ -1,9 +1,11 @@
 package uk.dioxic.muon.component.page
 
 import csstype.*
+import kotlinx.browser.window
 import kotlinx.js.jso
 import mui.icons.material.Circle
 import mui.icons.material.CircleOutlined
+import mui.icons.material.PlayCircle
 import mui.icons.material.Search
 import mui.material.*
 import mui.material.Size
@@ -15,7 +17,11 @@ import org.w3c.dom.HTMLInputElement
 import react.*
 import react.dom.html.ReactHTML
 import react.table.*
+import uk.dioxic.muon.Routes
 import uk.dioxic.muon.common.debounce
+import uk.dioxic.muon.component.table.CellType
+import uk.dioxic.muon.component.table.actions.RowAction
+import uk.dioxic.muon.component.table.plugin.useRowActions
 import uk.dioxic.muon.external.chroma
 import uk.dioxic.muon.hook.useTrackSearch
 import uk.dioxic.muon.model.Track
@@ -134,13 +140,26 @@ val LibraryPage = VFC {
     val (searchText, setSearchText) = useState("")
     val tracks = useTrackSearch(searchText)
 
-    val table = useTable<Track>(
+    fun handlePlay(track: Track) {
+        window.open(Routes.trackAudio(track), "_blank")?.focus()
+    }
+
+    val rowActions = listOf(
+        RowAction(
+            name = "Play",
+            icon = PlayCircle,
+            onClick = ::handlePlay
+        )
+    )
+
+    val table = useTable(
         options = jso {
             data = useMemo(tracks.data) { tracks.data?.toTypedArray() ?: emptyArray() }
             columns = useMemo { columnDefinitions }
         },
         useSortBy,
-        useColumnOrder
+        useColumnOrder,
+        useRowActions(rowActions)
     )
 
     Box {
@@ -170,6 +189,8 @@ val LibraryPage = VFC {
                                 flex = Flex.fitContent
                                 marginLeft = 1.em
                             }
+                            spellCheck = false
+                            autoComplete = "off"
                             placeholder = "Search Library"
                             onChange = { event ->
                                 debounce((event.target as HTMLInputElement).value, 500) {
@@ -224,19 +245,30 @@ val LibraryPage = VFC {
 
                                 headerGroup.headers.forEach { header ->
                                     TableCell {
+                                        val cellType = CellType.getCellType(header.id)
+
                                         sx {
-                                            minWidth = minimumWidths[header.id]!!.px
+                                            minimumWidths[header.id]?.let {
+                                                minWidth = it.px
+                                            }
                                         }
 
-                                        +header.getHeaderProps(header.getSortByToggleProps())
+                                        if (cellType == CellType.DEFAULT) {
+                                            +header.getHeaderProps(header.getSortByToggleProps())
+                                        } else {
+                                            +header.getHeaderProps()
+                                        }
+
                                         +header.render(RenderType.Header)
 
-                                        TableSortLabel {
-                                            active = header.isSorted
-                                            direction = if (header.isSortedDesc)
-                                                TableSortLabelDirection.desc
-                                            else
-                                                TableSortLabelDirection.asc
+                                        if (cellType == CellType.DEFAULT) {
+                                            TableSortLabel {
+                                                active = header.isSorted
+                                                direction = if (header.isSortedDesc)
+                                                    TableSortLabelDirection.desc
+                                                else
+                                                    TableSortLabelDirection.asc
+                                            }
                                         }
                                     }
                                 }
