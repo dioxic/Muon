@@ -8,10 +8,12 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.cachingheaders.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.compression.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.partialcontent.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -69,6 +71,8 @@ fun Application.plugins() {
             encodeDefaults = true
         })
     }
+    install(PartialContent)
+    install(AutoHeadResponse)
 //    install(CORS) {
 //        host("0.0.0.0:5000")
 //        anyHost()
@@ -119,10 +123,10 @@ fun Application.plugins() {
                 )
                 else -> {
                     cause.printStackTrace()
-                    call.respondText(
-                        cause.message.orEmpty(),
-                        status = HttpStatusCode.InternalServerError
-                    )
+//                    call.respondText(
+//                        cause.message.orEmpty(),
+//                        status = HttpStatusCode.InternalServerError
+//                    )
                 }
             }
         }

@@ -37,6 +37,12 @@ fun Routing.tracks() {
         get("/{id}/audio") {
             val id = call.parameters["id"]
             val audioFile = File(rekordboxRepository.getTrackById(id!!).path)
+            call.response.header(
+                name = HttpHeaders.ContentDisposition,
+                value = ContentDisposition.Inline
+                    .withParameter(ContentDisposition.Parameters.FileName, audioFile.name)
+                    .toString()
+            )
             call.respondFile(audioFile)
         }
         get {
