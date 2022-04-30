@@ -1,4 +1,5 @@
 //import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
 
@@ -10,7 +11,7 @@ plugins {
 //    alias(libs.plugins.versions)
     application
     id("pl.allegro.tech.build.axion-release") version "1.13.6"
-//    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     id("com.github.ben-manes.versions") version "0.42.0"
 //    id("com.github.turansky.kfc.webpack") version "4.61.0"
 }
@@ -163,6 +164,27 @@ tasks.withType<Test> {
     systemProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
 }
 
+tasks.withType<ShadowJar> {
+    val taskName = if ("true" == project.findProperty("isProduction")) {
+        "jsBrowserProductionWebpack"
+    } else {
+        "jsBrowserDevelopmentWebpack"
+    }
+    val webpackTask = tasks.getByName<KotlinWebpack>(taskName)
+    mergeServiceFiles()
+//    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn(webpackTask) // make sure JS gets compiled first
+    from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) {
+        into("static")
+    }
+    manifest {
+        attributes(mapOf(
+            "Main-Class" to "uk.dioxic.muon.ApplicationKt",
+            "Multi-Release" to "true"
+        ))
+    }
+}
+
 tasks.getByName("distZip") {
     dependsOn(tasks.getByName("jsJar"))
     dependsOn(tasks.getByName("allMetadataJar"))
@@ -182,11 +204,3 @@ tasks.getByName("jsBrowserProductionWebpack") {
     dependsOn(tasks.getByName("jsDevelopmentExecutableCompileSync"))
 }
 
-//tasks.withType<ShadowJar> {
-//    archiveBaseName.set("shadow")
-//    mergeServiceFiles()
-//    archiveFileName.set("muon")
-//    manifest {
-//        attributes(mapOf("Main-Class" to "uk.dioxic.muon.ApplicationKt"))
-//    }
-//}

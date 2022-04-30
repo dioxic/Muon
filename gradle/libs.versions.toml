@@ -95,6 +95,7 @@ log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4
 log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
 lucene-analysis-common = { module = "org.apache.lucene:lucene-analysis-common", version.ref = "lucene" }
 lucene-core = { module = "org.apache.lucene:lucene-core", version.ref = "lucene" }
+lucene-codecs = { module = "org.apache.lucene:lucene-codecs", version.ref = "lucene" }
 lucene-facet = { module = "org.apache.lucene:lucene-facet", version.ref = "lucene" }
 lucene-queryparser = { module = "org.apache.lucene:lucene-queryparser", version.ref = "lucene" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
