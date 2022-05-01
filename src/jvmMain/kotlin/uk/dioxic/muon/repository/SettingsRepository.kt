@@ -5,25 +5,37 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import uk.dioxic.muon.common.validate
 import uk.dioxic.muon.config.Settings
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
+
+typealias SettingsListener = (Settings) -> Unit
 
 class SettingsRepository(path: Path) {
 
     private val log: Logger = LogManager.getLogger()
     private val settingsFile = path.resolve("settings.json")
     private var settings: Settings = loadSettings()
+    private val listeners = mutableListOf<SettingsListener>()
 
     fun get() = settings
 
     fun save(settings: Settings): Settings {
         log.debug("Saving settings")
+        settings.validate()
         Files.writeString(settingsFile, Json.encodeToString(settings))
         this.settings = settings
+        notifyListeners()
         return settings
     }
+
+    fun addListener(listener: SettingsListener) =
+        listeners.add(listener)
+
+    private fun notifyListeners() =
+        listeners.forEach { it(settings) }
 
     private fun loadSettings(): Settings {
         var settings = Settings.DEFAULT

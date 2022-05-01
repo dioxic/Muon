@@ -9,6 +9,7 @@ import uk.dioxic.muon.model.RbColor
 import uk.dioxic.muon.model.Track
 import java.io.Closeable
 import java.nio.file.Path
+import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.ResultSet
 import java.sql.Statement
@@ -19,15 +20,36 @@ import kotlin.io.path.nameWithoutExtension
 class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
     private val logger = LogManager.getLogger()
     private val cipherKey = "402fd482c38817c35ffa8ffb8c7d93143b749e7d315df7a81732a1ff43608497"
-    private val url =
-        "jdbc:sqlite:${settingsRepository.get().rekordboxDatabase}?cipher=sqlcipher&legacy=4&key=$cipherKey"
-    private val conn = DriverManager.getConnection(url)
+    private var conn: Connection? = null
+
+    init {
+        connect(settingsRepository.get().rekordboxDatabase)
+        settingsRepository.addListener { settings ->
+            connect(settings.rekordboxDatabase)
+        }
+    }
+
+    private fun connect(database: String?) {
+        close()
+        conn = if (database != null) {
+            DriverManager.getConnection("jdbc:sqlite:$database?cipher=sqlcipher&legacy=4&key=$cipherKey")
+        } else {
+            null
+        }
+    }
+
+    private fun getConn(): Connection {
+        conn.let {
+            requireNotNull(it) { "rekordbox database not set!" }
+            return it
+        }
+    }
 
     /**
      * Returns all tracks imported later than the input date (if specified)
      */
     fun getTracks(oldestImportDate: LocalDateTime? = null) =
-        conn.createStatement().use { stmt ->
+        getConn().createStatement().use { stmt ->
             flow {
                 val where = oldestImportDate?.let {
                     "TRACK.created_at > '${oldestImportDate}'"
@@ -42,7 +64,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
         }
 
     fun getTrackById(id: String): Track {
-        conn.createStatement().use { stmt ->
+        getConn().createStatement().use { stmt ->
             val rs = stmt.executeAndLogQuery("TRACK.ID = $id")
             if (rs.next()) {
                 return rs.toTrack()
@@ -53,7 +75,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
     }
 
     fun getTracksById(ids: List<String>) =
-        conn.createStatement().use { stmt ->
+        getConn().createStatement().use { stmt ->
             flow {
                 ids.forEach { id ->
                     val rs = stmt.executeAndLogQuery("TRACK.ID = $id")
@@ -65,7 +87,11 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
         }
 
     override fun close() {
-        conn.close()
+        conn?.let {
+            if (!it.isClosed) {
+                it.close()
+            }
+        }
     }
 
     private fun Statement.executeAndLogQuery(where: String?): ResultSet {

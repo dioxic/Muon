@@ -1,0 +1,14 @@
+package uk.dioxic.muon.common
+
+import uk.dioxic.muon.config.Settings
+import java.nio.file.Files
+import kotlin.io.path.Path
+
+fun Settings.validate() {
+    require(listOf("light", "dark").contains(theme)) {
+        "Theme must be 'light' or 'dark'"
+    }
+    require(rekordboxDatabase == null || Files.exists(Path(rekordboxDatabase))) {
+        "rekordbox database [$rekordboxDatabase] does not exist!"
+    }
+}
