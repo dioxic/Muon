@@ -18,10 +18,12 @@ import react.dom.aria.AriaHasPopup.`false`
 import react.dom.aria.ariaHasPopup
 import react.dom.aria.ariaLabel
 import react.dom.html.ReactHTML
+import react.query.useQueryClient
 import react.router.useLocation
 import uk.dioxic.muon.Routes
 import uk.dioxic.muon.api.Api
 import uk.dioxic.muon.common.Area
+import uk.dioxic.muon.common.QueryKey
 import uk.dioxic.muon.common.Themes
 import uk.dioxic.muon.context.AlertContext
 import uk.dioxic.muon.context.ThemeContext
@@ -32,6 +34,7 @@ val Header = FC<Props> {
     val toggleColorMode = useContext(ThemeContext)
     val lastPathname = useLocation().pathname.substringAfterLast("/")
     val (indexing, setIndexing) = useState(false)
+    val queryClient = useQueryClient()
 
     AppBar {
         position = AppBarPosition.fixed
@@ -122,6 +125,7 @@ val Header = FC<Props> {
                                 Api.get<String>("${Routes.index}/refresh")
                             }.then {
                                 addAlert(uk.dioxic.muon.context.Alert.AlertSuccess(it))
+                                queryClient.invalidateQueries<Nothing>(QueryKey.LIBRARY)
                                 setIndexing(false)
                             }
                         }
