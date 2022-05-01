@@ -164,12 +164,7 @@ tasks.withType<Test> {
 }
 
 tasks.withType<ShadowJar> {
-    val taskName = if ("true" == project.findProperty("isProduction")) {
-        "jsBrowserProductionWebpack"
-    } else {
-        "jsBrowserDevelopmentWebpack"
-    }
-    val webpackTask = tasks.getByName<KotlinWebpack>(taskName)
+    val webpackTask = tasks.getByName<KotlinWebpack>("jsBrowserProductionWebpack")
     mergeServiceFiles()
 //    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     dependsOn(webpackTask) // make sure JS gets compiled first
