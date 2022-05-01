@@ -122,11 +122,10 @@ fun Application.plugins() {
                     status = HttpStatusCode.InternalServerError
                 )
                 else -> {
-                    cause.printStackTrace()
-//                    call.respondText(
-//                        cause.message.orEmpty(),
-//                        status = HttpStatusCode.InternalServerError
-//                    )
+                    call.respondText(
+                        cause.message.orEmpty(),
+                        status = HttpStatusCode.InternalServerError
+                    )
                 }
             }
         }
@@ -149,7 +148,9 @@ fun Application.routes() {
         }
 
         get("/env") {
-            call.respondText(env)
+            val envMap = System.getenv().toMutableMap()
+            envMap["ktor.environment"] = env
+            call.respond(envMap)
         }
     }
 }

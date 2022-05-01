@@ -13,6 +13,9 @@ import react.ReactNode
 import react.VFC
 import react.dom.html.InputType
 import react.dom.html.ReactHTML
+import react.dom.onChange
+import react.useEffect
+import react.useState
 import uk.dioxic.muon.hook.useSettingsFetch
 import uk.dioxic.muon.hook.useSettingsSave
 
@@ -31,6 +34,19 @@ private val defaultTextProps: BaseTextFieldProps = jso {
 val SettingsPage = VFC {
     val settings = useSettingsFetch().data!!
     val saveSettings = useSettingsSave()
+    val (localSettings, setLocalSettings) = useState(settings)
+
+    useEffect(settings) {
+        if (settings != localSettings) {
+            setLocalSettings(settings)
+        }
+    }
+
+    fun handleSave() {
+        if (settings != localSettings) {
+            saveSettings(localSettings)
+        }
+    }
 
     Stack {
 
@@ -51,7 +67,7 @@ val SettingsPage = VFC {
                 labelId = "theme-select-label"
                 value = settings.theme.unsafeCast<Nothing?>()
                 onChange = { event, _ ->
-                    saveSettings(settings.copy(theme = event.target.value))
+                    saveSettings(localSettings.copy(theme = event.target.value))
                 }
                 MenuItem {
                     value = "dark"
@@ -66,48 +82,52 @@ val SettingsPage = VFC {
         TextField {
             id = "importDir"
             label = ReactNode("Import Folder")
-            defaultValue = settings.importDir
-            onBlur = { event ->
-                saveSettings(settings.copy(
+            value = localSettings.importDir
+            onChange = { event ->
+                setLocalSettings(localSettings.copy(
                     importDir = (event.target as HTMLInputElement).value
                 ))
             }
+            onBlur = { _ -> handleSave() }
 
             +defaultTextProps
         }
         TextField {
             id = "downloadDir"
             label = ReactNode("Download Folder")
-            defaultValue = settings.downloadDirs.firstOrNull()
-            onBlur = { event ->
-                saveSettings(settings.copy(
+            value = localSettings.downloadDirs.firstOrNull()
+            onChange = { event ->
+                setLocalSettings(localSettings.copy(
                     downloadDirs = listOf((event.target as HTMLInputElement).value)
                 ))
             }
+            onBlur = { _ -> handleSave() }
 
             +defaultTextProps
         }
         TextField {
             id = "rbDatabase"
             label = ReactNode("Rekordbox Database")
-            defaultValue = settings.rekordboxDatabase
-            onBlur = { event ->
-                saveSettings(settings.copy(
+            value = localSettings.rekordboxDatabase
+            onChange = { event ->
+                setLocalSettings(localSettings.copy(
                     rekordboxDatabase = (event.target as HTMLInputElement).value
                 ))
             }
+            onBlur = { _ -> handleSave() }
 
             +defaultTextProps
         }
         TextField {
             id = "deleteDir"
             label = ReactNode("Recycle Bin Folder")
-            defaultValue = settings.deleteDir
-            onBlur = { event ->
-                saveSettings(settings.copy(
+            value = localSettings.deleteDir
+            onChange = { event ->
+                setLocalSettings(localSettings.copy(
                     deleteDir = (event.target as HTMLInputElement).value
                 ))
             }
+            onBlur = { _ -> handleSave() }
 
             +defaultTextProps
         }
