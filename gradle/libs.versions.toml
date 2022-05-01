@@ -118,6 +118,7 @@ ktorServer = ["ktor-serialization", "ktor-server-core", "ktor-server-netty", "kt
 ktorClient = ["ktor-client-core", "ktor-client-js", "ktor-serialization", "ktor-client-content-negotiation"]
 exposed = ["exposed-core", "exposed-dao", "exposed-jdbc", "exposed-datetime"]
 lucene = ["lucene-core", "lucene-queryparser", "lucene-analysis-common"]
+koin = ["koin-core", "koin-ktor", "koin-logger-slf4j"]
 fixture = ["fixture", "fixture-faker"]
 
 [plugins]
