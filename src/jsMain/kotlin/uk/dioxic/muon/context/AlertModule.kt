@@ -12,15 +12,15 @@ import react.useState
 val AlertContext = createContext<AlertContextDto>()
 
 sealed class Alert(val severity: AlertColor, val message: String) {
-    class AlertError(message: String): Alert(AlertColor.error, message)
-    class AlertWarning(message: String): Alert(AlertColor.warning, message)
-    class AlertInfo(message: String): Alert(AlertColor.info, message)
-    class AlertSuccess(message: String): Alert(AlertColor.success, message)
+    class AlertError(message: String) : Alert(AlertColor.error, message)
+    class AlertWarning(message: String) : Alert(AlertColor.warning, message)
+    class AlertInfo(message: String) : Alert(AlertColor.info, message)
+    class AlertSuccess(message: String) : Alert(AlertColor.success, message)
 }
 
 data class AlertContextDto(
     val alerts: List<Alert>,
-    val addAlert: (Alert) -> Unit
+    val addAlert: (Alert) -> Unit,
 )
 
 val AlertModule = FC<PropsWithChildren> { props ->
@@ -44,7 +44,11 @@ val AlertModule = FC<PropsWithChildren> { props ->
     ) {
         Snackbar {
             open = isOpen
-            onClose = { _, _ -> handleAlertClose() }
+            onClose = { _, reason ->
+                if (reason != SnackbarCloseReason.clickaway) {
+                    handleAlertClose()
+                }
+            }
             autoHideDuration = 6000
             anchorOrigin = jso {
                 horizontal = SnackbarOriginHorizontal.center
