@@ -27,7 +27,7 @@ fun <TData> defaultQueryOptions(queryKey: QueryKey): UseQueryOptions<TData, Resp
     }
 }
 
-fun <TData> defaultMutationOptions(queryKey: QueryKey): UseMutationOptions<TData, ResponseException, TData, TData> {
+fun <TData> optimisticMutationOptions(queryKey: QueryKey): UseMutationOptions<TData, ResponseException, TData, TData> {
     val queryClient = useQueryClient()
     val (_, addAlert) = useContext(AlertContext)
 
