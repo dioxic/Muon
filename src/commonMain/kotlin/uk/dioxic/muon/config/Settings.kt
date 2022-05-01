@@ -12,7 +12,7 @@ data class Settings(
     val lastRekordboxRefresh: LocalDateTime,
     val softDelete: Boolean = true,
     val deleteDir: String? = null,
-    val standardiseFilenames: Boolean = true
+    val standardiseFilenames: Boolean = true,
 ) {
     companion object {
         val DEFAULT = Settings(

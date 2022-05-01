@@ -1,7 +1,5 @@
 package uk.dioxic.muon.common
 
-import csstype.Color
-import csstype.NamedColor
 import kotlinx.js.jso
 import mui.material.PaletteMode
 import mui.material.styles.createTheme
