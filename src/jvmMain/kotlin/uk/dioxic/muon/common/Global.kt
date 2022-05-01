@@ -8,8 +8,7 @@ object Global {
     val configPath: Path = initHomePath()
 
     private fun initHomePath(): Path {
-        // assume that HOMEPATH env exists or a docker build
-        val homePath = System.getenv("HOMEPATH") ?: "/app"
+        val homePath = System.getenv("HOMEPATH") ?: error("environment variable HOMEPATH not set!")
         val configPath = Paths.get("$homePath/.muon")
 
         // create the muon directory if it doesn't exist
