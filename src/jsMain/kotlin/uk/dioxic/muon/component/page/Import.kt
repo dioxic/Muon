@@ -1,10 +1,8 @@
 package uk.dioxic.muon.component.page
 
+import kotlinx.browser.window
 import kotlinx.js.jso
-import mui.icons.material.Delete
-import mui.icons.material.Edit
-import mui.icons.material.GetApp
-import mui.icons.material.Refresh
+import mui.icons.material.*
 import mui.material.Box
 import mui.material.IconButtonColor
 import mui.material.Paper
@@ -12,6 +10,7 @@ import react.VFC
 import react.table.*
 import react.useMemo
 import react.useState
+import uk.dioxic.muon.Routes
 import uk.dioxic.muon.component.dialog.ImportDialog
 import uk.dioxic.muon.component.dialog.TrackEditDialog
 import uk.dioxic.muon.component.table.EnhancedTable
@@ -64,9 +63,14 @@ val ImportPage = VFC {
         reload()
     }
 
+    fun handlePlay(track: Track) {
+        window.open(Routes.trackAudio(track), "_blank")?.focus()
+    }
+
     val rowActions = listOf(
         RowAction(name = "edit", icon = Edit, onClick = ::handleRowEditClick),
         RowAction(name = "import", icon = GetApp, onClick = ::handleRowImportClick),
+        RowAction(name = "Play", icon = PlayCircle, onClick = ::handlePlay),
         RowAction(name = "delete", icon = Delete, onClick = ::handleRowDeleteClick, iconColor = IconButtonColor.error),
     )
 
