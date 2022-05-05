@@ -32,6 +32,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
     private fun connect(database: String?) {
         close()
         conn = if (database != null) {
+            logger.debug("Connecting to database $database")
             DriverManager.getConnection("jdbc:sqlite:$database?cipher=sqlcipher&legacy=4&key=$cipherKey")
         } else {
             null
