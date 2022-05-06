@@ -20,7 +20,7 @@ class RekordBoxRepositoryTest {
         rekordboxDatabase = RekordBoxRepositoryTest::class.java.getResource("/rekordbox.db")?.file
     )
 
-    private val settingsRepository = mockk<SettingsRepository> {
+    private val settingsRepository = mockk<SettingsRepository>(relaxed = true) {
         every { get() } returns settings
     }
     private val rekordboxRepository = RekordboxRepository(settingsRepository)
