@@ -126,8 +126,10 @@ val Header = FC<Props> {
                             }.then {
                                 addAlert(uk.dioxic.muon.context.Alert.AlertSuccess(it))
                                 queryClient.invalidateQueries<Nothing>(QueryKey.LIBRARY)
-                                setIndexing(false)
-                            }
+
+                            }.catch {
+                                addAlert(uk.dioxic.muon.context.Alert.AlertError("Error reindexing - ${it.message}"))
+                            }.finally { setIndexing(false) }
                         }
 
                         LibraryMusic()
