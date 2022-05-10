@@ -38,7 +38,7 @@ fun Track.toDocument(searchAnalyser: Analyzer): Document = Document().apply {
     add(StringField("path", path, Field.Store.NO))
     add(StringField("filename", filename, Field.Store.NO))
     add(IntPoint("filesize", fileSize))
-    add(StringField("key", key, Field.Store.NO))
+    key?.let { add(StringField("key", key, Field.Store.NO)) }
     rating?.let { add(IntPoint("rating", it))}
     bpm?.let { add(IntPoint("bpm", it))}
     color?.apply { add(StringField("color", name, Field.Store.NO)) }
