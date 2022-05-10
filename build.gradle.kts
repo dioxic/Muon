@@ -5,14 +5,10 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 plugins {
     kotlin("multiplatform") version "1.6.21"
     kotlin("plugin.serialization") version "1.6.21"
-//    alias(libs.plugins.kotlin.serialization)
-//    alias(libs.plugins.axion)
-//    alias(libs.plugins.versions)
-    application
     id("pl.allegro.tech.build.axion-release") version "1.13.6"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("com.github.ben-manes.versions") version "0.42.0"
-//    id("com.github.turansky.kfc.webpack") version "4.61.0"
+    application
 }
 
 version = scmVersion.version
