@@ -1,5 +1,6 @@
 package uk.dioxic.muon.component.page
 
+import csstype.Display
 import csstype.FontFamily
 import csstype.FontSize
 import csstype.px
@@ -7,6 +8,7 @@ import kotlinx.js.jso
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mui.material.*
+import mui.system.responsive
 import mui.system.sx
 import org.w3c.dom.HTMLInputElement
 import react.ReactNode
@@ -16,6 +18,7 @@ import react.dom.html.ReactHTML
 import react.dom.onChange
 import react.useEffect
 import react.useState
+import uk.dioxic.muon.common.percent
 import uk.dioxic.muon.hook.useSettingsFetch
 import uk.dioxic.muon.hook.useSettingsSave
 
@@ -48,14 +51,17 @@ val SettingsPage = VFC {
         }
     }
 
-    Stack {
+    fun setLocalFolderMapping(rbFolder: String, localFolder: String) {
+        setLocalSettings(localSettings.copy(
+            folderMappings = if (rbFolder.isEmpty() && localFolder.isEmpty())
+                emptyList()
+            else
+                listOf(rbFolder to localFolder)
+        ))
+    }
 
-        sx {
-            MuiFormControl.root {
-                marginTop = 8.px
-                marginBottom = 8.px
-            }
-        }
+    Stack {
+        spacing = responsive(18.px)
 
         FormControl {
             InputLabel {
@@ -130,6 +136,49 @@ val SettingsPage = VFC {
             onBlur = { _ -> handleSave() }
 
             +defaultTextProps
+        }
+        Divider { +"Folder Mappings" }
+        Stack {
+            sx {
+                display = Display.flex
+            }
+            direction = responsive(StackDirection.row)
+            spacing = responsive(18.px)
+
+            TextField {
+                sx {
+                    width = 50.percent
+                }
+                id = "rekordboxFolder"
+                label = ReactNode("Rekordbox Folder")
+                value = localSettings.folderMappings.firstOrNull()?.first
+                onChange = { event ->
+                    setLocalFolderMapping(
+                        rbFolder = (event.target as HTMLInputElement).value,
+                        localFolder = localSettings.folderMappings.firstOrNull()?.second ?: ""
+                    )
+                }
+                onBlur = { _ -> handleSave() }
+
+                +defaultTextProps
+            }
+            TextField {
+                sx {
+                    width = 50.percent
+                }
+                id = "localFolder"
+                label = ReactNode("Local Folder")
+                value = localSettings.folderMappings.firstOrNull()?.second
+                onChange = { event ->
+                    setLocalFolderMapping(
+                        rbFolder = localSettings.folderMappings.firstOrNull()?.first ?: "",
+                        localFolder = (event.target as HTMLInputElement).value
+                    )
+                }
+                onBlur = { _ -> handleSave() }
+
+                +defaultTextProps
+            }
         }
 
         Divider {

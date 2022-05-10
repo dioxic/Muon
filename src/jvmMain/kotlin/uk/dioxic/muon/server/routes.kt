@@ -13,6 +13,7 @@ import org.koin.core.context.GlobalContext
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
 import uk.dioxic.muon.Routes
+import uk.dioxic.muon.common.getLocalPath
 import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.ImportResponse
 import uk.dioxic.muon.model.Track
@@ -28,6 +29,7 @@ fun Routing.tracks() {
     val searchService by inject<SearchService>()
     val trackService by inject<TrackService>()
     val rekordboxRepository by inject<RekordboxRepository>()
+    val settingsRepository by inject<SettingsRepository>()
 
     route(Routes.track) {
         get("/{id}") {
@@ -36,11 +38,13 @@ fun Routing.tracks() {
         }
         get("/{id}/audio") {
             val id = call.parameters["id"]
-            val audioFile = File(rekordboxRepository.getTrackById(id!!).path)
+            val trackPath = rekordboxRepository.getTrackById(id!!).path
+            val audioFile = File(settingsRepository.get().getLocalPath(trackPath))
             call.response.header(
                 name = HttpHeaders.ContentDisposition,
                 value = ContentDisposition.Inline
                     .withParameter(ContentDisposition.Parameters.FileName, audioFile.name)
+                    .withParameter(ContentDisposition.Parameters.Name, audioFile.name)
                     .toString()
             )
             call.respondFile(audioFile)

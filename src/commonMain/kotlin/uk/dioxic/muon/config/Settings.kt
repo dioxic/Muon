@@ -10,6 +10,7 @@ data class Settings(
     val importDir: String? = null,
     val rekordboxDatabase: String? = null,
     val lastRekordboxRefresh: LocalDateTime,
+    val folderMappings: List<Pair<String,String>> = emptyList(),
     val softDelete: Boolean = true,
     val deleteDir: String? = null,
     val standardiseFilenames: Boolean = true,

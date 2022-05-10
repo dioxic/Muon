@@ -13,8 +13,8 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.ResultSet
 import java.sql.Statement
-import kotlin.io.path.absolutePathString
 import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.pathString
 
 
 class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
@@ -110,7 +110,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
             bitrate = getInt("bitRate"),
             length = getInt("length"),
             lyricist = getString("lyricist").orEmpty(),
-            path = fullPath.absolutePathString(),
+            path = fullPath.pathString,
             filename = fullPath.nameWithoutExtension,
             album = getString("album").orEmpty(),
             comment = getString("comment").orEmpty(),

@@ -12,3 +12,8 @@ fun Settings.validate() {
         "rekordbox database [$rekordboxDatabase] does not exist!"
     }
 }
+
+fun Settings.getLocalPath(path: String) =
+    this.folderMappings.fold(path) { p, (from, to) ->
+        p.replace(from, to)
+    }
