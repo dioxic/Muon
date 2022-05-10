@@ -122,6 +122,7 @@ fun Application.plugins() {
                     status = HttpStatusCode.InternalServerError
                 )
                 else -> {
+                    cause.printStackTrace()
                     call.respondText(
                         cause.message.orEmpty(),
                         status = HttpStatusCode.InternalServerError
