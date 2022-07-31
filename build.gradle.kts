@@ -1,12 +1,11 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
 
 plugins {
-    kotlin("multiplatform") version "1.6.21"
-    kotlin("plugin.serialization") version "1.6.21"
-    id("pl.allegro.tech.build.axion-release") version "1.13.6"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    kotlin("multiplatform") version "1.7.10"
+    kotlin("plugin.serialization") version "1.7.10"
+    id("pl.allegro.tech.build.axion-release") version "1.13.14"
+//    id("com.github.johnrengelman.shadow") version "7.1.2"
     id("com.github.ben-manes.versions") version "0.42.0"
     application
 }
@@ -34,11 +33,14 @@ kotlin {
             useJUnitPlatform()
         }
     }
-    js(IR) {
+    js {
         useCommonJs()
         browser {
             commonWebpackConfig {
                 cssSupport.enabled = true
+            }
+            testTask {
+                enabled = false
             }
 //            dceTask {
 //                dceOptions.devMode = true
@@ -50,7 +52,7 @@ kotlin {
         binaries.executable()
     }
     sourceSets {
-        commonMain {
+        val commonMain by getting {
             dependencies {
                 implementation(libs.kotlin.serialization.core)
                 implementation(libs.koin.core)
@@ -58,7 +60,7 @@ kotlin {
                 implementation(libs.kotlin.coroutines.test)
             }
         }
-        commonTest {
+        val commonTest by getting {
             dependencies {
                 implementation(libs.kotlin.test)
             }
@@ -93,7 +95,7 @@ kotlin {
 
                 implementation(
                     project.dependencies.enforcedPlatform(
-                        kotlinw("wrappers-bom:0.0.1-${libs.versions.kotlinWrapper.get()}")
+                        kotlinw("wrappers-bom:1.0.0-${libs.versions.kotlinWrapper.get()}")
                     )
                 )
 
@@ -110,7 +112,6 @@ kotlin {
                 implementation(npm("chroma-js", "2.4.2"))
             }
         }
-        val jsTest by getting
     }
 }
 
@@ -125,7 +126,8 @@ scmVersion {
 
 // include JS artifacts in any JAR we generate
 tasks.getByName<Jar>("jvmJar") {
-    val taskName = if ("true" == project.findProperty("isProduction")) {
+    val taskName = if ("true" == project.findProperty("isProduction")
+        || project.gradle.startParameter.taskNames.contains("installDist")) {
         "jsBrowserProductionWebpack"
     } else {
         "jsBrowserDevelopmentWebpack"
@@ -150,29 +152,29 @@ distributions {
 }
 
 
-tasks.named<JavaExec>("run") {
-    classpath(tasks.named<Jar>("jvmJar"))
+tasks.getByName<JavaExec>("run") {
+    classpath(tasks.getByName<Jar>("jvmJar"))
 }
 
 tasks.withType<Test> {
     systemProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
 }
 
-tasks.withType<ShadowJar> {
-    val webpackTask = tasks.getByName<KotlinWebpack>("jsBrowserProductionWebpack")
-    mergeServiceFiles()
-//    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    dependsOn(webpackTask) // make sure JS gets compiled first
-    from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) {
-        into("static")
-    }
-    manifest {
-        attributes(mapOf(
-            "Main-Class" to "uk.dioxic.muon.ApplicationKt",
-            "Multi-Release" to "true"
-        ))
-    }
-}
+//tasks.withType<ShadowJar> {
+//    val webpackTask = tasks.getByName<KotlinWebpack>("jsBrowserProductionWebpack")
+//    mergeServiceFiles()
+////    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//    dependsOn(webpackTask) // make sure JS gets compiled first
+//    from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) {
+//        into("static")
+//    }
+//    manifest {
+//        attributes(mapOf(
+//            "Main-Class" to "uk.dioxic.muon.ApplicationKt",
+//            "Multi-Release" to "true"
+//        ))
+//    }
+//}
 
 tasks.getByName("distZip") {
     dependsOn(tasks.getByName("jsJar"))
@@ -184,12 +186,31 @@ tasks.getByName("distTar") {
     dependsOn(tasks.getByName("allMetadataJar"))
 }
 
-tasks.getByName("jsBrowserDevelopmentWebpack") {
-    dependsOn(tasks.getByName("jsProductionExecutableCompileSync"))
+//tasks.getByName("jsBrowserDevelopmentWebpack") {
+//    dependsOn(tasks.getByName("jsProductionExecutableCompileSync"))
+//}
+//
+//tasks.getByName("jsBrowserProductionWebpack") {
+//    dependsOn(tasks.getByName("jsProductionExecutableCompileSync"))
+//    dependsOn(tasks.getByName("jsDevelopmentExecutableCompileSync"))
+//}
+
+tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask> {
+    resolutionStrategy {
+        componentSelection {
+            all {
+                if (isNonStable(candidate.version) && !isNonStable(currentVersion)) {
+                    reject("Release candidate")
+                }
+            }
+        }
+    }
 }
 
-tasks.getByName("jsBrowserProductionWebpack") {
-    dependsOn(tasks.getByName("jsProductionExecutableCompileSync"))
-    dependsOn(tasks.getByName("jsDevelopmentExecutableCompileSync"))
+fun isNonStable(version: String): Boolean {
+    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.toUpperCase().contains(it) }
+    val regex = "^[0-9,.v-]+(-r)?$".toRegex()
+    val isStable = stableKeyword || regex.matches(version)
+    return isStable.not()
 }
 

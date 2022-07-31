@@ -33,14 +33,9 @@ val Content = FC<Props> {
                 Outlet()
             }
 
-            Route {
-                index = true
-                element = Placeholder.create()
-            }
-
-            for ((key, _, Component) in pages) {
-                Component.displayName = key
+            pages.forEachIndexed { i, (key, _, Component) ->
                 Route {
+                    index = i == 0
                     path = key
                     element = Component.create()
                 }
