@@ -2,9 +2,9 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
 
 plugins {
-    kotlin("multiplatform") version "1.7.10"
-    kotlin("plugin.serialization") version "1.7.10"
-    id("pl.allegro.tech.build.axion-release") version "1.13.14"
+    kotlin("multiplatform") version "1.7.20"
+    kotlin("plugin.serialization") version "1.7.20"
+    id("pl.allegro.tech.build.axion-release") version "1.14.2"
 //    id("com.github.johnrengelman.shadow") version "7.1.2"
     id("com.github.ben-manes.versions") version "0.42.0"
     application
@@ -115,14 +115,19 @@ kotlin {
     }
 }
 
-scmVersion {
-    repository.type = "git"
-    repository.directory = rootProject.file("./")
-    repository.remote = "origin"
-
-    tag.prefix = "v"
-    tag.versionSeparator = ""
-}
+//scmVersion {
+//    versionCreator("versionWithBranch")
+//    repository {
+////        type.set("git")
+//        directory = rootProject.file("./")
+//        remote = "origin"
+//    }
+//
+//    tag {
+//        prefix = "v"
+//        versionSeparator = ""
+//    }
+//}
 
 // include JS artifacts in any JAR we generate
 tasks.getByName<Jar>("jvmJar") {
