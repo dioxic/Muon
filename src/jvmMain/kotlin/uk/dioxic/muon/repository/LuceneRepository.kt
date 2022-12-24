@@ -102,7 +102,7 @@ class LuceneRepository(indexPath: Path) : Closeable {
         }
 
     private fun query(text: String? = null): Query =
-        if (text == null || text.isBlank()) {
+        if (text.isNullOrBlank()) {
             MatchAllDocsQuery()
         } else {
 //            with(PhraseQuery.Builder()) {
