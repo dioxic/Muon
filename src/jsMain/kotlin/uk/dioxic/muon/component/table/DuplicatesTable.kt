@@ -1,14 +1,14 @@
 package uk.dioxic.muon.component.table
 
-import kotlinx.js.jso
+import js.core.jso
 import mui.icons.material.CheckCircle
 import mui.icons.material.Delete
 import mui.material.*
 import react.FC
 import react.Props
 import react.ReactNode
-import react.query.useQueryClient
-import uk.dioxic.muon.common.QueryKey
+import tanstack.react.query.useQueryClient
+import uk.dioxic.muon.common.QueryKeys
 import uk.dioxic.muon.hook.useTrackDelete
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.model.Tracks
@@ -27,9 +27,9 @@ val DuplicatesTable = FC<DuplicatesProps> { props ->
     }
 
     fun handleIgnoreClick(duplicate: Track) {
-        queryClient.cancelQueries(QueryKey.IMPORT)
+        queryClient.cancelQueries(QueryKeys.IMPORT)
         queryClient.setQueryData<Tracks>(
-            queryKey = QueryKey.IMPORT,
+            queryKey = QueryKeys.IMPORT,
             updater = {
                 it?.map { track ->
                     if (track.id == props.track.id) {

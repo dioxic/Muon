@@ -1,7 +1,5 @@
 package uk.dioxic.muon.component
 
-import csstype.Color
-import csstype.None.none
 import emotion.react.css
 import mui.material.*
 import mui.system.Box
@@ -16,6 +14,9 @@ import react.useContext
 import uk.dioxic.muon.common.Area
 import uk.dioxic.muon.common.Sizes.Sidebar
 import uk.dioxic.muon.context.PagesContext
+import web.cssom.Color
+import web.cssom.TextDecoration
+import web.cssom.TextDecorationColor
 
 val Sidebar = FC<Props> {
     val pages = useContext(PagesContext)
@@ -36,12 +37,12 @@ val Sidebar = FC<Props> {
             List {
                 sx { width = Sidebar.Width }
 
-                for ((key, name) in pages) {
+                for ((key, name) in pages!!) {
                     NavLink {
                         to = key
 
                         css {
-                            textDecoration = none
+                            textDecoration = TextDecoration.solid
                             color = Color.currentcolor
                         }
 

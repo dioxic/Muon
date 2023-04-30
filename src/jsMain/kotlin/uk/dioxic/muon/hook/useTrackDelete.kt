@@ -1,16 +1,16 @@
 package uk.dioxic.muon.hook
 
 import io.ktor.client.plugins.*
+import js.core.jso
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.promise
-import kotlinx.js.jso
-import react.query.UseMutationOptions
-import react.query.useMutation
-import react.query.useQueryClient
+import tanstack.react.query.UseMutationOptions
+import tanstack.react.query.useMutation
+import tanstack.react.query.useQueryClient
 import react.useContext
 import uk.dioxic.muon.Routes
 import uk.dioxic.muon.api.Api
-import uk.dioxic.muon.common.QueryKey
+import uk.dioxic.muon.common.QueryKeys
 import uk.dioxic.muon.context.Alert
 import uk.dioxic.muon.context.AlertContext
 import uk.dioxic.muon.model.Track
@@ -35,19 +35,19 @@ private fun deleteTrack(track: Track): Promise<Unit> =
 
 private fun mutationOptions(): UseMutationOptions<Unit, ResponseException, Track, Tracks> {
     val queryClient = useQueryClient()
-    val (_, addAlert) = useContext(AlertContext)
+    val (_, addAlert) = useContext(AlertContext)!!
 
     return jso {
         onMutate = { newValue ->
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-            queryClient.cancelQueries(QueryKey.IMPORT)
+            queryClient.cancelQueries(QueryKeys.IMPORT)
 
             // Snapshot the previous value
-            val previousValue = queryClient.getQueryData<Tracks>(QueryKey.IMPORT)
+            val previousValue = queryClient.getQueryData<Tracks>(QueryKeys.IMPORT)
 
             // Optimistically remove the duplicate tracks
             queryClient.setQueryData<Tracks>(
-                queryKey = QueryKey.IMPORT,
+                queryKey = QueryKeys.IMPORT,
                 updater = {
                     it?.map { track ->
                         if (track.duplicates != null ){
@@ -67,7 +67,7 @@ private fun mutationOptions(): UseMutationOptions<Unit, ResponseException, Track
         }
         onError = { error, _, previousValue ->
             addAlert(Alert.AlertError(errMsg(error)))
-            queryClient.setQueryData<Tracks>(QueryKey.IMPORT, { previousValue!! }, jso())
+            queryClient.setQueryData<Tracks>(QueryKeys.IMPORT, { previousValue!! }, jso())
             null
         }
     }

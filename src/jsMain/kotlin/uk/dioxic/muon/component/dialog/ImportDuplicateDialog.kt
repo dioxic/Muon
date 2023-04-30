@@ -1,9 +1,6 @@
 package uk.dioxic.muon.component.dialog
 
-import csstype.FontFamily
-import csstype.FontSize
-import csstype.px
-import kotlinx.js.jso
+import js.core.jso
 import mui.icons.material.Delete
 import mui.icons.material.GetApp
 import mui.icons.material.KeyboardArrowDown
@@ -22,6 +19,9 @@ import uk.dioxic.muon.hook.useImportDelete
 import uk.dioxic.muon.hook.useImportMutation
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.model.Tracks
+import web.cssom.FontFamily
+import web.cssom.FontSize
+import web.cssom.px
 import kotlin.time.Duration.Companion.seconds
 
 external interface ImportDuplicateProps : Props {

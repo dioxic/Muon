@@ -1,8 +1,8 @@
 package uk.dioxic.muon.component.page
 
 import csstype.*
+import js.core.jso
 import kotlinx.browser.window
-import kotlinx.js.jso
 import mui.icons.material.Circle
 import mui.icons.material.CircleOutlined
 import mui.icons.material.PlayCircle
@@ -16,15 +16,18 @@ import mui.system.sx
 import org.w3c.dom.HTMLInputElement
 import react.*
 import react.dom.html.ReactHTML
-import react.table.*
+import tanstack.react.table.useReactTable
+import tanstack.table.core.ColumnDef
+import tanstack.table.core.StringOrTemplateHeader
+import tanstack.table.core.getCoreRowModel
 import uk.dioxic.muon.Routes
 import uk.dioxic.muon.common.debounce
-import uk.dioxic.muon.component.table.CellType
 import uk.dioxic.muon.component.table.actions.RowAction
-import uk.dioxic.muon.component.table.plugin.useRowActions
+import uk.dioxic.muon.component.table.columns
 import uk.dioxic.muon.external.chroma
 import uk.dioxic.muon.hook.useTrackSearch
 import uk.dioxic.muon.model.Track
+import web.cssom.*
 import kotlin.time.Duration.Companion.seconds
 
 private val minimumWidths = mapOf(
@@ -43,7 +46,8 @@ private val minimumWidths = mapOf(
     "length" to 103,
     "type" to 89,
 )
-private val columnDefinitions = columns<Track> {
+
+private val columnDefs = columns<Track> {
     column(
         id = "title",
         header = "Title",
@@ -88,8 +92,8 @@ private val columnDefinitions = columns<Track> {
         id = "color",
         header = "Color",
         accessor = { color },
-        cell = {
-            it.value?.let { rbColor ->
+        render = {
+            it.getValue()?.let { rbColor ->
                 createElement(Circle, jso {
                     sx {
                         color = Color(rbColor.name.lowercase())
@@ -106,10 +110,10 @@ private val columnDefinitions = columns<Track> {
     column(
         id = "rating",
         header = "Rating",
-        accessor = { rating },
-        cell = {
+        accessor = { rating ?: 0 },
+        render = {
             createElement(Rating, jso {
-                value = it.value ?: 0
+                value = it.getValue()
                 readOnly = true
             })
         },
@@ -117,9 +121,9 @@ private val columnDefinitions = columns<Track> {
     column(
         id = "tags",
         header = "Tags",
-        accessor = { tags },
-        cell = {
-            (it.value?.joinToString(", ") ?: "").unsafeCast<ReactElement<*>>()
+        accessor = { tags ?: emptyList() },
+        render = {
+            it.getValue().joinToString(", ").unsafeCast<ReactElement<*>>()
         },
     )
     column(
@@ -132,8 +136,98 @@ private val columnDefinitions = columns<Track> {
         header = "Type",
         accessor = { type },
     )
-
 }
+
+private var columnDefinitions = arrayOf<ColumnDef<Track, Any>>(
+    jso {
+        id = "title"
+        header = StringOrTemplateHeader("Title")
+        accessorFn = { row, _ -> row.title }
+    },
+    jso {
+        id = "artist"
+        header = StringOrTemplateHeader("Artist")
+        accessorFn = { row, _ -> row.artist }
+    },
+    jso {
+        id = "genre"
+        header = StringOrTemplateHeader("Genre")
+        accessorFn = { row, _ -> row.genre }
+    },
+    jso {
+        id = "album"
+        header = StringOrTemplateHeader("Album")
+        accessorFn = { row, _ -> row.album }
+    },
+    jso {
+        id = "lyricist"
+        header = StringOrTemplateHeader("Lyricist")
+        accessorFn = { row, _ -> row.lyricist }
+    },
+    jso {
+        id = "comment"
+        header = StringOrTemplateHeader("Comment")
+        accessorFn = { row, _ -> row.comment }
+    },
+    jso {
+        id = "bitrate"
+        header = StringOrTemplateHeader("Bitrate")
+        accessorFn = { row, _ -> row.bitrate }
+    },
+    jso {
+        id = "year"
+        header = StringOrTemplateHeader("Year")
+        accessorFn = { row, _ -> row.year }
+    },
+    jso {
+        id = "color"
+        header = StringOrTemplateHeader("Color")
+        accessorFn = { row, _ -> row.year }
+//        cell = {
+//            it.value?.let { rbColor ->
+//                createElement(Circle, jso {
+//                    sx {
+//                        color = Color(rbColor.name.lowercase())
+//                    }
+//                })
+//            } ?: CircleOutlined.create()
+//        }
+    },
+    jso {
+        id = "bpm"
+        header = StringOrTemplateHeader("BPM")
+        accessorFn = { row, _ -> row.bpm.toString() }
+    },
+    jso {
+        id = "rating"
+        header = StringOrTemplateHeader("Rating")
+        accessorFn = { row, _ -> row.rating.toString() }
+//        cell = {
+//            createElement(Rating, jso {
+//                value = it.value ?: 0
+//                readOnly = true
+//            })
+//        }
+    },
+    jso {
+        id = "tags"
+        header = StringOrTemplateHeader("Tags")
+        accessorFn = { row, _ -> row.tags ?: emptyList<String>() }
+//        cell = {
+//            (it.value?.joinToString(", ") ?: "").unsafeCast<ReactElement<*>>()
+//        },
+    },
+    jso {
+        id = "length"
+        header = StringOrTemplateHeader("Length")
+        accessorFn = { row, _ -> row.length.seconds.toString() }
+    },
+    jso {
+        id = "type"
+        header = StringOrTemplateHeader("Type")
+        accessorFn = { row, _ -> row.type.name }
+    },
+)
 
 val LibraryPage = VFC {
     val theme = useTheme<Theme>()
@@ -152,14 +246,12 @@ val LibraryPage = VFC {
         )
     )
 
-    val table = useTable(
+    val table = useReactTable<Track>(
         options = jso {
-            data = useMemo(tracks.data) { tracks.data?.toTypedArray() ?: emptyArray() }
-            columns = useMemo { columnDefinitions }
-        },
-        useSortBy,
-        useColumnOrder,
-        useRowActions(rowActions)
+            data = tracks.data?.toTypedArray() ?: emptyArray()
+            columns = columnDefs
+            getCoreRowModel = getCoreRowModel()
+        }
     )
 
     Box {
@@ -236,59 +328,7 @@ val LibraryPage = VFC {
                     }
                     size = Size.small
 
-                    +table.getTableProps()
 
-                    TableHead {
-                        table.headerGroups.forEach { headerGroup ->
-                            TableRow {
-                                +headerGroup.getHeaderGroupProps()
-
-                                headerGroup.headers.forEach { header ->
-                                    TableCell {
-                                        val cellType = CellType.getCellType(header.id)
-
-                                        sx {
-                                            minimumWidths[header.id]?.let {
-                                                minWidth = it.px
-                                            }
-                                        }
-
-                                        if (cellType == CellType.DEFAULT) {
-                                            +header.getHeaderProps(header.getSortByToggleProps())
-                                        } else {
-                                            +header.getHeaderProps()
-                                        }
-
-                                        +header.render(RenderType.Header)
-
-                                        if (cellType == CellType.DEFAULT) {
-                                            TableSortLabel {
-                                                active = header.isSorted
-                                                direction = if (header.isSortedDesc)
-                                                    TableSortLabelDirection.desc
-                                                else
-                                                    TableSortLabelDirection.asc
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    TableBody {
-                        table.rows.forEach { row ->
-                            table.prepareRow(row)
-                            TableRow {
-                                row.cells.forEach { cell ->
-                                    TableCell {
-                                        +cell.getCellProps()
-                                        +cell.render(RenderType.Cell)
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
             }
         }

@@ -144,9 +144,7 @@ fun Application.routes() {
         import()
         indexHtml()
 
-        static("/") {
-            resources("static")
-        }
+        staticResources("/", "static")
 
         get("/env") {
             val envMap = System.getenv().toMutableMap()

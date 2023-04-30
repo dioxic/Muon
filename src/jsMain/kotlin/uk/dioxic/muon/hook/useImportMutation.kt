@@ -1,17 +1,17 @@
 package uk.dioxic.muon.hook
 
 import io.ktor.client.plugins.*
+import js.core.jso
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.promise
-import kotlinx.js.jso
-import react.query.UseMutationOptions
-import react.query.UseMutationResult
-import react.query.useMutation
-import react.query.useQueryClient
+import tanstack.react.query.UseMutationOptions
+import tanstack.react.query.UseMutationResult
+import tanstack.react.query.useMutation
+import tanstack.react.query.useQueryClient
 import react.useContext
 import uk.dioxic.muon.Routes
 import uk.dioxic.muon.api.Api
-import uk.dioxic.muon.common.QueryKey
+import uk.dioxic.muon.common.QueryKeys
 import uk.dioxic.muon.context.Alert
 import uk.dioxic.muon.context.AlertContext
 import uk.dioxic.muon.model.ImportResponse
@@ -22,7 +22,7 @@ import kotlin.js.Promise
 
 fun useImportMutation(): UseMutationResult<ImportResponse, ResponseException, Tracks, Unit> {
     val queryClient = useQueryClient()
-    val (_, addAlert) = useContext(AlertContext)
+    val (_, addAlert) = useContext(AlertContext)!!
 
     fun importTrack(tracks: Tracks): Promise<ImportResponse> =
         MainScope().promise {
@@ -40,7 +40,7 @@ fun useImportMutation(): UseMutationResult<ImportResponse, ResponseException, Tr
                 null
             }
             onSuccess = { response, _, _ ->
-                queryClient.setQueryData<List<Track>>(QueryKey.IMPORT,
+                queryClient.setQueryData<List<Track>>(QueryKeys.IMPORT,
                     { tracks -> tracks?.filterNot { response.successes.contains(it.id) } ?: emptyList() },
                     jso())
 

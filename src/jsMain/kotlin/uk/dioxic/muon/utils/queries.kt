@@ -1,9 +1,11 @@
 package uk.dioxic.muon.utils
 
 import io.ktor.client.plugins.*
-import kotlinx.js.jso
-import react.query.*
+import js.core.jso
 import react.useContext
+import tanstack.query.core.JsDuration
+import tanstack.query.core.QueryKey
+import tanstack.react.query.*
 import uk.dioxic.muon.api.InternalServerException
 import uk.dioxic.muon.context.Alert
 import uk.dioxic.muon.context.AlertContext
@@ -11,10 +13,10 @@ import uk.dioxic.muon.model.IdType
 import kotlin.js.Promise
 
 fun <TData> defaultQueryOptions(queryKey: QueryKey): UseQueryOptions<TData, ResponseException, TData, QueryKey> {
-    val (_, addAlert) = useContext(AlertContext)
+    val (_, addAlert) = useContext(AlertContext)!!
 
     return jso {
-        refetchOnWindowFocus = false
+        refetchOnWindowFocus = { _ -> false }
         retry = { failureCount, _ -> (failureCount < 1) }
         staleTime = JsDuration.MAX_VALUE
         onError = { error ->
@@ -29,7 +31,7 @@ fun <TData> defaultQueryOptions(queryKey: QueryKey): UseQueryOptions<TData, Resp
 
 fun <TData> optimisticMutationOptions(queryKey: QueryKey): UseMutationOptions<TData, ResponseException, TData, TData> {
     val queryClient = useQueryClient()
-    val (_, addAlert) = useContext(AlertContext)
+    val (_, addAlert) = useContext(AlertContext)!!
 
     return jso {
         onMutate = { newValue ->
@@ -59,7 +61,7 @@ fun <TData> optimisticMutationOptions(queryKey: QueryKey): UseMutationOptions<TD
 
 fun <TData : IdType> listModifyMutationOptions(queryKey: QueryKey): UseMutationOptions<TData, ResponseException, TData, TData> {
     val queryClient = useQueryClient()
-    val (_, addAlert) = useContext(AlertContext)
+    val (_, addAlert) = useContext(AlertContext)!!
 
     return jso {
         onMutate = { newValue ->
@@ -90,7 +92,7 @@ fun <TData : IdType> listModifyMutationOptions(queryKey: QueryKey): UseMutationO
 
 fun <TData : IdType> listDeleteMutationOptions(queryKey: QueryKey): UseMutationOptions<Unit, ResponseException, TData, TData> {
     val queryClient = useQueryClient()
-    val (_, addAlert) = useContext(AlertContext)
+    val (_, addAlert) = useContext(AlertContext)!!
 
     return jso {
         onMutate = { newValue ->
@@ -133,6 +135,7 @@ operator fun <T : IdType> List<T>?.plus(item: T?) =
             result.add(item)
             result
         }
+
         else -> emptyList()
     }
 
@@ -150,6 +153,7 @@ operator fun <T : IdType> List<T>?.minus(list: List<T>?) =
             val ids = list.map { it.id }
             this.filterNot { ids.contains(it.id) }
         }
+
         else -> emptyList()
     }
 

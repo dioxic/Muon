@@ -1,27 +1,29 @@
 package uk.dioxic.muon.component.page
 
+import js.core.jso
 import kotlinx.browser.window
-import kotlinx.js.jso
 import mui.icons.material.*
-import mui.material.Box
-import mui.material.IconButtonColor
-import mui.material.Paper
+import mui.material.*
+import mui.system.sx
 import react.VFC
-import react.table.*
 import react.useMemo
 import react.useState
+import tanstack.react.table.renderCell
+import tanstack.react.table.renderHeader
+import tanstack.react.table.useReactTable
+import tanstack.table.core.*
+import tanstack.table.core.SortDirection
 import uk.dioxic.muon.Routes
 import uk.dioxic.muon.component.dialog.ImportDialog
 import uk.dioxic.muon.component.dialog.TrackEditDialog
-import uk.dioxic.muon.component.table.EnhancedTable
+import uk.dioxic.muon.component.table.TableToolbar
 import uk.dioxic.muon.component.table.actions.RowAction
 import uk.dioxic.muon.component.table.actions.ToolbarAction
-import uk.dioxic.muon.component.table.plugin.useCheckboxSelect
-import uk.dioxic.muon.component.table.plugin.useRowActions
+import uk.dioxic.muon.component.table.columns
 import uk.dioxic.muon.hook.*
-import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.model.Tracks
+import web.cssom.Cursor
 import kotlin.time.Duration.Companion.seconds
 
 val ImportPage = VFC {
@@ -32,10 +34,11 @@ val ImportPage = VFC {
     val import = useImportMutation()
     val (editDialogOpen, setEditDialogOpen) = useState(false)
     val (importDialogOpen, setImportDialogOpen) = useState(false)
-    val (selected, setSelected) = useState<Tracks>(emptyList())
+    val (selectedRows, setSelectedRows) = useState<Tracks>(emptyList())
+    val (sorting, setSorting) = useState<SortingState>(emptyArray())
 
     fun handleEditClick(tracks: Tracks) {
-        setSelected(tracks)
+        setSelectedRows(tracks)
         setEditDialogOpen(true)
     }
 
@@ -44,7 +47,7 @@ val ImportPage = VFC {
     }
 
     fun handleImportClick(tracks: Tracks) {
-        setSelected(tracks)
+        setSelectedRows(tracks)
         val hasDuplicates = tracks.count { !it.duplicates.isNullOrEmpty() } > 0
 
         if (hasDuplicates) {
@@ -103,88 +106,219 @@ val ImportPage = VFC {
         ),
     )
 
-    val columnDefinitions = columns<Track> {
-        column<String> {
-            header = "Title"
-            accessorFunction = { it.title }
-        }
-        column<String> {
-            header = "Artist"
-            accessorFunction = { it.artist }
-        }
-        column<String> {
-            header = "Genre"
-            accessorFunction = { it.genre }
-        }
-        column<String> {
-            header = "Album"
-            accessorFunction = { it.album }
-        }
-        column<String> {
-            header = "Lyricist"
-            accessorFunction = { it.lyricist }
-        }
-        column<String> {
-            header = "Comment"
-            accessorFunction = { it.comment }
-        }
-        column<Int> {
-            header = "Bitrate"
-            accessorFunction = { it.bitrate }
-        }
+    var columnsSSS = arrayOf<ColumnDef<Track, Any>>(
+        jso {
+            id = "title"
+            header = StringOrTemplateHeader("Title")
+            accessorFn = { row, _ -> row.title }
+        },
+        jso {
+            id = "artist"
+            header = StringOrTemplateHeader("Artist")
+            accessorFn = { row, _ -> row.artist }
+        },
+        jso {
+            id = "genre"
+            header = StringOrTemplateHeader("Genre")
+            accessorFn = { row, _ -> row.genre }
+        },
+        jso {
+            id = "album"
+            header = StringOrTemplateHeader("Album")
+            accessorFn = { row, _ -> row.album }
+        },
+        jso {
+            id = "lyricist"
+            header = StringOrTemplateHeader("Lyricist")
+            accessorFn = { row, _ -> row.lyricist }
+        },
+        jso {
+            id = "comment"
+            header = StringOrTemplateHeader("Comment")
+            accessorFn = { row, _ -> row.comment }
+        },
+        jso {
+            id = "bitrate"
+            header = StringOrTemplateHeader("Bitrate")
+            accessorFn = { row, _ -> row.bitrate.toString() }
+        },
+        jso {
+            id = "filename"
+            header = StringOrTemplateHeader("Filename")
+            accessorFn = { row, _ -> row.filename }
+        },
+        jso {
+            id = "year"
+            header = StringOrTemplateHeader("Year")
+            accessorFn = { row, _ -> row.year }
+        },
+        jso {
+            id = "length"
+            header = StringOrTemplateHeader("Length")
+            accessorFn = { row, _ -> row.length.seconds.toString() }
+        },
+        jso {
+            id = "type"
+            header = StringOrTemplateHeader("Type")
+            accessorFn = { row, _ -> row.type.name }
+        },
+    )
+
+    val columnDefs = columns<Track> {
+        column(
+            id = "title",
+            header = "Title",
+            accessor = { title },
+        )
+        column(
+            id = "artist",
+            header = "Artist",
+            accessor = { artist },
+        )
+        column(
+            id = "genre",
+            header = "Genre",
+            accessor = { genre },
+        )
+        column(
+            id = "album",
+            header = "Album",
+            accessor = { album },
+        )
+        column(
+            id = "lyricist",
+            header = "Lyricist",
+            accessor = { lyricist },
+        )
+        column(
+            id = "comment",
+            header = "Comment",
+            accessor = { comment },
+        )
+        column(
+            id = "bitrate",
+            header = "Bitrate",
+            accessor = { bitrate },
+        )
         if (settings?.standardiseFilenames == false) {
-            column<String> {
-                header = "Filename"
-                accessorFunction = { it.filename }
-            }
+            column(
+                id = "filename",
+                header = "Filename",
+                accessor = { filename }
+            )
         }
-        column<String> {
-            header = "Year"
-            accessorFunction = { it.year }
-        }
-        column<String> {
-            header = "Length"
-            accessorFunction = { it.length.seconds.toString() }
-        }
-        column<FileType> {
-            header = "Type"
-            accessorFunction = { it.type }
-        }
+        column(
+            id = "year",
+            header = "Year",
+            accessor = { year },
+        )
+        column(
+            id = "length",
+            header = "Length",
+            accessor = { length.seconds.toString() },
+        )
+        column(
+            id = "type",
+            header = "Type",
+            accessor = { type },
+        )
     }
 
-    val table = useTable(
+    val table = useReactTable<Track>(
         options = jso {
-            data = useMemo(tracks.data) { tracks.data?.toTypedArray() ?: emptyArray() }
-            columns = useMemo(settings?.standardiseFilenames) { columnDefinitions }
-        },
-        useSortBy,
-        useRowSelect,
-        useCheckboxSelect,
-        useColumnOrder,
-        useRowActions(rowActions),
+            this.data = tracks.data?.toTypedArray() ?: emptyArray()
+            this.columns = useMemo { columnDefs }
+            this.state = jso {
+                this.sorting = sorting
+            }
+            this.onSortingChange = { setSorting }
+            this.getCoreRowModel = getCoreRowModel()
+            this.getSortedRowModel = getSortedRowModel()
+            this.debugTable = true
+        }
     )
 
     Box {
         Paper {
-            EnhancedTable {
-                title = "Import Table"
-                tableInstance = table
-                this.toolbarActions = toolbarActions
-                selectedRows = tableInstance.selectedFlatRows
-                columnCount = columnDefinitions.size + 3 // check, expand + actions column
+//            EnhancedTable {
+//                title = "Import Table"
+//                tableInstance = table
+//                this.toolbarActions = toolbarActions
+//                selectedRows = tableInstance.selectedFlatRows
+//                columnCount = columns.size + 3 // check, expand + actions column
+//            }
+            TableContainer {
+                TableToolbar {
+                    title = "Import Table"
+                    actions = toolbarActions
+                    selected = emptyArray()
+                }
+
+                Table {
+                    size = Size.small
+                    stickyHeader = true
+
+                    TableHead {
+                        table.getHeaderGroups().forEach { headerGroup ->
+                            TableRow {
+                                headerGroup.headers.forEach { header ->
+                                    TableCell {
+                                        if (header.column.getCanSort()) {
+                                            sx {
+                                                cursor = Cursor.pointer
+                                            }
+                                        }
+
+                                        +renderHeader(header)
+
+//                                        if (!header.isPlaceholder) {
+
+//                                            println("canSort: ${header.column.getCanSort()}")
+//                                            println("isSorted: ${header.column.getIsSorted()}")
+
+//                                            if (header.column.getCanSort()) {
+//                                                TableSortLabel {
+//                                                    onClick = header.column.getToggleSortingHandler()
+//                                                    active = header.column.getIsSorted() != null
+//                                                    direction = when (header.column.getIsSorted()) {
+//                                                        SortDirection.asc -> TableSortLabelDirection.asc
+//                                                        else -> TableSortLabelDirection.desc
+//                                                    else -> null
+//                                                    }
+//                                                }
+//                                            }
+//                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    TableBody {
+                        table.getRowModel().rows.forEach { row ->
+                            TableRow {
+                                row.getVisibleCells().forEach { cell ->
+                                    TableCell {
+                                        +renderCell(cell)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
-    if (selected.isNotEmpty()) {
+    if (selectedRows.isNotEmpty()) {
         TrackEditDialog {
             open = editDialogOpen
-            this.tracks = selected
+            this.tracks = selectedRows
             handleClose = { setEditDialogOpen(false) }
         }
         ImportDialog {
             open = importDialogOpen
-            this.tracks = selected
+            this.tracks = selectedRows
             handleImport = { import.mutate(it, jso()) }
             handleClose = { setImportDialogOpen(false) }
         }

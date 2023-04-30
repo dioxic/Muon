@@ -10,6 +10,7 @@ import mui.system.sx
 import react.FC
 import react.Props
 import react.dom.html.ReactHTML.img
+import web.cssom.*
 
 val Placeholder = FC<Props> {
     Box {

@@ -1,6 +1,6 @@
 package uk.dioxic.muon.common
 
-import csstype.px
+import web.cssom.px
 
 object Sizes {
     object Header {

@@ -1,13 +1,13 @@
 package uk.dioxic.muon.hook
 
-import react.query.useQueryClient
-import uk.dioxic.muon.common.QueryKey
+import tanstack.react.query.useQueryClient
+import uk.dioxic.muon.common.QueryKeys
 
 typealias ReloadImport = () -> Unit
 
 fun useImportReload(): ReloadImport {
     val queryClient = useQueryClient()
     return {
-        queryClient.invalidateQueries<Nothing>(QueryKey.IMPORT)
+        queryClient.invalidateQueries<Nothing>(QueryKeys.IMPORT)
     }
 }

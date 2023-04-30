@@ -26,3 +26,4 @@ data class Track(
     val duplicates: List<Track>? = null,
 ) : IdType
 
+typealias Tracks = List<Track> //Array<out Track>

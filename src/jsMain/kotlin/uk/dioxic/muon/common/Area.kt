@@ -1,6 +1,6 @@
 package uk.dioxic.muon.common
 
-import csstype.ident
+import web.cssom.ident
 
 object Area {
     val Header = ident("header")

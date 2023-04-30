@@ -1,6 +1,6 @@
 package uk.dioxic.muon.common
 
-import kotlinx.js.jso
+import js.core.jso
 import mui.material.PaletteMode
 import mui.material.styles.createTheme
 

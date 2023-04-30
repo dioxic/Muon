@@ -1,9 +1,5 @@
 package uk.dioxic.muon.component
 
-import csstype.Position
-import csstype.integer
-import csstype.number
-import csstype.px
 import kotlinx.browser.window
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.promise
@@ -14,24 +10,28 @@ import mui.material.styles.TypographyVariant
 import mui.material.styles.useTheme
 import mui.system.sx
 import react.*
-import react.dom.aria.AriaHasPopup.`false`
+import react.dom.aria.AriaHasPopup
 import react.dom.aria.ariaHasPopup
 import react.dom.aria.ariaLabel
 import react.dom.html.ReactHTML
-import react.query.useQueryClient
 import react.router.useLocation
+import tanstack.react.query.useQueryClient
 import uk.dioxic.muon.Routes
 import uk.dioxic.muon.api.Api
 import uk.dioxic.muon.common.Area
-import uk.dioxic.muon.common.QueryKey
+import uk.dioxic.muon.common.QueryKeys
 import uk.dioxic.muon.common.Themes
 import uk.dioxic.muon.context.AlertContext
 import uk.dioxic.muon.context.ThemeContext
+import web.cssom.Position
+import web.cssom.integer
+import web.cssom.number
+import web.cssom.px
 
 val Header = FC<Props> {
     val theme = useTheme<Theme>()
-    val (_, addAlert) = useContext(AlertContext)
-    val toggleColorMode = useContext(ThemeContext)
+    val (_, addAlert) = useContext(AlertContext)!!
+    val toggleColorMode = useContext(ThemeContext)!!
     val lastPathname = useLocation().pathname.substringAfterLast("/")
     val (indexing, setIndexing) = useState(false)
     val queryClient = useQueryClient()
@@ -71,7 +71,7 @@ val Header = FC<Props> {
 
                 IconButton {
                     ariaLabel = "official documentation"
-                    ariaHasPopup = `false`
+                    ariaHasPopup = AriaHasPopup.`false`
                     size = Size.large
                     color = IconButtonColor.inherit
                     onClick = { window.location.href = "https://mui.com/components/$lastPathname" }
@@ -85,7 +85,7 @@ val Header = FC<Props> {
 
                 IconButton {
                     ariaLabel = "source code"
-                    ariaHasPopup = `false`
+                    ariaHasPopup = AriaHasPopup.`false`
                     size = Size.large
                     color = IconButtonColor.inherit
                     onClick = {
@@ -115,7 +115,7 @@ val Header = FC<Props> {
 
                     IconButton {
                         ariaLabel = "reindex"
-                        ariaHasPopup = `false`
+                        ariaHasPopup = AriaHasPopup.`false`
                         size = Size.large
                         color = IconButtonColor.inherit
                         disabled = indexing == true
@@ -125,7 +125,7 @@ val Header = FC<Props> {
                                 Api.get<String>("${Routes.index}/refresh")
                             }.then {
                                 addAlert(uk.dioxic.muon.context.Alert.AlertSuccess(it))
-                                queryClient.invalidateQueries<Nothing>(QueryKey.LIBRARY)
+                                queryClient.invalidateQueries<Nothing>(QueryKeys.LIBRARY)
 
                             }.catch {
                                 addAlert(uk.dioxic.muon.context.Alert.AlertError("Error reindexing - ${it.message}"))

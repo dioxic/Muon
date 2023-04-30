@@ -2,11 +2,11 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
 
 plugins {
-    kotlin("multiplatform") version "1.7.20"
-    kotlin("plugin.serialization") version "1.7.20"
-    id("pl.allegro.tech.build.axion-release") version "1.14.2"
+    kotlin("multiplatform") version "1.8.21"
+    kotlin("plugin.serialization") version "1.8.21"
+    id("pl.allegro.tech.build.axion-release") version "1.15.0"
 //    id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("com.github.ben-manes.versions") version "0.42.0"
+    id("com.github.ben-manes.versions") version "0.46.0"
     application
 }
 
@@ -37,7 +37,9 @@ kotlin {
         useCommonJs()
         browser {
             commonWebpackConfig {
-                cssSupport.enabled = true
+                cssSupport {
+                    enabled.set(true)
+                }
             }
             testTask {
                 enabled = false
@@ -101,8 +103,8 @@ kotlin {
 
                 implementation(kotlinw("react"))
                 implementation(kotlinw("react-dom"))
-                implementation(kotlinw("react-query"))
-                implementation(kotlinw("react-table"))
+                implementation(kotlinw("tanstack-react-query"))
+                implementation(kotlinw("tanstack-react-table"))
                 implementation(kotlinw("react-router-dom"))
 
                 implementation(kotlinw("emotion"))
@@ -143,6 +145,10 @@ tasks.getByName<Jar>("jvmJar") {
     from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) {
         into("static")
     }
+}
+
+tasks.getByName<KotlinWebpack>("jsBrowserProductionWebpack") {
+    dependsOn(tasks.getByName("jsDevelopmentExecutableCompileSync"))
 }
 
 distributions {
@@ -200,17 +206,17 @@ tasks.getByName("distTar") {
 //    dependsOn(tasks.getByName("jsDevelopmentExecutableCompileSync"))
 //}
 
-tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask> {
-    resolutionStrategy {
-        componentSelection {
-            all {
-                if (isNonStable(candidate.version) && !isNonStable(currentVersion)) {
-                    reject("Release candidate")
-                }
-            }
-        }
-    }
-}
+//tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask> {
+//    resolutionStrategy {
+//        componentSelection {
+//            all {
+//                if (isNonStable(candidate.version) && !isNonStable(currentVersion)) {
+//                    reject("Release candidate")
+//                }
+//            }
+//        }
+//    }
+//}
 
 fun isNonStable(version: String): Boolean {
     val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.toUpperCase().contains(it) }

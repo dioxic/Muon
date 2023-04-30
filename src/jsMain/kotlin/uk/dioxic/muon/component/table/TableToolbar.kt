@@ -1,10 +1,6 @@
 package uk.dioxic.muon.component.table
 
-import csstype.Position
-import csstype.integer
-import csstype.number
-import csstype.px
-import kotlinx.js.ReadonlyArray
+import js.core.ReadonlyArray
 import mui.material.*
 import mui.material.styles.Theme
 import mui.material.styles.TypographyVariant
@@ -14,10 +10,14 @@ import react.FC
 import react.Props
 import react.ReactNode
 import react.dom.html.ReactHTML
-import react.table.Row
+import tanstack.table.core.Row
 import uk.dioxic.muon.component.table.actions.ToolbarAction
 import uk.dioxic.muon.external.chroma
 import uk.dioxic.muon.model.Track
+import web.cssom.Position
+import web.cssom.integer
+import web.cssom.number
+import web.cssom.px
 
 external interface TableToolbarProps<T: Any> : Props {
     var title: String

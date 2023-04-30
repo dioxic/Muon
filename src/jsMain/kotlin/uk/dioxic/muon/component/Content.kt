@@ -1,6 +1,5 @@
 package uk.dioxic.muon.component
 
-import csstype.px
 import mui.material.Typography
 import mui.system.Box
 import mui.system.sx
@@ -14,16 +13,18 @@ import react.router.Routes
 import react.useContext
 import uk.dioxic.muon.common.Area
 import uk.dioxic.muon.context.PagesContext
+import web.cssom.px
 
 private val DEFAULT_PADDING = 30.px
 
+// asDynamic everywhere because https://github.com/JetBrains/kotlin-wrappers/issues/1921
 val Content = FC<Props> {
     val pages = useContext(PagesContext)
 
     Routes {
         Route {
-            path = "/"
-            element = Box.create {
+            asDynamic().path = "/"
+            asDynamic().element = Box.create {
                 component = ReactHTML.main
                 sx {
                     gridArea = Area.Content
@@ -33,17 +34,17 @@ val Content = FC<Props> {
                 Outlet()
             }
 
-            pages.forEachIndexed { i, (key, _, Component) ->
+            pages?.forEachIndexed { i, (key, _, Component) ->
                 Route {
-                    index = i == 0
-                    path = key
-                    element = Component.create()
+                    asDynamic().index = i == 0
+                    asDynamic().path = key
+                    asDynamic().element = Component.create()
                 }
             }
 
             Route {
-                path = "*"
-                element = Typography.create { +"404 Page Not Found" }
+                asDynamic().path = "*"
+                asDynamic().element = Typography.create { +"404 Page Not Found" }
             }
         }
     }

@@ -1,19 +1,15 @@
 package uk.dioxic.muon
 
-import csstype.Auto
-import csstype.Display
-import csstype.GridTemplateAreas
-import csstype.array
-import kotlinx.browser.document
+
 import mui.system.Box
 import mui.system.sx
 import react.FC
 import react.Props
 import react.create
 import react.dom.client.createRoot
-import react.query.QueryClient
-import react.query.QueryClientProvider
 import react.router.dom.HashRouter
+import tanstack.query.core.QueryClient
+import tanstack.react.query.QueryClientProvider
 import uk.dioxic.muon.common.Area
 import uk.dioxic.muon.common.Sizes.Header
 import uk.dioxic.muon.common.Sizes.Sidebar
@@ -21,9 +17,15 @@ import uk.dioxic.muon.component.*
 import uk.dioxic.muon.context.AlertModule
 import uk.dioxic.muon.context.PagesModule
 import uk.dioxic.muon.context.ThemeModule
+import web.cssom.Auto
+import web.cssom.Display
+import web.cssom.GridTemplateAreas
+import web.cssom.array
+import web.dom.document
 
 fun main() {
-    createRoot(document.createElement("div").also { document.body!!.appendChild(it) })
+    createRoot(document.createElement("div")
+        .also { document.body.appendChild(it) })
         .render(App.create())
 }
 

@@ -1,6 +1,6 @@
 package uk.dioxic.muon.external
 
-import csstype.Color
+import web.cssom.Color
 
 @JsModule("chroma-js")
 @JsNonModule

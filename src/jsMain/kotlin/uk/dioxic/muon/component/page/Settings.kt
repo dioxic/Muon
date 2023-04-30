@@ -1,10 +1,6 @@
 package uk.dioxic.muon.component.page
 
-import csstype.Display
-import csstype.FontFamily
-import csstype.FontSize
-import csstype.px
-import kotlinx.js.jso
+import js.core.jso
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mui.material.*
@@ -13,7 +9,6 @@ import mui.system.sx
 import org.w3c.dom.HTMLInputElement
 import react.ReactNode
 import react.VFC
-import react.dom.html.InputType
 import react.dom.html.ReactHTML
 import react.dom.onChange
 import react.useEffect
@@ -21,6 +16,11 @@ import react.useState
 import uk.dioxic.muon.common.percent
 import uk.dioxic.muon.hook.useSettingsFetch
 import uk.dioxic.muon.hook.useSettingsSave
+import web.cssom.Display
+import web.cssom.FontFamily
+import web.cssom.FontSize
+import web.cssom.px
+import web.html.InputType
 
 private val json = Json {
     prettyPrint = true

@@ -1,7 +1,5 @@
 package uk.dioxic.muon.context
 
-import csstype.Color
-import csstype.integer
 import mui.material.Backdrop
 import mui.material.CircularProgress
 import mui.material.CircularProgressColor
@@ -15,6 +13,8 @@ import react.createContext
 import uk.dioxic.muon.common.Themes
 import uk.dioxic.muon.hook.useSettingsFetch
 import uk.dioxic.muon.hook.useSettingsSave
+import web.cssom.Color
+import web.cssom.integer
 
 val ThemeContext = createContext<() -> Unit>()
 

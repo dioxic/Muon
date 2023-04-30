@@ -1,8 +1,9 @@
 package uk.dioxic.muon.common
 
-import react.query.QueryKey
+import tanstack.query.core.QueryKey
 
-object QueryKey {
+
+object QueryKeys {
     fun trackSearch(text: String) = QueryKey<QueryKey>("library", text)
     val LIBRARY = QueryKey<QueryKey>("library")
     val SETTINGS = QueryKey<QueryKey>("settings")

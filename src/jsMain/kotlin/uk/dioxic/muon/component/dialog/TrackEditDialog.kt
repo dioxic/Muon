@@ -1,21 +1,21 @@
 package uk.dioxic.muon.component.dialog
 
-import csstype.px
-import kotlinx.js.jso
+import js.core.jso
 import mui.material.*
 import mui.system.sx
 import org.w3c.dom.HTMLInputElement
 import react.FC
 import react.Props
 import react.ReactNode
-import react.dom.html.ButtonType
-import react.dom.html.InputType
 import react.dom.html.ReactHTML.form
 import react.dom.onChange
 import uk.dioxic.muon.hook.useSettingsFetch
 import uk.dioxic.muon.hook.useTrackSave
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.model.Tracks
+import web.cssom.px
+import web.html.ButtonType
+import web.html.InputType
 
 external interface TrackDialogProps : Props {
     var tracks: Tracks

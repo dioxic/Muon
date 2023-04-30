@@ -1,13 +1,13 @@
 package uk.dioxic.muon.context
 
-import csstype.integer
-import kotlinx.js.jso
+import js.core.jso
 import mui.material.*
 import mui.system.sx
 import react.FC
 import react.PropsWithChildren
 import react.createContext
 import react.useState
+import web.cssom.integer
 
 val AlertContext = createContext<AlertContextDto>()
 
