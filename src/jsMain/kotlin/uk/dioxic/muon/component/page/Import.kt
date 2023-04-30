@@ -2,32 +2,29 @@ package uk.dioxic.muon.component.page
 
 import js.core.jso
 import kotlinx.browser.window
-import mui.icons.material.*
+import mui.icons.material.Refresh
 import mui.material.*
 import mui.system.sx
-import react.VFC
-import react.useMemo
+import react.FC
+import react.Props
 import react.useState
 import tanstack.react.table.renderCell
 import tanstack.react.table.renderHeader
 import tanstack.react.table.useReactTable
-import tanstack.table.core.*
-import tanstack.table.core.SortDirection
+import tanstack.table.core.ColumnDef
+import tanstack.table.core.StringOrTemplateHeader
+import tanstack.table.core.getCoreRowModel
 import uk.dioxic.muon.Routes
-import uk.dioxic.muon.component.dialog.ImportDialog
-import uk.dioxic.muon.component.dialog.TrackEditDialog
 import uk.dioxic.muon.component.table.TableToolbar
-import uk.dioxic.muon.component.table.actions.RowAction
 import uk.dioxic.muon.component.table.actions.ToolbarAction
-import uk.dioxic.muon.component.table.columns
 import uk.dioxic.muon.hook.*
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.model.Tracks
 import web.cssom.Cursor
 import kotlin.time.Duration.Companion.seconds
 
-val ImportPage = VFC {
-    val settings = useSettingsFetch().data
+val ImportPage = FC<Props> {
+    val settings = useSettingsFetch()
     val tracks = useImportFetch()
     val reload = useImportReload()
     val delete = useImportDelete()
@@ -35,7 +32,7 @@ val ImportPage = VFC {
     val (editDialogOpen, setEditDialogOpen) = useState(false)
     val (importDialogOpen, setImportDialogOpen) = useState(false)
     val (selectedRows, setSelectedRows) = useState<Tracks>(emptyList())
-    val (sorting, setSorting) = useState<SortingState>(emptyArray())
+//    val (sorting, setSorting) = useState<SortingState>(emptyArray())
 
     fun handleEditClick(tracks: Tracks) {
         setSelectedRows(tracks)
@@ -63,6 +60,7 @@ val ImportPage = VFC {
 
     @Suppress("UNUSED_PARAMETER")
     fun handleRefreshClick(rows: Tracks) {
+        println("refresh click")
         reload()
     }
 
@@ -70,43 +68,43 @@ val ImportPage = VFC {
         window.open(Routes.trackAudio(track), "_blank")?.focus()
     }
 
-    val rowActions = listOf(
-        RowAction(name = "edit", icon = Edit, onClick = ::handleRowEditClick),
-        RowAction(name = "import", icon = GetApp, onClick = ::handleRowImportClick),
-        RowAction(name = "Play", icon = PlayCircle, onClick = ::handlePlay),
-        RowAction(name = "delete", icon = Delete, onClick = ::handleRowDeleteClick, iconColor = IconButtonColor.error),
-    )
+//    val rowActions = listOf(
+//        RowAction(name = "edit", icon = Edit, onClick = ::handleRowEditClick),
+//        RowAction(name = "import", icon = GetApp, onClick = ::handleRowImportClick),
+//        RowAction(name = "Play", icon = PlayCircle, onClick = ::handlePlay),
+//        RowAction(name = "delete", icon = Delete, onClick = ::handleRowDeleteClick, iconColor = IconButtonColor.error),
+//    )
 
     val toolbarActions = listOf(
-        ToolbarAction(
-            name = "edit",
-            icon = Edit,
-            onClick = ::handleEditClick,
-            requiresSelection = true
-        ),
-        ToolbarAction(
-            name = "import",
-            icon = GetApp,
-            onClick = ::handleImportClick,
-            requiresSelection = true,
-            fetchingAnimation = import.isLoading
-        ),
-        ToolbarAction(
-            name = "delete",
-            icon = Delete,
-            onClick = ::handleDeleteClick,
-            requiresSelection = true,
-            iconColor = IconButtonColor.error
-        ),
+//        ToolbarAction(
+//            name = "edit",
+//            icon = Edit,
+//            onClick = ::handleEditClick,
+//            requiresSelection = true
+//        ),
+//        ToolbarAction(
+//            name = "import",
+//            icon = GetApp,
+//            onClick = ::handleImportClick,
+//            requiresSelection = true,
+//            fetchingAnimation = import.isLoading
+//        ),
+//        ToolbarAction(
+//            name = "delete",
+//            icon = Delete,
+//            onClick = ::handleDeleteClick,
+//            requiresSelection = true,
+//            iconColor = IconButtonColor.error
+//        ),
         ToolbarAction(
             name = "refresh",
             icon = Refresh,
             onClick = ::handleRefreshClick,
-            fetchingAnimation = tracks.isFetching
+//            fetchingAnimation = tracks.isFetching
         ),
     )
 
-    var columnsSSS = arrayOf<ColumnDef<Track, Any>>(
+    val columnsSSS = arrayOf<ColumnDef<Track, Any>>(
         jso {
             id = "title"
             header = StringOrTemplateHeader("Title")
@@ -164,79 +162,21 @@ val ImportPage = VFC {
         },
     )
 
-    val columnDefs = columns<Track> {
-        column(
-            id = "title",
-            header = "Title",
-            accessor = { title },
-        )
-        column(
-            id = "artist",
-            header = "Artist",
-            accessor = { artist },
-        )
-        column(
-            id = "genre",
-            header = "Genre",
-            accessor = { genre },
-        )
-        column(
-            id = "album",
-            header = "Album",
-            accessor = { album },
-        )
-        column(
-            id = "lyricist",
-            header = "Lyricist",
-            accessor = { lyricist },
-        )
-        column(
-            id = "comment",
-            header = "Comment",
-            accessor = { comment },
-        )
-        column(
-            id = "bitrate",
-            header = "Bitrate",
-            accessor = { bitrate },
-        )
-        if (settings?.standardiseFilenames == false) {
-            column(
-                id = "filename",
-                header = "Filename",
-                accessor = { filename }
-            )
-        }
-        column(
-            id = "year",
-            header = "Year",
-            accessor = { year },
-        )
-        column(
-            id = "length",
-            header = "Length",
-            accessor = { length.seconds.toString() },
-        )
-        column(
-            id = "type",
-            header = "Type",
-            accessor = { type },
-        )
-    }
-
     val table = useReactTable<Track>(
         options = jso {
-            this.data = tracks.data?.toTypedArray() ?: emptyArray()
-            this.columns = useMemo { columnDefs }
-            this.state = jso {
-                this.sorting = sorting
-            }
-            this.onSortingChange = { setSorting }
-            this.getCoreRowModel = getCoreRowModel()
-            this.getSortedRowModel = getSortedRowModel()
-            this.debugTable = true
+            data = tracks
+            columns = columnsSSS
+//            this.state = jso {
+//                this.sorting = sorting
+//            }
+//            this.onSortingChange = { setSorting }
+            getCoreRowModel = getCoreRowModel()
+//            this.getSortedRowModel = getSortedRowModel()
+            //this.debugTable = true
         }
     )
+
+    println("render")
 
     Box {
         Paper {
@@ -310,18 +250,18 @@ val ImportPage = VFC {
         }
     }
 
-    if (selectedRows.isNotEmpty()) {
-        TrackEditDialog {
-            open = editDialogOpen
-            this.tracks = selectedRows
-            handleClose = { setEditDialogOpen(false) }
-        }
-        ImportDialog {
-            open = importDialogOpen
-            this.tracks = selectedRows
-            handleImport = { import.mutate(it, jso()) }
-            handleClose = { setImportDialogOpen(false) }
-        }
-    }
+//    if (selectedRows.isNotEmpty()) {
+//        TrackEditDialog {
+//            open = editDialogOpen
+//            this.tracks = selectedRows
+//            handleClose = { setEditDialogOpen(false) }
+//        }
+//        ImportDialog {
+//            open = importDialogOpen
+//            this.tracks = selectedRows
+//            handleImport = { import.mutate(it, jso()) }
+//            handleClose = { setImportDialogOpen(false) }
+//        }
+//    }
 
 }

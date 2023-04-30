@@ -254,6 +254,8 @@ val LibraryPage = VFC {
         }
     )
 
+    println("render")
+
     Box {
         Paper {
             TableContainer {

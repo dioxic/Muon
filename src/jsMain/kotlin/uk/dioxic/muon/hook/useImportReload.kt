@@ -8,6 +8,7 @@ typealias ReloadImport = () -> Unit
 fun useImportReload(): ReloadImport {
     val queryClient = useQueryClient()
     return {
+        println("invalidate queries")
         queryClient.invalidateQueries<Nothing>(QueryKeys.IMPORT)
     }
 }
