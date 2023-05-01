@@ -1,6 +1,7 @@
 package uk.dioxic.muon.utils
 
 import io.ktor.client.plugins.*
+import js.core.ReadonlyArray
 import js.core.jso
 import react.useContext
 import tanstack.query.core.JsDuration
@@ -69,22 +70,22 @@ fun <TData : IdType> listModifyMutationOptions(queryKey: QueryKey): UseMutationO
             queryClient.cancelQueries(queryKey)
 
             // Snapshot the previous value
-            val previousValue = queryClient.getQueryData<List<TData>>(queryKey)
-                ?.first { it.id == newValue.id }
+            val previousValue = queryClient.getQueryData<ReadonlyArray<TData>>(queryKey)
+                ?.firstOrNull { it.id == newValue.id }
 
             // Optimistically update to the new value
-            queryClient.setQueryData<List<TData>>(queryKey, { it.replace(newValue) }, jso())
+            queryClient.setQueryData<ReadonlyArray<TData>>(queryKey, { it.replace(newValue) }, jso())
 
             // Set the previous settings value to the context
             Promise.resolve(previousValue)
         }
         onError = { error, _, previousValue ->
             addAlert(Alert.AlertError(errMsg(error)))
-            queryClient.setQueryData<List<TData>>(queryKey, { it.replace(previousValue) }, jso())
+            queryClient.setQueryData<ReadonlyArray<TData>>(queryKey, { it.replace(previousValue) }, jso())
             null
         }
         onSuccess = { responseValue, _, _ ->
-            queryClient.setQueryData<List<TData>>(queryKey, { it.replace(responseValue) }, jso())
+            queryClient.setQueryData<ReadonlyArray<TData>>(queryKey, { it.replace(responseValue) }, jso())
             null
         }
     }
@@ -100,18 +101,18 @@ fun <TData : IdType> listDeleteMutationOptions(queryKey: QueryKey): UseMutationO
             queryClient.cancelQueries(queryKey)
 
             // Snapshot the previous value
-            val previousValue = queryClient.getQueryData<List<TData>>(queryKey)
+            val previousValue = queryClient.getQueryData<ReadonlyArray<TData>>(queryKey)
                 ?.first { it.id == newValue.id }
 
             // Optimistically remove the list element
-            queryClient.setQueryData<List<TData>>(queryKey, { it - newValue }, jso())
+            queryClient.setQueryData<ReadonlyArray<TData>>(queryKey, { it - newValue }, jso())
 
             // Set the previous settings value to the context
             Promise.resolve(previousValue)
         }
         onError = { error, _, previousValue ->
             addAlert(Alert.AlertError(errMsg(error)))
-            queryClient.setQueryData<List<TData>>(queryKey, { it + previousValue }, jso())
+            queryClient.setQueryData<ReadonlyArray<TData>>(queryKey, { it + previousValue }, jso())
             null
         }
     }
@@ -125,41 +126,45 @@ fun errMsg(error: ResponseException) =
     }
 
 
-operator fun <T : IdType> List<T>?.plus(item: T?) =
+operator fun <T : IdType> ReadonlyArray<T>?.plus(item: T?) =
     when {
         item == null && this != null -> this
-        item != null && this == null -> listOf(item)
+        item != null && this == null -> arrayOf(item)
         item != null && this != null -> {
             val result = ArrayList<T>(size + 1)
             result.addAll(this)
             result.add(item)
-            result
+            result.toTypedArray()
         }
 
-        else -> emptyList()
+        else -> emptyArray()
     }
 
-operator fun <T : IdType> List<T>?.minus(item: T?) =
+operator fun <T : IdType> ReadonlyArray<T>?.minus(item: T?) =
     when {
         item == null && this != null -> this
-        item != null && this != null -> this.filterNot { it.id == item.id }
-        else -> emptyList()
+        item != null && this != null -> this.filterNot { it.id == item.id }.toTypedArray()
+        else -> emptyArray()
     }
 
-operator fun <T : IdType> List<T>?.minus(list: List<T>?) =
+operator fun <T : IdType> ReadonlyArray<T>?.minus(list: List<T>?) =
     when {
         list == null && this != null -> this
         list != null && this != null -> {
             val ids = list.map { it.id }
             this.filterNot { ids.contains(it.id) }
+                .toTypedArray()
         }
 
-        else -> emptyList()
+        else -> emptyArray()
     }
 
-fun <T : IdType> List<T>?.replace(replacement: T?) =
+fun <T : IdType> ReadonlyArray<T>?.replace(replacement: T?) =
     when {
         replacement == null && this != null -> this
-        replacement != null && this != null -> this.map { if (it.id == replacement.id) replacement else it }
-        else -> emptyList()
+        replacement != null && this != null -> this
+            .map { if (it.id == replacement.id) replacement else it }
+            .toTypedArray()
+
+        else -> emptyArray()
     }

@@ -48,8 +48,8 @@ val ImportPage = VFC {
         RowAction(name = "delete", icon = Delete, onClick = { delete(it) }, iconColor = IconButtonColor.error),
     )
 
-    val columnsDefs = useMemo {
-        arrayOf<ColumnDef<Track, Any>>(
+    val columnsDefs = useMemo(settings) {
+        mutableListOf<ColumnDef<Track, Any>>(
             jso {
                 id = "checkbox"
                 header = StringOrTemplateHeader(checkboxHeaderTemplate())
@@ -91,11 +91,6 @@ val ImportPage = VFC {
                 accessorFn = { row, _ -> row.bitrate.toString() }
             },
             jso {
-                id = "filename"
-                header = StringOrTemplateHeader("Filename")
-                accessorFn = { row, _ -> row.filename }
-            },
-            jso {
                 id = "year"
                 header = StringOrTemplateHeader("Year")
                 accessorFn = { row, _ -> row.year }
@@ -115,7 +110,15 @@ val ImportPage = VFC {
                 header = StringOrTemplateHeader("Action")
                 cell = rowActionTemplate(rowActions)
             }
-        )
+        ).apply {
+            if (settings.data?.standardiseFilenames == false) {
+                add(jso {
+                    id = "filename"
+                    header = StringOrTemplateHeader("Filename")
+                    accessorFn = { row, _ -> row.filename }
+                })
+            }
+        }.toTypedArray()
     }
 
     val table = useReactTable<Track>(
@@ -124,6 +127,7 @@ val ImportPage = VFC {
             columns = columnsDefs
             enableRowSelection = { _ -> true }
             enableMultiRowSelection = { _ -> true }
+
 //            onRowSelectionChange = { println("row selection") }
 //            this.onSortingChange = { updater -> setSorting.invoke(updater)}
 //            state = jso {
@@ -162,19 +166,15 @@ val ImportPage = VFC {
         ToolbarAction(
             name = "delete",
             icon = Delete,
-            onClick = { table.getSelectedData().forEach {
-                track -> delete(track)
-            } },
+            onClick = {
+                table.getSelectedData().forEach { track ->
+                    delete(track)
+                }
+            },
             iconColor = IconButtonColor.error,
             visible = table.getIsAnyRowsSelected()
         ),
     )
-
-//    println("render")
-//    println("table selection: " + table.getSelectedRowModel().rows.map { it.original.title })
-//    println("selection state: $editDialogTracks")
-//    println("selection state is empty: ${editDialogTracks.isEmpty()}")
-
 
     Box {
         Paper {
@@ -200,7 +200,9 @@ val ImportPage = VFC {
                                             }
                                         }
 
-                                        +renderHeader(header)
+                                        if (!header.isPlaceholder) {
+                                            +renderHeader(header)
+                                        }
 
 //                                        if (!header.isPlaceholder) {
 
