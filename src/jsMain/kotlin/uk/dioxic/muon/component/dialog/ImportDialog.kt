@@ -3,12 +3,13 @@ package uk.dioxic.muon.component.dialog
 import mui.material.*
 import react.FC
 import react.Props
+import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.model.Tracks
 
 external interface ImportDialogProps : Props {
-    var tracks: Tracks
+    var tracks: Array<out Track>
     var open: Boolean
-    var handleImport: (Tracks) -> Unit
+    var handleImport: (Array<out Track>) -> Unit
     var handleClose: () -> Unit
 }
 
@@ -44,7 +45,7 @@ val ImportDialog = FC<ImportDialogProps> { props ->
                 Button {
                     onClick = { _ ->
                         props.handleClose()
-                        props.handleImport(withoutDuplicates)
+                        props.handleImport(withoutDuplicates.toTypedArray())
                     }
                     +"Import Safe"
                 }

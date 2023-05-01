@@ -36,7 +36,7 @@ val ImportDuplicateDialog = FC<ImportDuplicateProps> { props ->
     val delete = useImportDelete()
 
     fun handleImportClick(track: Track) {
-        import.mutate(listOf(track), jso())
+        import.mutate(arrayOf(track), jso())
     }
 
     fun handleDeleteDuplicateClick(track: Track) {

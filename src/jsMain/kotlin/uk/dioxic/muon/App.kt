@@ -32,8 +32,6 @@ fun main() {
 private val App = FC<Props> {
     QueryClientProvider {
         client = queryClient
-//        ImportPage()
-//        UserInfo()
         HashRouter {
             AlertModule {
                 ThemeModule {

@@ -1,6 +1,5 @@
 package uk.dioxic.muon.component.table
 
-import js.core.ReadonlyArray
 import mui.material.*
 import mui.material.styles.Theme
 import mui.material.styles.TypographyVariant
@@ -10,33 +9,31 @@ import react.FC
 import react.Props
 import react.ReactNode
 import react.dom.html.ReactHTML
-import tanstack.table.core.Row
 import uk.dioxic.muon.component.table.actions.ToolbarAction
 import uk.dioxic.muon.external.chroma
-import uk.dioxic.muon.model.Track
 import web.cssom.Position
 import web.cssom.integer
 import web.cssom.number
 import web.cssom.px
 
-external interface TableToolbarProps<T: Any> : Props {
+external interface TableToolbarProps : Props {
     var title: String
-    var selected: ReadonlyArray<Row<T>>
-    var actions: List<ToolbarAction<T>>
+    var selectedCount: Int
+    var actions: List<ToolbarAction>
 }
 
 // TODO use proper types when wrapper supports it - https://github.com/JetBrains/kotlin-wrappers/issues/1129
-private operator fun TableToolbarProps<Track>.component1() = title
-private operator fun TableToolbarProps<Track>.component2() = selected
-private operator fun TableToolbarProps<Track>.component3() = actions
+private operator fun TableToolbarProps.component1() = title
+private operator fun TableToolbarProps.component2() = selectedCount
+private operator fun TableToolbarProps.component3() = actions
 
-val TableToolbar = FC<TableToolbarProps<Track>> { (title, selected, actions) ->
+val TableToolbar = FC<TableToolbarProps> { (title, selectedCount, actions) ->
 
     val theme = useTheme<Theme>()
 
     Toolbar {
         sx {
-            if (selected.isNotEmpty()) {
+            if (selectedCount > 0) {
                 backgroundColor = chroma(theme.palette.primary.main)
                     .alpha(theme.palette.action.activatedOpacity)
                     .hex()
@@ -49,9 +46,9 @@ val TableToolbar = FC<TableToolbarProps<Track>> { (title, selected, actions) ->
             }
             component = ReactHTML.div
 
-            if (selected.isNotEmpty()) {
+            if (selectedCount > 0) {
                 variant = TypographyVariant.subtitle1
-                +"${selected.size} selected"
+                +"$selectedCount selected"
             } else {
                 variant = TypographyVariant.h6
                 +title
@@ -59,7 +56,7 @@ val TableToolbar = FC<TableToolbarProps<Track>> { (title, selected, actions) ->
         }
 
         actions.forEach { action ->
-            if (!action.requiresSelection || selected.isNotEmpty()) {
+            if (action.visible) {
                 Box {
                     sx {
                         position = Position.relative
@@ -69,11 +66,11 @@ val TableToolbar = FC<TableToolbarProps<Track>> { (title, selected, actions) ->
                         this.title = ReactNode(action.name)
 
                         IconButton {
-                            disabled = action.fetchingAnimation
+//                            disabled = action.fetchingAnimation
                             action.iconColor?.let {
                                 color = it
                             }
-                            onClick = { _ -> action.onClick(selected.map { it.original }) }
+                            onClick = { _ -> action.onClick() }
 
                             action.icon()
                         }

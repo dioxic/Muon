@@ -1,5 +1,6 @@
 package uk.dioxic.muon.hook
 
+import js.core.ReadonlyArray
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.promise
 import tanstack.query.core.QueryKey
@@ -10,14 +11,14 @@ import uk.dioxic.muon.common.QueryKeys
 import uk.dioxic.muon.model.Track
 import kotlin.js.Promise
 
-fun useImportFetchOld() = useQuery<Array<Track>, Error, Array<Track>, QueryKey>(
+fun useImportFetchOld() = useQuery<ReadonlyArray<Track>, Error, ReadonlyArray<Track>, QueryKey>(
     queryKey = QueryKeys.IMPORT,
     queryFn = { readImports() },
 //    options = defaultQueryOptions(QueryKeys.IMPORT)
 )
 
-fun useImportFetch(): Array<Track> {
-    val result = useQuery<Array<Track>, Error, Array<Track>, QueryKey>(
+fun useImportFetch(): ReadonlyArray<Track> {
+    val result = useQuery<ReadonlyArray<Track>, Error, ReadonlyArray<Track>, QueryKey>(
         queryKey = QueryKeys.IMPORT,
         queryFn = { readImports() },
     )
@@ -26,7 +27,7 @@ fun useImportFetch(): Array<Track> {
 
 
 
-private fun readImports(): Promise<Array<Track>> =
+private fun readImports(): Promise<ReadonlyArray<Track>> =
     MainScope().promise {
         Api.get(Routes.import)
     }

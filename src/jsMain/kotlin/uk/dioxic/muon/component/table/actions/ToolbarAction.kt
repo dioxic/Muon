@@ -3,11 +3,11 @@ package uk.dioxic.muon.component.table.actions
 import mui.icons.material.SvgIconComponent
 import mui.material.IconButtonColor
 
-data class ToolbarAction<T: Any>(
+data class ToolbarAction(
     val name: String,
     val icon: SvgIconComponent,
     val iconColor: IconButtonColor? = null,
-    val requiresSelection: Boolean = false,
-    val onClick: (List<T>) -> Unit,
+    val visible: Boolean = true,
+    val onClick: () -> Unit,
     val fetchingAnimation: Boolean = false,
 )

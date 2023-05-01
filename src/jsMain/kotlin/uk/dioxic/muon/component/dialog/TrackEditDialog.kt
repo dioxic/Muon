@@ -12,13 +12,12 @@ import react.dom.onChange
 import uk.dioxic.muon.hook.useSettingsFetch
 import uk.dioxic.muon.hook.useTrackSave
 import uk.dioxic.muon.model.Track
-import uk.dioxic.muon.model.Tracks
 import web.cssom.px
 import web.html.ButtonType
 import web.html.InputType
 
 external interface TrackDialogProps : Props {
-    var tracks: Tracks
+    var tracks: Array<out Track>
     var open: Boolean
     var handleClose: () -> Unit
 }
@@ -40,6 +39,7 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
 
     fun handleSave() {
         props.tracks.forEach { original ->
+            println("saving track")
             saveTrack(assign(original, editTrack))
         }
         props.handleClose()
@@ -153,9 +153,8 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
     }
 }
 
-private fun List<Track>.merge(): Track {
-    require(isNotEmpty())
-    var track = first()
+private fun Array<out Track>.merge(): Track {
+    var track = if (isEmpty()) Track.EMPTY else first()
 
     forEach {
         track = track.copy(

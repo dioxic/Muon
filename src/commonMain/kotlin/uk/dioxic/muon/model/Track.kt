@@ -24,6 +24,25 @@ data class Track(
     val color: RbColor? = null,
     val tags: List<String>? = null,
     val duplicates: List<Track>? = null,
-) : IdType
+) : IdType {
+    companion object {
+        val EMPTY = Track(
+            id = "EMPTY",
+            title = "",
+            artist = "",
+            genre = "",
+            album = "",
+            lyricist = "",
+            comment = "",
+            bitrate = 0,
+            path = "",
+            filename = "",
+            length = 0,
+            year = "",
+            fileSize = 0,
+            type = FileType.UNKNOWN,
+        )
+    }
+}
 
 typealias Tracks = List<Track> //Array<out Track>
