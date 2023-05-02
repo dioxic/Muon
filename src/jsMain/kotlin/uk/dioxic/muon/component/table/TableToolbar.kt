@@ -64,15 +64,18 @@ val TableToolbar = FC<TableToolbarProps> { (title, selectedCount, actions) ->
 
                     Tooltip {
                         this.title = ReactNode(action.name)
+                        Box {
+                            component = ReactHTML.span
 
-                        IconButton {
-//                            disabled = action.fetchingAnimation
-                            action.iconColor?.let {
-                                color = it
+                            IconButton {
+                                disabled = action.fetchingAnimation
+                                action.iconColor?.let {
+                                    color = it
+                                }
+                                onClick = { _ -> action.onClick() }
+
+                                action.icon()
                             }
-                            onClick = { _ -> action.onClick() }
-
-                            action.icon()
                         }
                     }
 

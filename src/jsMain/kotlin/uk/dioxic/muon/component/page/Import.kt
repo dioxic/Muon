@@ -50,7 +50,7 @@ val ImportPage = VFC {
     val rowActions = listOf(
         RowAction(name = "edit", icon = Edit, onClick = { setEditDialogTracks(arrayOf(it)) }),
         RowAction(name = "import", icon = GetApp, onClick = { setImportDialogTracks(arrayOf(it)) }),
-        RowAction(name = "Play", icon = PlayCircle, onClick = ::handleRowPlayClick),
+        RowAction(name = "play", icon = PlayCircle, onClick = ::handleRowPlayClick),
         RowAction(name = "delete", icon = Delete, onClick = { delete(it) }, iconColor = IconButtonColor.error),
     )
 
