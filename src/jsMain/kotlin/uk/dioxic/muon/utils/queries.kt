@@ -25,7 +25,6 @@ fun <TData> defaultQueryOptions(queryKey: QueryKey): UseQueryOptions<TData, Thro
                 is ResponseException -> addAlert(Alert.AlertError("Error fetching $queryKey - ${error.response.status.description}"))
                 else -> addAlert(Alert.AlertError("Error fetching $queryKey - ${error.message}"))
             }
-//            println(error)
         }
     }
 }

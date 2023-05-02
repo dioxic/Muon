@@ -4,16 +4,13 @@ import js.core.jso
 import kotlinx.browser.window
 import mui.icons.material.*
 import mui.material.*
-import mui.material.MuiRating.Companion.visuallyHidden
 import mui.material.Size
 import mui.system.sx
 import react.*
-import react.dom.html.ReactHTML
 import tanstack.react.table.renderCell
 import tanstack.react.table.renderHeader
 import tanstack.react.table.useReactTable
 import tanstack.table.core.*
-import tanstack.table.core.SortDirection
 import uk.dioxic.muon.Routes
 import uk.dioxic.muon.common.getIsAnyRowsSelected
 import uk.dioxic.muon.common.getIsSortedBoolean
@@ -30,12 +27,11 @@ import uk.dioxic.muon.component.table.columns.rowActionTemplate
 import uk.dioxic.muon.hook.*
 import uk.dioxic.muon.model.Track
 import web.cssom.*
-import web.cssom.BlockOverflow.Companion.clip
 import kotlin.time.Duration.Companion.seconds
 
 val ImportPage = VFC {
     val settings = useSettingsFetch()
-    val fetch = useImportFetchOld()
+    val fetch = useImportFetch()
     val tracks = useMemo(fetch) { fetch.data ?: emptyArray() }
     val reload = useImportReload()
     val delete = useImportDelete()
