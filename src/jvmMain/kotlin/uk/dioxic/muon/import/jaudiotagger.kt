@@ -4,14 +4,17 @@ import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.audio.SupportedFileFormat
 import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.Tag
+import uk.dioxic.muon.common.toHex
 import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.Track
 import java.io.File
 import java.nio.file.Files
-import java.util.*
+import java.security.MessageDigest
+
+private val md = MessageDigest.getInstance("MD5")
 
 var Tag.artist: String
-    get() = getFirst(FieldKey.ARTIST) //.split("/")
+    get() = getFirst(FieldKey.ARTIST)
     set(value) = setField(FieldKey.ARTIST, value)
 
 var Tag.title: String
@@ -90,7 +93,7 @@ fun File.toTrack(): Track {
     val tag = audioFile.tagOrCreateDefault
 
     return Track(
-        id = UUID.randomUUID().toString(),
+        id = md.digest(this.absolutePath.encodeToByteArray()).toHex(),
         album = tag.album,
         artist = tag.artist.nullIfBlank() ?: artist,
         bitrate = audioFile.audioHeader.bitRateAsNumber.toInt(),
