@@ -1,5 +1,6 @@
 package uk.dioxic.muon.hook
 
+import io.ktor.client.plugins.*
 import js.core.ReadonlyArray
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.promise
@@ -9,12 +10,13 @@ import uk.dioxic.muon.Routes
 import uk.dioxic.muon.api.Api
 import uk.dioxic.muon.common.QueryKeys
 import uk.dioxic.muon.model.Track
+import uk.dioxic.muon.utils.defaultQueryOptions
 import kotlin.js.Promise
 
-fun useImportFetchOld() = useQuery<ReadonlyArray<Track>, Error, ReadonlyArray<Track>, QueryKey>(
+fun useImportFetchOld() = useQuery<ReadonlyArray<Track>, Throwable, ReadonlyArray<Track>, QueryKey>(
     queryKey = QueryKeys.IMPORT,
     queryFn = { readImports() },
-//    options = defaultQueryOptions(QueryKeys.IMPORT)
+    options = defaultQueryOptions(QueryKeys.IMPORT)
 )
 
 fun useImportFetch(): ReadonlyArray<Track> {
@@ -24,8 +26,6 @@ fun useImportFetch(): ReadonlyArray<Track> {
     )
     return result.data ?: emptyArray()
 }
-
-
 
 private fun readImports(): Promise<ReadonlyArray<Track>> =
     MainScope().promise {

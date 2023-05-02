@@ -13,7 +13,7 @@ import uk.dioxic.muon.context.AlertContext
 import uk.dioxic.muon.model.IdType
 import kotlin.js.Promise
 
-fun <TData> defaultQueryOptions(queryKey: QueryKey): UseQueryOptions<TData, ResponseException, TData, QueryKey> {
+fun <TData> defaultQueryOptions(queryKey: QueryKey): UseQueryOptions<TData, Throwable, TData, QueryKey> {
     val (_, addAlert) = useContext(AlertContext)!!
 
     return jso {
@@ -21,11 +21,11 @@ fun <TData> defaultQueryOptions(queryKey: QueryKey): UseQueryOptions<TData, Resp
         retry = { failureCount, _ -> (failureCount < 1) }
         staleTime = JsDuration.MAX_VALUE
         onError = { error ->
-            if (error.response.asDynamic() == undefined) {
-                println(error.cause)
-                addAlert(Alert.AlertError("Error fetching $queryKey - connection failed"))
+            when(error) {
+                is ResponseException -> addAlert(Alert.AlertError("Error fetching $queryKey - ${error.response.status.description}"))
+                else -> addAlert(Alert.AlertError("Error fetching $queryKey - ${error.message}"))
             }
-            addAlert(Alert.AlertError("Error fetching $queryKey - ${error.response.status.description}"))
+//            println(error)
         }
     }
 }

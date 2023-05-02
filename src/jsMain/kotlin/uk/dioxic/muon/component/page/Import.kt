@@ -42,7 +42,6 @@ val ImportPage = VFC {
     val import = useImportMutation()
     val (editDialogTracks, setEditDialogTracks) = useState<Array<Track>>(emptyArray())
     val (importDialogTracks, setImportDialogTracks) = useState<Array<Track>>(emptyArray())
-//    val (sorting, setSorting) = useState<SortingState>(emptyArray())
 
     fun handleRowPlayClick(track: Track) {
         window.open(Routes.trackAudio(track), "_blank")?.focus()
@@ -136,14 +135,6 @@ val ImportPage = VFC {
             columns = columnsDefs
             enableRowSelection = { _ -> true }
             enableMultiRowSelection = { _ -> true }
-
-//            onRowSelectionChange = { println("row selection") }
-//            this.onSortingChange = { updater -> setSorting.invoke(updater)}
-//            state = jso {
-//                this.rowSelection = rowSelection
-//                this.sorting = sorting
-//            }
-//            this.onSortingChange = { setSorting }
             getCoreRowModel = getCoreRowModel()
             getSortedRowModel = getSortedRowModel()
 //            this.debugTable = true
@@ -155,7 +146,7 @@ val ImportPage = VFC {
             name = "refresh",
             icon = Refresh,
             onClick = { reload() },
-            fetchingAnimation = fetch.isLoading
+            fetchingAnimation = fetch.isLoading || fetch.isFetching
         ),
         ToolbarAction(
             name = "edit",
