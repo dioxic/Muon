@@ -4,15 +4,21 @@ import js.core.jso
 import kotlinx.browser.window
 import mui.icons.material.*
 import mui.material.*
+import mui.material.MuiRating.Companion.visuallyHidden
+import mui.material.Size
 import mui.system.sx
 import react.*
+import react.dom.html.ReactHTML
 import tanstack.react.table.renderCell
 import tanstack.react.table.renderHeader
 import tanstack.react.table.useReactTable
 import tanstack.table.core.*
+import tanstack.table.core.SortDirection
 import uk.dioxic.muon.Routes
 import uk.dioxic.muon.common.getIsAnyRowsSelected
+import uk.dioxic.muon.common.getIsSortedBoolean
 import uk.dioxic.muon.common.getSelectedData
+import uk.dioxic.muon.common.getTableSortLabelDirection
 import uk.dioxic.muon.component.dialog.ImportDialog
 import uk.dioxic.muon.component.dialog.TrackEditDialog
 import uk.dioxic.muon.component.table.TableToolbar
@@ -23,7 +29,8 @@ import uk.dioxic.muon.component.table.columns.checkboxHeaderTemplate
 import uk.dioxic.muon.component.table.columns.rowActionTemplate
 import uk.dioxic.muon.hook.*
 import uk.dioxic.muon.model.Track
-import web.cssom.Cursor
+import web.cssom.*
+import web.cssom.BlockOverflow.Companion.clip
 import kotlin.time.Duration.Companion.seconds
 
 val ImportPage = VFC {
@@ -54,6 +61,7 @@ val ImportPage = VFC {
                 id = "checkbox"
                 header = StringOrTemplateHeader(checkboxHeaderTemplate())
                 cell = checkboxCellTemplate()
+                enableSorting = false
             },
             jso {
                 id = "title"
@@ -109,6 +117,7 @@ val ImportPage = VFC {
                 id = "action"
                 header = StringOrTemplateHeader("Action")
                 cell = rowActionTemplate(rowActions)
+                enableSorting = false
             }
         ).apply {
             if (settings.data?.standardiseFilenames == false) {
@@ -136,7 +145,7 @@ val ImportPage = VFC {
 //            }
 //            this.onSortingChange = { setSorting }
             getCoreRowModel = getCoreRowModel()
-//            this.getSortedRowModel = getSortedRowModel()
+            getSortedRowModel = getSortedRowModel()
 //            this.debugTable = true
         }
     )
@@ -194,33 +203,23 @@ val ImportPage = VFC {
                             TableRow {
                                 headerGroup.headers.forEach { header ->
                                     TableCell {
-                                        if (header.column.getCanSort()) {
-                                            sx {
-                                                cursor = Cursor.pointer
+                                        if (!header.isPlaceholder) {
+                                            if (header.column.getCanSort()) {
+                                                sx {
+                                                    cursor = Cursor.pointer
+                                                }
+                                                TableSortLabel {
+                                                    active = header.column.getIsSortedBoolean()
+                                                    direction = header.column.getTableSortLabelDirection()
+                                                    onClick = header.column.getToggleSortingHandler()
+
+                                                    +renderHeader(header)
+                                                }
+                                            }
+                                            else {
+                                                +renderHeader(header)
                                             }
                                         }
-
-                                        if (!header.isPlaceholder) {
-                                            +renderHeader(header)
-                                        }
-
-//                                        if (!header.isPlaceholder) {
-
-//                                            println("canSort: ${header.column.getCanSort()}")
-//                                            println("isSorted: ${header.column.getIsSorted()}")
-
-//                                            if (header.column.getCanSort()) {
-//                                                TableSortLabel {
-//                                                    onClick = header.column.getToggleSortingHandler()
-//                                                    active = header.column.getIsSorted() != null
-//                                                    direction = when (header.column.getIsSorted()) {
-//                                                        SortDirection.asc -> TableSortLabelDirection.asc
-//                                                        else -> TableSortLabelDirection.desc
-//                                                    else -> null
-//                                                    }
-//                                                }
-//                                            }
-//                                        }
                                     }
                                 }
                             }
@@ -228,7 +227,7 @@ val ImportPage = VFC {
                     }
 
                     TableBody {
-                        table.getRowModel().rows.forEach { row ->
+                        table.getSortedRowModel().rows.forEach { row ->
                             TableRow {
                                 onClick = { event ->
                                     if (row.getCanSelect()) {
