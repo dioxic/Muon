@@ -111,6 +111,7 @@ fun File.toFileType() = when (this.extension.lowercase()) {
     "mp3" -> FileType.MP3
     "flac" -> FileType.FLAC
     "wav" -> FileType.WAV
+    "aiff" -> FileType.AIFF
     else -> FileType.UNKNOWN
 }
 

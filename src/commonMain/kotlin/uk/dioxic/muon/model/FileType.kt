@@ -4,6 +4,7 @@ enum class FileType {
     FLAC,
     MP3,
     WAV,
+    AIFF,
     UNKNOWN;
 
 }
