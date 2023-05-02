@@ -1,56 +1,89 @@
 package uk.dioxic.muon.component.page
 
 import js.core.jso
-import kotlinx.browser.window
 import mui.icons.material.*
-import mui.material.*
-import mui.material.Size
-import mui.system.sx
-import react.*
-import tanstack.react.table.renderCell
-import tanstack.react.table.renderHeader
+import mui.material.Box
+import mui.material.IconButtonColor
+import mui.material.Paper
+import mui.material.TableContainer
+import react.VFC
+import react.useContext
+import react.useMemo
+import react.useState
 import tanstack.react.table.useReactTable
-import tanstack.table.core.*
-import uk.dioxic.muon.Routes
+import tanstack.table.core.ColumnDef
+import tanstack.table.core.StringOrTemplateHeader
+import tanstack.table.core.getCoreRowModel
+import tanstack.table.core.getSortedRowModel
 import uk.dioxic.muon.common.getIsAnyRowsSelected
-import uk.dioxic.muon.common.getIsSortedBoolean
 import uk.dioxic.muon.common.getSelectedData
-import uk.dioxic.muon.common.getTableSortLabelDirection
 import uk.dioxic.muon.component.dialog.ImportDialog
 import uk.dioxic.muon.component.dialog.TrackEditDialog
+import uk.dioxic.muon.component.table.BasicTable
 import uk.dioxic.muon.component.table.TableToolbar
 import uk.dioxic.muon.component.table.actions.RowAction
 import uk.dioxic.muon.component.table.actions.ToolbarAction
 import uk.dioxic.muon.component.table.columns.checkboxCellTemplate
 import uk.dioxic.muon.component.table.columns.checkboxHeaderTemplate
 import uk.dioxic.muon.component.table.columns.rowActionTemplate
+import uk.dioxic.muon.context.IsPlayingContext
+import uk.dioxic.muon.context.PlayTrackContext
 import uk.dioxic.muon.hook.*
 import uk.dioxic.muon.model.Track
-import web.cssom.*
 import kotlin.time.Duration.Companion.seconds
 
 val ImportPage = VFC {
     val settings = useSettingsFetch()
     val fetch = useImportFetch()
-    val tracks = useMemo(fetch) { fetch.data ?: emptyArray() }
+    val tracks = useMemo(fetch.status) { fetch.data ?: emptyArray() }
     val reload = useImportReload()
     val delete = useImportDelete()
     val import = useImportMutation()
     val (editDialogTracks, setEditDialogTracks) = useState<Array<Track>>(emptyArray())
     val (importDialogTracks, setImportDialogTracks) = useState<Array<Track>>(emptyArray())
+    val (isPlaying, setIsPlaying) = useContext(IsPlayingContext)!!
+    val (playTrack, setPlayTrack) = useContext(PlayTrackContext)!!
 
-    fun handleRowPlayClick(track: Track) {
-        window.open(Routes.trackAudio(track), "_blank")?.focus()
+    fun handlePlayClick(track: Track) {
+        if (track == playTrack) {
+            setIsPlaying(!isPlaying)
+        } else {
+            setPlayTrack(track)
+            setIsPlaying(true)
+        }
     }
 
     val rowActions = listOf(
-        RowAction(name = "edit", icon = Edit, onClick = { setEditDialogTracks(arrayOf(it)) }),
-        RowAction(name = "import", icon = GetApp, onClick = { setImportDialogTracks(arrayOf(it)) }),
-        RowAction(name = "play", icon = PlayCircle, onClick = ::handleRowPlayClick),
-        RowAction(name = "delete", icon = Delete, onClick = { delete(it) }, iconColor = IconButtonColor.error),
+        RowAction(
+            name = "edit",
+            icon = Edit,
+            onClick = { setEditDialogTracks(arrayOf(it)) }
+        ),
+        RowAction(
+            name = "import",
+            icon = GetApp,
+            onClick = { setImportDialogTracks(arrayOf(it)) }
+        ),
+        RowAction(
+            name = "play",
+            iconFn = { track ->
+                if (isPlaying && playTrack == track) {
+                    PauseCircle
+                } else {
+                    PlayCircle
+                }
+            },
+            onClick = ::handlePlayClick
+        ),
+        RowAction(
+            name = "delete",
+            icon = Delete,
+            onClick = { delete(it) },
+            iconColor = IconButtonColor.error
+        ),
     )
 
-    val columnsDefs = useMemo(settings) {
+    val columnsDefs = useMemo(isPlaying, playTrack, settings) {
         mutableListOf<ColumnDef<Track, Any>>(
             jso {
                 id = "checkbox"
@@ -180,55 +213,10 @@ val ImportPage = VFC {
                     actions = toolbarActions
                     selectedCount = table.getSelectedRowModel().rows.size
                 }
-
-                Table {
-                    size = Size.small
-                    stickyHeader = true
-
-                    TableHead {
-                        table.getHeaderGroups().forEach { headerGroup ->
-                            TableRow {
-                                headerGroup.headers.forEach { header ->
-                                    TableCell {
-                                        if (!header.isPlaceholder) {
-                                            if (header.column.getCanSort()) {
-                                                sx {
-                                                    cursor = Cursor.pointer
-                                                }
-                                                TableSortLabel {
-                                                    active = header.column.getIsSortedBoolean()
-                                                    direction = header.column.getTableSortLabelDirection()
-                                                    onClick = header.column.getToggleSortingHandler()
-
-                                                    +renderHeader(header)
-                                                }
-                                            }
-                                            else {
-                                                +renderHeader(header)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    TableBody {
-                        table.getSortedRowModel().rows.forEach { row ->
-                            TableRow {
-                                onClick = { event ->
-                                    if (row.getCanSelect()) {
-                                        row.getToggleSelectedHandler()(event)
-                                    }
-                                }
-                                row.getVisibleCells().forEach { cell ->
-                                    TableCell {
-                                        +renderCell(cell)
-                                    }
-                                }
-                            }
-                        }
-                    }
+                BasicTable {
+                    this.table = table
+                    this.selectable = true
+                    this.sortable = true
                 }
             }
         }

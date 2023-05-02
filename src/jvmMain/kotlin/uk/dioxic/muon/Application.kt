@@ -19,6 +19,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import io.ktor.util.cio.*
 import kotlinx.serialization.json.Json
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.singleOf
@@ -36,6 +37,7 @@ import uk.dioxic.muon.server.plugins.CsrfPlugin
 import uk.dioxic.muon.server.plugins.KoinPlugin
 import uk.dioxic.muon.service.SearchService
 import uk.dioxic.muon.service.TrackService
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.days
 
 private val appModule = module {
@@ -88,6 +90,7 @@ fun Application.plugins() {
                     ContentType.Image.XIcon, ContentType.Image.PNG, ContentType.Image.JPEG,
                     ContentType.Application.JavaScript, ContentType.Text.CSS ->
                         CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 7.days.inWholeSeconds.toInt()))
+
                     else -> null
                 }
             } else {
@@ -116,11 +119,21 @@ fun Application.plugins() {
                     "file Id [${cause.id}] not found",
                     status = HttpStatusCode.NotFound
                 )
-                is CsrfInvalidException -> call.respond(HttpStatusCode.Forbidden)
+
+                is CsrfInvalidException ->
+                    call.respond(HttpStatusCode.Forbidden)
+
                 is java.nio.file.FileAlreadyExistsException -> call.respondText(
                     "file already exists: ${cause.message}",
                     status = HttpStatusCode.InternalServerError
                 )
+
+                is ChannelWriteException -> if (!call.response.isSent)
+                    call.respond(HttpStatusCode.InternalServerError)
+
+                is CancellationException -> if (!call.response.isSent)
+                    call.respond(HttpStatusCode.InternalServerError)
+
                 else -> {
                     cause.printStackTrace()
                     call.respondText(

@@ -15,6 +15,7 @@ import uk.dioxic.muon.common.Sizes.Header
 import uk.dioxic.muon.common.Sizes.Sidebar
 import uk.dioxic.muon.component.*
 import uk.dioxic.muon.context.AlertModule
+import uk.dioxic.muon.context.AudioPlayerModule
 import uk.dioxic.muon.context.PagesModule
 import uk.dioxic.muon.context.ThemeModule
 import web.cssom.Auto
@@ -36,25 +37,27 @@ private val App = FC<Props> {
             AlertModule {
                 ThemeModule {
                     PagesModule {
-                        Box {
-                            sx {
-                                display = Display.grid
-                                gridTemplateRows = array(
-                                    Header.Height,
-                                    Auto.auto,
-                                )
-                                gridTemplateColumns = array(
-                                    Sidebar.Width, Auto.auto,
-                                )
-                                gridTemplateAreas = GridTemplateAreas(
-                                    arrayOf(Area.Header, Area.Header),
-                                    arrayOf(Area.Sidebar, Area.Content),
-                                )
-                            }
+                        AudioPlayerModule {
+                            Box {
+                                sx {
+                                    display = Display.grid
+                                    gridTemplateRows = array(
+                                        Header.Height,
+                                        Auto.auto,
+                                    )
+                                    gridTemplateColumns = array(
+                                        Sidebar.Width, Auto.auto,
+                                    )
+                                    gridTemplateAreas = GridTemplateAreas(
+                                        arrayOf(Area.Header, Area.Header),
+                                        arrayOf(Area.Sidebar, Area.Content),
+                                    )
+                                }
 
-                            Header()
-                            Sidebar()
-                            Content()
+                                Header()
+                                Sidebar()
+                                Content()
+                            }
                         }
                     }
                 }

@@ -5,7 +5,9 @@ import mui.material.IconButtonColor
 
 data class RowAction<T : Any>(
     val name: String,
-    val icon: SvgIconComponent,
+    val icon: SvgIconComponent? = null,
+    val iconFn: ((T) -> SvgIconComponent)? = null,
     val iconColor: IconButtonColor? = null,
+    val iconColorFn: ((T) -> IconButtonColor)? = null,
     val onClick: (T) -> Unit,
 )

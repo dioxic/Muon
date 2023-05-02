@@ -49,10 +49,22 @@ fun <TProps : Any> rowActionTemplate(actions: List<RowAction<TProps>>): ColumnDe
                 }
 
                 actions.forEach { action ->
+                    val icon = when {
+                        action.iconFn != null -> action.iconFn.invoke(cellCtx.row.original)
+                        action.icon != null -> action.icon
+                        else -> error("require icon or iconFn attribute not null")
+                    }
+                    val iconColor = when {
+                        action.iconColorFn != null -> action.iconColorFn.invoke(cellCtx.row.original)
+                        action.iconColor != null -> action.iconColor
+                        else -> null
+                    }
+
                     Tooltip {
                         title = ReactNode(action.name)
+                        enterDelay = 3000
                         IconButton {
-                            action.iconColor?.let {
+                            iconColor?.let {
                                 color = it
                             }
                             size = Size.small
@@ -61,7 +73,7 @@ fun <TProps : Any> rowActionTemplate(actions: List<RowAction<TProps>>): ColumnDe
                                 action.onClick(cellCtx.row.original)
                             }
 
-                            action.icon()
+                            icon()
                         }
                     }
                 }

@@ -157,25 +157,25 @@ val CollapsibleRow = FC<CollapsibleRowProps> { props ->
         TableCell { +props.track.bitrate.toString() }
         TableCell { +props.track.length.seconds.toString() }
         TableCell { +props.track.type.toString() }
-        TableCell {
-            props.trackActions.forEach { action ->
-                Tooltip {
-                    title = ReactNode(action.name)
-                    IconButton {
-                        action.iconColor?.let {
-                            color = it
-                        }
-                        size = Size.small
-                        onClick = { event ->
-                            event.stopPropagation()
-                            action.onClick(props.track)
-                        }
-
-                        action.icon()
-                    }
-                }
-            }
-        }
+//        TableCell {
+//            props.trackActions.forEach { action ->
+//                Tooltip {
+//                    title = ReactNode(action.name)
+//                    IconButton {
+//                        action.iconColor?.let {
+//                            color = it
+//                        }
+//                        size = Size.small
+//                        onClick = { event ->
+//                            event.stopPropagation()
+//                            action.onClick(props.track)
+//                        }
+//
+//                        action.icon()
+//                    }
+//                }
+//            }
+//        }
     }
     TableRow {
         TableCell {
@@ -234,25 +234,25 @@ val SubTable = FC<SubTableProps> { props ->
                     TableCell { +track.length.seconds.toString() }
                     TableCell { +track.type.toString() }
                     TableCell { +track.path }
-                    TableCell {
-                        props.trackActions.forEach { action ->
-                            Tooltip {
-                                title = ReactNode(action.name)
-                                IconButton {
-                                    action.iconColor?.let {
-                                        color = it
-                                    }
-                                    size = Size.small
-                                    onClick = { event ->
-                                        event.stopPropagation()
-                                        action.onClick(track)
-                                    }
-
-                                    action.icon()
-                                }
-                            }
-                        }
-                    }
+//                    TableCell {
+//                        props.trackActions.forEach { action ->
+//                            Tooltip {
+//                                title = ReactNode(action.name)
+//                                IconButton {
+//                                    action.iconColor?.let {
+//                                        color = it
+//                                    }
+//                                    size = Size.small
+//                                    onClick = { event ->
+//                                        event.stopPropagation()
+//                                        action.onClick(track)
+//                                    }
+//
+//                                    action.icon()
+//                                }
+//                            }
+//                        }
+//                    }
                 }
             }
         }
