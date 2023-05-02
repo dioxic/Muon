@@ -56,21 +56,10 @@ fun Routing.tracks() {
         }
         get("trackSearch") {
             val maxResults = call.request.queryParameters["maxResults"]?.toIntOrNull() ?: 100
-            val track = Track(
-                id = UUID.randomUUID().toString(),
+            val track = Track.EMPTY.copy(
                 artist = call.request.queryParameters["artist"] ?: "",
                 title = call.request.queryParameters["title"] ?: "",
                 lyricist = call.request.queryParameters["lyricist"] ?: "",
-                genre = "",
-                filename = "",
-                comment = "",
-                length = 0,
-                path = "",
-                bitrate = 0,
-                album = "",
-                year = "",
-                fileSize = 0,
-                type = FileType.UNKNOWN
             )
 
             call.respond(searchService.search(track, maxResults))
