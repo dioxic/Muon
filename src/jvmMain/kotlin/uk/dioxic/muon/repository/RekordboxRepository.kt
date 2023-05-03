@@ -96,7 +96,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
         try {
             executeAndLogQuery("TRACK.ID = $id")
         } catch (e: SQLException) {
-            logger.error(e)
+            logger.error("Error finding track by id [$id]", e)
             throw IdNotFoundException(id)
         }
 
