@@ -9,12 +9,9 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.html.*
-import org.koin.core.context.GlobalContext
-import org.koin.core.parameter.ParametersDefinition
-import org.koin.core.qualifier.Qualifier
+import org.koin.ktor.ext.inject
 import uk.dioxic.muon.Routes
 import uk.dioxic.muon.common.getLocalPath
-import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.ImportResponse
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.model.Tracks
@@ -23,7 +20,6 @@ import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.service.SearchService
 import uk.dioxic.muon.service.TrackService
 import java.io.File
-import java.util.*
 
 fun Routing.tracks() {
     val searchService by inject<SearchService>()
@@ -193,16 +189,16 @@ fun Routing.indexHtml() {
 
 // TODO remove when koin is compatible with ktor 2.0.0
 
-private inline fun <reified T : Any> Routing.inject(
-    qualifier: Qualifier? = null,
-    noinline parameters: ParametersDefinition? = null,
-) =
-    lazy { get<T>(qualifier, parameters) }
-
-private inline fun <reified T : Any> Routing.get(
-    qualifier: Qualifier? = null,
-    noinline parameters: ParametersDefinition? = null,
-) =
-    getKoin().get<T>(qualifier, parameters)
-
-fun Routing.getKoin() = GlobalContext.get()
+//private inline fun <reified T : Any> Routing.inject(
+//    qualifier: Qualifier? = null,
+//    noinline parameters: ParametersDefinition? = null,
+//) =
+//    lazy { get<T>(qualifier, parameters) }
+//
+//private inline fun <reified T : Any> Routing.get(
+//    qualifier: Qualifier? = null,
+//    noinline parameters: ParametersDefinition? = null,
+//) =
+//    getKoin().get<T>(qualifier, parameters)
+//
+//fun Routing.getKoin() = GlobalContext.get()

@@ -25,6 +25,7 @@ import org.koin.core.logger.Level
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.dsl.onClose
+import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import uk.dioxic.muon.common.Global
 import uk.dioxic.muon.exceptions.CsrfInvalidException
@@ -34,7 +35,6 @@ import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.server.*
 import uk.dioxic.muon.server.plugins.CsrfPlugin
-import uk.dioxic.muon.server.plugins.KoinPlugin
 import uk.dioxic.muon.service.SearchService
 import uk.dioxic.muon.service.TrackService
 import kotlin.coroutines.cancellation.CancellationException
@@ -98,11 +98,9 @@ fun Application.plugins() {
             }
         }
     }
-    install(KoinPlugin) {
-        appDeclaration = {
-            slf4jLogger(level = Level.INFO)
-            modules(appModule)
-        }
+    install(Koin) {
+        slf4jLogger(level = Level.INFO)
+        modules(appModule)
     }
     install(Sessions) {
         apiSessionCookie(isDevelopment)
