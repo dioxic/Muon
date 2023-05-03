@@ -9,10 +9,7 @@ import uk.dioxic.muon.model.RbColor
 import uk.dioxic.muon.model.Track
 import java.io.Closeable
 import java.nio.file.Path
-import java.sql.Connection
-import java.sql.DriverManager
-import java.sql.ResultSet
-import java.sql.Statement
+import java.sql.*
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.pathString
 
@@ -66,7 +63,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
 
     fun getTrackById(id: String): Track {
         getConn().createStatement().use { stmt ->
-            val rs = stmt.executeAndLogQuery("TRACK.ID = $id")
+            val rs = stmt.getById(id)
             if (rs.next()) {
                 return rs.toTrack()
             } else {
@@ -79,7 +76,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
         getConn().createStatement().use { stmt ->
             flow {
                 ids.forEach { id ->
-                    val rs = stmt.executeAndLogQuery("TRACK.ID = $id")
+                    val rs = stmt.getById(id)
                     if (rs.next()) {
                         emit(rs.toTrack())
                     }
@@ -94,6 +91,14 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
             }
         }
     }
+
+    private fun Statement.getById(id: String) =
+        try {
+            executeAndLogQuery("TRACK.ID = $id")
+        } catch (e: SQLException) {
+            logger.error(e)
+            throw IdNotFoundException(id)
+        }
 
     private fun Statement.executeAndLogQuery(where: String?): ResultSet {
         val sql = query(where)
