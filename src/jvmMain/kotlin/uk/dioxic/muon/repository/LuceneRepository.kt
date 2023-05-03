@@ -1,7 +1,7 @@
 package uk.dioxic.muon.repository
 
 import kotlinx.coroutines.flow.Flow
-import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.kotlin.logger
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
@@ -18,7 +18,7 @@ import java.nio.file.Path
 
 
 class LuceneRepository(indexPath: Path) : Closeable {
-    private val logger = LogManager.getLogger()
+    private val logger = logger()
     private val stopWords = charArraySetOf("and", "ft", "feat", "dj")
     private val searchAnalyser = StandardAnalyzer(stopWords)
     private val directory = MMapDirectory.open(indexPath)

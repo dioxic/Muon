@@ -2,7 +2,7 @@ package uk.dioxic.muon.repository
 
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDateTime
-import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.kotlin.logger
 import uk.dioxic.muon.exceptions.IdNotFoundException
 import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.RbColor
@@ -18,7 +18,7 @@ import kotlin.io.path.pathString
 
 
 class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
-    private val logger = LogManager.getLogger()
+    private val logger = logger()
     private val cipherKey = "402fd482c38817c35ffa8ffb8c7d93143b749e7d315df7a81732a1ff43608497"
     private var conn: Connection? = null
 

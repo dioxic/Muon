@@ -1,6 +1,6 @@
 package uk.dioxic.muon.service
 
-import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.kotlin.logger
 import uk.dioxic.muon.import.isAudioFile
 import uk.dioxic.muon.import.removeIllegalFileCharacters
 import uk.dioxic.muon.import.toTrack
@@ -17,7 +17,7 @@ class TrackService(
     private val settingsRepository: SettingsRepository,
 ) {
 
-    private val logger = LogManager.getLogger()
+    private val logger = logger()
 
     fun getImportTracks(): List<Track> {
         val dirs = settingsRepository.get().downloadDirs

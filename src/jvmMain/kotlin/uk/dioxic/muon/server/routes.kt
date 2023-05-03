@@ -185,19 +185,3 @@ fun Routing.indexHtml() {
         }
     }
 }
-
-// TODO remove when koin is compatible with ktor 2.0.0
-
-//private inline fun <reified T : Any> Routing.inject(
-//    qualifier: Qualifier? = null,
-//    noinline parameters: ParametersDefinition? = null,
-//) =
-//    lazy { get<T>(qualifier, parameters) }
-//
-//private inline fun <reified T : Any> Routing.get(
-//    qualifier: Qualifier? = null,
-//    noinline parameters: ParametersDefinition? = null,
-//) =
-//    getKoin().get<T>(qualifier, parameters)
-//
-//fun Routing.getKoin() = GlobalContext.get()
