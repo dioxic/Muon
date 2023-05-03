@@ -91,7 +91,7 @@ val SettingsPage = VFC {
             value = localSettings.importDir
             onChange = { event ->
                 setLocalSettings(localSettings.copy(
-                    importDir = (event.target as HTMLInputElement).value
+                    importDir = (event.target.asDynamic() as HTMLInputElement).value
                 ))
             }
             onBlur = { _ -> handleSave() }
@@ -104,7 +104,7 @@ val SettingsPage = VFC {
             value = localSettings.downloadDirs.firstOrNull()
             onChange = { event ->
                 setLocalSettings(localSettings.copy(
-                    downloadDirs = listOf((event.target as HTMLInputElement).value)
+                    downloadDirs = listOf((event.target.asDynamic() as HTMLInputElement).value)
                 ))
             }
             onBlur = { _ -> handleSave() }
@@ -117,7 +117,7 @@ val SettingsPage = VFC {
             value = localSettings.rekordboxDatabase
             onChange = { event ->
                 setLocalSettings(localSettings.copy(
-                    rekordboxDatabase = (event.target as HTMLInputElement).value
+                    rekordboxDatabase = (event.target.asDynamic() as HTMLInputElement).value
                 ))
             }
             onBlur = { _ -> handleSave() }
@@ -130,7 +130,7 @@ val SettingsPage = VFC {
             value = localSettings.deleteDir
             onChange = { event ->
                 setLocalSettings(localSettings.copy(
-                    deleteDir = (event.target as HTMLInputElement).value
+                    deleteDir = (event.target.asDynamic() as HTMLInputElement).value
                 ))
             }
             onBlur = { _ -> handleSave() }
@@ -154,7 +154,7 @@ val SettingsPage = VFC {
                 value = localSettings.folderMappings.firstOrNull()?.first
                 onChange = { event ->
                     setLocalFolderMapping(
-                        rbFolder = (event.target as HTMLInputElement).value,
+                        rbFolder = (event.target.asDynamic() as HTMLInputElement).value,
                         localFolder = localSettings.folderMappings.firstOrNull()?.second ?: ""
                     )
                 }
@@ -172,7 +172,7 @@ val SettingsPage = VFC {
                 onChange = { event ->
                     setLocalFolderMapping(
                         rbFolder = localSettings.folderMappings.firstOrNull()?.first ?: "",
-                        localFolder = (event.target as HTMLInputElement).value
+                        localFolder = (event.target.asDynamic() as HTMLInputElement).value
                     )
                 }
                 onBlur = { _ -> handleSave() }
