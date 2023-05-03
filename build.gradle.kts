@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
 
@@ -5,7 +6,7 @@ plugins {
     kotlin("multiplatform") version "1.8.21"
     kotlin("plugin.serialization") version "1.8.21"
     id("pl.allegro.tech.build.axion-release") version "1.15.0"
-//    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.github.ben-manes.versions") version "0.46.0"
     application
 }
@@ -171,21 +172,21 @@ tasks.withType<Test> {
     systemProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
 }
 
-//tasks.withType<ShadowJar> {
-//    val webpackTask = tasks.getByName<KotlinWebpack>("jsBrowserProductionWebpack")
-//    mergeServiceFiles()
-////    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-//    dependsOn(webpackTask) // make sure JS gets compiled first
-//    from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) {
-//        into("static")
-//    }
-//    manifest {
-//        attributes(mapOf(
-//            "Main-Class" to "uk.dioxic.muon.ApplicationKt",
-//            "Multi-Release" to "true"
-//        ))
-//    }
-//}
+tasks.withType<ShadowJar> {
+    val webpackTask = tasks.getByName<KotlinWebpack>("jsBrowserProductionWebpack")
+    mergeServiceFiles()
+//    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn(webpackTask) // make sure JS gets compiled first
+    from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) {
+        into("static")
+    }
+    manifest {
+        attributes(mapOf(
+            "Main-Class" to "uk.dioxic.muon.ApplicationKt",
+            "Multi-Release" to "true"
+        ))
+    }
+}
 
 tasks.getByName("distZip") {
     dependsOn(tasks.getByName("jsJar"))
