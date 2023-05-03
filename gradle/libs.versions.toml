@@ -25,6 +25,7 @@ kotlinWrapper = "pre.545"
 ksp = "1.6.20-1.0.4"
 ktor = "2.3.0"
 log4j = "2.20.0"
+log4jKotlin = "1.2.0"
 lucene = "9.5.0"
 mockk = "1.13.5"
 mongodb = "4.5.0"
@@ -92,7 +93,8 @@ ktor-websockets = { module = "io.ktor:ktor-websockets", version.ref = "ktor" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4j" }
-log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
+log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
+log4j-kotlin = { module = "org.apache.logging.log4j:log4j-api-kotlin", version.ref = "log4jKotlin" }
 lucene-analysis-common = { module = "org.apache.lucene:lucene-analysis-common", version.ref = "lucene" }
 lucene-core = { module = "org.apache.lucene:lucene-core", version.ref = "lucene" }
 lucene-codecs = { module = "org.apache.lucene:lucene-codecs", version.ref = "lucene" }
@@ -110,7 +112,7 @@ fixture = { module = "com.appmattus.fixture:fixture", version.ref = "fixture" }
 fixture-faker = { module = "com.appmattus.fixture:fixture-javafaker", version.ref = "fixture" }
 
 [bundles]
-logging = ["log4j-core", "log4j-api", "log4j-slf4j", "log4j-jul"]
+logging = ["log4j-core", "log4j-api", "log4j-slf4j", "log4j-jul", "log4j-kotlin"]
 ktorServer = ["ktor-serialization", "ktor-server-core", "ktor-server-netty", "ktor-websockets",
     "ktor-server-call-logging", "ktor-server-compression", "ktor-server-status-pages",
     "ktor-server-content-negotiation", "ktor-server-cors", "ktor-server-sessions", "ktor-server-html-builder",

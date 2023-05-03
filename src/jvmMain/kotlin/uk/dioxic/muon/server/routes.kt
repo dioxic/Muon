@@ -38,7 +38,7 @@ fun Routing.tracks() {
             val audioFile = File(settingsRepository.get().getLocalPath(trackPath))
             call.response.header(
                 name = HttpHeaders.ContentDisposition,
-                value = ContentDisposition.Inline
+                value = ContentDisposition.Attachment
                     .withParameter(ContentDisposition.Parameters.FileName, audioFile.name)
                     .withParameter(ContentDisposition.Parameters.Name, audioFile.name)
                     .toString()
@@ -125,7 +125,6 @@ fun Routing.import() {
         }
         post {
             val tracks = call.receive<Tracks>()
-
             val successes = mutableListOf<String>()
             val errors = mutableMapOf<String, String>()
 

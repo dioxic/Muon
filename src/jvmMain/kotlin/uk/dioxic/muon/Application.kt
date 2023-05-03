@@ -19,8 +19,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
-import io.ktor.util.cio.*
 import kotlinx.serialization.json.Json
+import org.apache.logging.log4j.kotlin.logger
 import org.koin.core.logger.Level
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -61,6 +61,7 @@ fun Application.plugins() {
     val env = environment.config.property("ktor.environment").getString()
     val isDevelopment = env == "dev"
     val useCsrf = environment.config.property("ktor.useCsrf").getString().toBoolean()
+    val logger = logger()
 
     install(CallLogging) {
         filter { call ->
@@ -114,7 +115,7 @@ fun Application.plugins() {
         exception<Throwable> { call, cause ->
             when (cause) {
                 is IdNotFoundException -> call.respondText(
-                    "file Id [${cause.id}] not found",
+                    text = "file Id [${cause.id}] not found",
                     status = HttpStatusCode.NotFound
                 )
 
@@ -122,18 +123,14 @@ fun Application.plugins() {
                     call.respond(HttpStatusCode.Forbidden)
 
                 is java.nio.file.FileAlreadyExistsException -> call.respondText(
-                    "file already exists: ${cause.message}",
+                    text = "file already exists: ${cause.message}",
                     status = HttpStatusCode.InternalServerError
                 )
 
-                is ChannelWriteException -> if (!call.response.isSent)
-                    call.respond(HttpStatusCode.InternalServerError)
-
-                is CancellationException -> if (!call.response.isSent)
-                    call.respond(HttpStatusCode.InternalServerError)
+                is CancellationException -> {}
 
                 else -> {
-                    cause.printStackTrace()
+                    logger.error("Unknown error", cause)
                     call.respondText(
                         cause.message.orEmpty(),
                         status = HttpStatusCode.InternalServerError
