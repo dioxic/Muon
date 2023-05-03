@@ -15,7 +15,6 @@ import uk.dioxic.muon.common.getLocalPath
 import uk.dioxic.muon.model.ImportResponse
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.model.Tracks
-import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
 import uk.dioxic.muon.service.SearchService
 import uk.dioxic.muon.service.TrackService
@@ -24,26 +23,29 @@ import java.io.File
 fun Routing.tracks() {
     val searchService by inject<SearchService>()
     val trackService by inject<TrackService>()
-    val rekordboxRepository by inject<RekordboxRepository>()
     val settingsRepository by inject<SettingsRepository>()
 
     route(Routes.track) {
         get("/{id}") {
             val id = call.parameters["id"]
-            call.respond(rekordboxRepository.getTrackById(id!!))
+            trackService.getTrackById(id!!)?.let {
+                call.respond(it)
+            } ?: call.respond(HttpStatusCode.NotFound)
         }
         get("/{id}/audio") {
             val id = call.parameters["id"]
-            val trackPath = rekordboxRepository.getTrackById(id!!).path
-            val audioFile = File(settingsRepository.get().getLocalPath(trackPath))
-            call.response.header(
-                name = HttpHeaders.ContentDisposition,
-                value = ContentDisposition.Attachment
-                    .withParameter(ContentDisposition.Parameters.FileName, audioFile.name)
-                    .withParameter(ContentDisposition.Parameters.Name, audioFile.name)
-                    .toString()
-            )
-            call.respondFile(audioFile)
+            trackService.getTrackById(id!!)?.path?.let { path ->
+                val audioFile = File(settingsRepository.get().getLocalPath(path))
+                call.response.header(
+                    name = HttpHeaders.ContentDisposition,
+                    value = ContentDisposition.Attachment
+                        .withParameter(ContentDisposition.Parameters.FileName, audioFile.name)
+                        .withParameter(ContentDisposition.Parameters.Name, audioFile.name)
+                        .toString()
+                )
+                call.respondFile(audioFile)
+            } ?: call.respond(HttpStatusCode.NotFound)
+
         }
         get {
             val maxResults = call.request.queryParameters["maxResults"]?.toIntOrNull() ?: 100
@@ -68,8 +70,8 @@ fun Routing.tracks() {
         patch {
             call.respond(trackService.updateTrack(call.receive()))
         }
-        delete {
-            trackService.deleteTrack(call.receive())
+        delete("/{id}") {
+            trackService.deleteTrack(call.parameters["id"]!!)
             call.respond(HttpStatusCode.OK)
         }
     }
@@ -131,7 +133,7 @@ fun Routing.import() {
             tracks.forEach { track ->
                 withContext(Dispatchers.IO) {
                     try {
-                        trackService.importTrack(track)
+                        trackService.importTrack(track.id)
                         successes.add(track.id)
                     } catch (e: Throwable) {
                         errors[track.id] = "${e::class.simpleName} - ${e.message}"

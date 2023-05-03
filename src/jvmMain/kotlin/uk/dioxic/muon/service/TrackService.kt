@@ -1,11 +1,12 @@
 package uk.dioxic.muon.service
 
 import org.apache.logging.log4j.kotlin.logger
-import uk.dioxic.muon.import.isAudioFile
+import uk.dioxic.muon.exceptions.IdNotFoundException
 import uk.dioxic.muon.import.removeIllegalFileCharacters
-import uk.dioxic.muon.import.toTrack
 import uk.dioxic.muon.import.updateTags
 import uk.dioxic.muon.model.Track
+import uk.dioxic.muon.repository.ImportRepository
+import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
 import java.io.File
 import java.nio.file.Files
@@ -15,43 +16,24 @@ import kotlin.io.path.*
 
 class TrackService(
     private val settingsRepository: SettingsRepository,
+    private val rekordboxRepository: RekordboxRepository,
+    private val importRepository: ImportRepository,
 ) {
 
     private val logger = logger()
 
-    fun getImportTracks(): List<Track> {
-        val dirs = settingsRepository.get().downloadDirs
-        require(dirs.isNotEmpty()) { "download directory not set!" }
+    fun getImportTracks() = importRepository.getTracks()
 
-        return dirs.map { File(it) }
-            .flatMap(::getTracks)
-    }
-
-    private fun getTracks(dir: File): List<Track> {
-        require(dir.isDirectory) { "${dir.absolutePath} is not a directory!" }
-
-        logger.debug("Reading files from ${dir.absolutePath}...")
-
-        return dir.walk()
-            .filter { it.isAudioFile }
-            .map(this::toTrack)
-            .toList()
-    }
-
-    fun getTrack(f: File): Track {
-        require(f.isAudioFile) { "${f.name} is not an audio file!" }
-
-        return toTrack(f)
-    }
-
-    fun importTrack(track: Track) {
+    fun importTrack(id: String) {
+        val track = importRepository.getTrackById(id)
+        require(track != null) { "track should be present by ID!" }
         logger.debug("importing track ${track.path}")
 
         val importDir = settingsRepository.get().importDir
         requireNotNull(importDir) { "import directory is not set!" }
 
         val file = File(track.path)
-        require(file.isFile) { "${track.path} is not a file!" }
+        require(file.isFile) { "$track is not a file!" }
 
         val importPath = Path(importDir)
         val newPath = importPath.resolve(track.targetFilename)
@@ -61,13 +43,14 @@ class TrackService(
         Files.move(file.toPath(), newPath)
     }
 
-    fun deleteTrack(track: Track) {
-        logger.debug("deleting track ${track.path}")
+    fun deleteTrack(id: String) {
+        val prevPath = getPreviousPath(id) ?: throw IdNotFoundException(id)
+        logger.debug("deleting track $prevPath")
 
         val settings = settingsRepository.get()
-        val file = File(track.path)
+        val file = File(prevPath)
 
-        require(file.isFile) { "${track.path} is not a file!" }
+        require(file.isFile) { "$prevPath is not a file!" }
 
         if (settings.softDelete) {
             requireNotNull(settings.deleteDir) { "delete directory is not set!" }
@@ -85,15 +68,16 @@ class TrackService(
     }
 
     fun updateTrack(track: Track): Track {
-        logger.debug("updating tags for ${track.path}")
+        val prevPath = getPreviousPath(track.id) ?: throw IdNotFoundException(track.id)
+        logger.debug("updating tags for $prevPath")
 
-        val file = File(track.path)
+        val file = File(prevPath)
 
         file.updateTags(track)
 
         // rename file
         if (file.name != track.targetFilename) {
-            logger.debug("renaming filename for ${track.path}")
+            logger.debug("renaming filename for $prevPath")
             val originalPath = file.toPath()
             val newPath = originalPath.parent.resolve(track.targetFilename)
             Files.move(originalPath, newPath)
@@ -105,13 +89,13 @@ class TrackService(
         return track
     }
 
-    private fun toTrack(f: File) =
-        try {
-            f.toTrack()
-        } catch (e: Throwable) {
-            logger.error("error on ${f.name}")
-            throw e
-        }
+    fun getTrackById(id: String): Track? =
+        importRepository.getTrackById(id) ?: rekordboxRepository.getTrackById(id)
+
+    private fun getPreviousPath(id: String) =
+        importRepository.getPathById(id) ?: rekordboxRepository.getPathById(id)
+
+    private fun Track.getPreviousPath() = getPreviousPath(id)
 
     /**
      * Check if the file exists already. If it does, find a new filename that doesn't exist.

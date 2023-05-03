@@ -6,6 +6,7 @@ import io.ktor.util.*
 import uk.dioxic.muon.common.Global
 import uk.dioxic.muon.server.plugins.CsrfTokenProvider
 import java.io.File
+import java.nio.file.Path
 import kotlin.time.Duration.Companion.days
 
 typealias FileLocations = Map<String, String>
@@ -13,7 +14,8 @@ typealias FileLocations = Map<String, String>
 data class UserSession(
     val currentUser: String = "anonymous",
     val csrfToken: String = CsrfTokenProvider.generateRandomToken(),
-    val importFileLocations: FileLocations = emptyMap()
+    val importFileLocations: FileLocations = emptyMap(),
+    val trackIdPathMap: MutableMap<String,Path> = mutableMapOf(),
 )
 
 fun SessionsConfig.apiSessionCookie(memoryStorage: Boolean) {

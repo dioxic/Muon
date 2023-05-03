@@ -27,7 +27,7 @@ fun useImportMutation(): UseMutationResult<ImportResponse, ResponseException, Ar
         MainScope().promise {
             Api.post(
                 path = Routes.import,
-                data = tracks
+                data = tracks.map { track -> Track.EMPTY.copy(id = track.id) }
             )
         }
 

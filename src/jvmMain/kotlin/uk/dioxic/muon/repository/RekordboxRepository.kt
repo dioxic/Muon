@@ -14,10 +14,11 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.pathString
 
 
-class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
+class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable, TrackRepository {
     private val logger = logger()
     private val cipherKey = "402fd482c38817c35ffa8ffb8c7d93143b749e7d315df7a81732a1ff43608497"
     private var conn: Connection? = null
+    private val digitPattern = Regex("\\d+")
 
     init {
         connect(settingsRepository.get().rekordboxDatabase)
@@ -61,24 +62,29 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
             }
         }
 
-    fun getTrackById(id: String): Track {
+    override fun getTrackById(id: String): Track? {
+        if (!id.matches(digitPattern)) {
+            return null
+        }
         getConn().createStatement().use { stmt ->
             val rs = stmt.getById(id)
             if (rs.next()) {
                 return rs.toTrack()
             } else {
-                throw IdNotFoundException(id)
+                return null
             }
         }
     }
 
-    fun getTracksById(ids: List<String>) =
+    override fun getTracksById(ids: List<String>) =
         getConn().createStatement().use { stmt ->
             flow {
                 ids.forEach { id ->
-                    val rs = stmt.getById(id)
-                    if (rs.next()) {
-                        emit(rs.toTrack())
+                    if (id.matches(digitPattern)) {
+                        val rs = stmt.getById(id)
+                        if (rs.next()) {
+                            emit(rs.toTrack())
+                        }
                     }
                 }
             }
@@ -93,12 +99,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable {
     }
 
     private fun Statement.getById(id: String) =
-        try {
-            executeAndLogQuery("TRACK.ID = $id")
-        } catch (e: SQLException) {
-            logger.error("Error finding track by id [$id]", e)
-            throw IdNotFoundException(id)
-        }
+        executeAndLogQuery("TRACK.ID = $id")
 
     private fun Statement.executeAndLogQuery(where: String?): ResultSet {
         val sql = query(where)

@@ -30,7 +30,7 @@ fun useTrackDelete(): DeleteTrack {
 
 private fun deleteTrack(track: Track): Promise<Unit> =
     MainScope().promise {
-        Api.delete(Routes.track, track)
+        Api.delete(Routes.trackApi(track))
     }
 
 private fun mutationOptions(): UseMutationOptions<Unit, ResponseException, Track, Tracks> {

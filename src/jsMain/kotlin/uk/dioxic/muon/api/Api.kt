@@ -105,12 +105,11 @@ object Api {
             setBody(data)
         }
 
-    suspend inline fun <reified T> delete(path: String, data: T): Unit =
+    suspend inline fun delete(path: String): Unit =
         apiRequest {
             method = HttpMethod.Delete
             localUrl(path)
             contentType(ContentType.Application.Json)
-            setBody(data)
         }
 
 }

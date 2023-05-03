@@ -33,6 +33,7 @@ import uk.dioxic.muon.exceptions.IdNotFoundException
 import uk.dioxic.muon.repository.LuceneRepository
 import uk.dioxic.muon.repository.RekordboxRepository
 import uk.dioxic.muon.repository.SettingsRepository
+import uk.dioxic.muon.repository.ImportRepository
 import uk.dioxic.muon.server.*
 import uk.dioxic.muon.server.plugins.CsrfPlugin
 import uk.dioxic.muon.service.SearchService
@@ -50,6 +51,7 @@ private val appModule = module {
     singleOf(::SearchService)
     single { SettingsRepository(Global.configPath) }
     singleOf(::TrackService)
+    singleOf(::ImportRepository)
 }
 
 fun main(args: Array<String>) {

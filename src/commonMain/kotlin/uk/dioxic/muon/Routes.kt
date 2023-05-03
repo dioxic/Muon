@@ -8,6 +8,10 @@ object Routes {
     const val index = "/api/index"
     const val track = "/api/track"
     const val static = "/static"
+
+    fun trackApi(track: Track) =
+        "${Routes.track}/${track.id}"
+
     fun trackAudio(track: Track) =
-        "${Routes.track}/${track.id}/audio"
+        trackApi(track) + "/audio"
 }
