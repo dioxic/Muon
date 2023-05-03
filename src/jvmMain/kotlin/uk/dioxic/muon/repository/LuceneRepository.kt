@@ -38,7 +38,7 @@ class LuceneRepository(indexPath: Path) : Closeable {
     ) = searcherManager.use { searcher ->
         searcher.search(query(track), maxResults)
             .scoreDocs
-            .map { searcher.doc(it.doc, setOf("id")).get("id") }
+            .map { searcher.storedFields().document(it.doc, setOf("id")).get("id") }
     }
 
     fun search(
@@ -47,7 +47,7 @@ class LuceneRepository(indexPath: Path) : Closeable {
     ) = searcherManager.use { searcher ->
         searcher.search(query(text), maxResults)
             .scoreDocs
-            .map { searcher.doc(it.doc, setOf("id")).get("id") }
+            .map { searcher.storedFields().document(it.doc, setOf("id")).get("id") }
     }
 
     suspend fun upsert(tracks: Flow<Track>): Int {
