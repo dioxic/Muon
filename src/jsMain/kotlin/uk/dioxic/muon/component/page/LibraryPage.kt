@@ -10,13 +10,11 @@ import mui.material.styles.Theme
 import mui.material.styles.useTheme
 import mui.system.sx
 import react.*
-import react.dom.html.ReactHTML.audio
 import tanstack.react.table.useReactTable
 import tanstack.table.core.ColumnDef
 import tanstack.table.core.ColumnDefTemplate
 import tanstack.table.core.StringOrTemplateHeader
 import tanstack.table.core.getCoreRowModel
-import uk.dioxic.muon.Routes
 import uk.dioxic.muon.component.table.BasicTable
 import uk.dioxic.muon.component.table.SearchTableToolbar
 import uk.dioxic.muon.component.table.actions.RowAction
@@ -26,8 +24,6 @@ import uk.dioxic.muon.context.PlayTrackContext
 import uk.dioxic.muon.hook.useTrackSearch
 import uk.dioxic.muon.model.Track
 import web.cssom.Color
-import web.html.Audio
-import web.html.HTMLAudioElement
 import kotlin.time.Duration.Companion.seconds
 
 private val minimumWidths = mapOf(
