@@ -1,70 +1,69 @@
 package uk.dioxic.muon
 
-import com.ccfraser.muirwik.components.Colors
-import com.ccfraser.muirwik.components.mCircularProgress
-import com.ccfraser.muirwik.components.mCssBaseline
-import com.ccfraser.muirwik.components.mThemeProvider
-import com.ccfraser.muirwik.components.styles.ThemeOptions
-import com.ccfraser.muirwik.components.styles.createMuiTheme
-import kotlinext.js.jsObject
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
+
+import mui.system.Box
+import mui.system.sx
+import react.FC
 import react.Props
-import react.fc
-import react.useState
-import uk.dioxic.muon.api.fetchFullConfig
-import uk.dioxic.muon.component.MainFrame
-import uk.dioxic.muon.model.ConfigMap
+import react.create
+import react.dom.client.createRoot
+import react.router.dom.HashRouter
+import tanstack.query.core.QueryClient
+import tanstack.react.query.QueryClientProvider
+import uk.dioxic.muon.common.Area
+import uk.dioxic.muon.common.Sizes.Header
+import uk.dioxic.muon.common.Sizes.Sidebar
+import uk.dioxic.muon.component.*
+import uk.dioxic.muon.context.AlertModule
+import uk.dioxic.muon.context.AudioPlayerModule
+import uk.dioxic.muon.context.PagesModule
+import uk.dioxic.muon.context.ThemeModule
+import web.cssom.Auto
+import web.cssom.Display
+import web.cssom.GridTemplateAreas
+import web.cssom.array
+import web.dom.document
 
-private val scope = MainScope()
+fun main() {
+    createRoot(document.createElement("div")
+        .also { document.body.appendChild(it) })
+        .render(App.create())
+}
 
-val App = fc<Props> {
-    val (isLoading, setLoading) = useState(true)
-    val (themeColor, setThemeColor) = useState("light")
-    val (config, setConfig) = useState(ConfigMap.Default)
-//    val (searchText, setSearchText) = useState("")
-    mCssBaseline()
+private val App = FC<Props> {
+    QueryClientProvider {
+        client = queryClient
+        HashRouter {
+            AlertModule {
+                ThemeModule {
+                    PagesModule {
+                        AudioPlayerModule {
+                            Box {
+                                sx {
+                                    display = Display.grid
+                                    gridTemplateRows = array(
+                                        Header.Height,
+                                        Auto.auto,
+                                    )
+                                    gridTemplateColumns = array(
+                                        Sidebar.Width, Auto.auto,
+                                    )
+                                    gridTemplateAreas = GridTemplateAreas(
+                                        arrayOf(Area.Header, Area.Header),
+                                        arrayOf(Area.Sidebar, Area.Content),
+                                    )
+                                }
 
-    val themeOptions: ThemeOptions = jsObject {
-        palette = jsObject {
-            type = themeColor
-            primary = jsObject {
-                main = Colors.Blue.shade500.toString()
-            }
-        }
-    }
-
-    if (isLoading) {
-        mCircularProgress()
-        scope.launch {
-            if (config == ConfigMap.Default) {
-                setConfig(fetchFullConfig())
-            }
-        }.invokeOnCompletion {
-            setLoading(false)
-        }
-    } else {
-//        ConfigContext.Provider(config) {
-        mThemeProvider(createMuiTheme(themeOptions)) {
-            child(MainFrame, props = jsObject {
-                initialView = "Import"
-                onThemeSwitch = {
-                    setThemeColor(if (themeColor == "dark") "light" else "dark")
+                                Header()
+                                Sidebar()
+                                Content()
+                            }
+                        }
+                    }
                 }
-            })
+            }
         }
-
-//        mThemeProvider(createMuiTheme(themeOptions)) {
-//            mainFrame(Page.Intro) { setThemeColor(if (themeColor == "dark") "light" else "dark") }
-//        }
-//        child(AppBar, props = jsObject {
-//            onSearchSubmit = { setSearchText(it) }
-//        })
-//        child(MusicTable, props = jsObject {
-//            filter = searchText
-//        })
-//        child(ShoppingList)
-//        mainFrame("Intro") { setThemeColor(if (themeColor == "dark") "light" else "dark") }
-//        }
     }
 }
+
+private val queryClient = QueryClient()

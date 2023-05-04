@@ -1,0 +1,135 @@
+[versions]
+#atomicfuPlugin = "1.6.20-RC"
+#kotlinWrapperMui = "5.5.1-pre.321-kotlin-1.6.10"
+#kotlinWrapperReact = "17.0.2-pre.321-kotlin-1.6.10"
+#kotlinWrapperReactRouter = "6.2.1-pre.321-kotlin-1.6.10"
+assertj = "3.24.2"
+assertk = "0.25"
+atomicfu = "0.17.1"
+axionPlugin = "1.13.6"
+clikt = "2.8.0"
+commonsCodec = "1.15"
+dokka = "1.6.20"
+exposed = "0.37.3"
+faker = "0.0.4"
+jaudiotagger = "3.0.1"
+junit = "5.8.2"
+kbson = "0.4.4"
+koin = "3.4.0"
+kotlin = "1.8.21"
+kotlinCoroutines = "1.6.4"
+kotlinDatetime = "0.4.0"
+kotlinPoet = "1.10.2"
+kotlinSerialization = "1.5.0"
+kotlinWrapper = "pre.546"
+ksp = "1.6.20-1.0.4"
+ktor = "2.3.0"
+log4j = "2.20.0"
+log4jKotlin = "1.2.0"
+lucene = "9.5.0"
+mockk = "1.13.5"
+mongodb = "4.5.0"
+reflections = "0.10.2"
+slf4j = "1.7.36"
+spek = "2.0.16"
+sqlcipher = "3.41.2.0"
+statistics = "1.2.1"
+versionsPlugin = "0.42.0"
+fixture = "1.2.0"
+
+[libraries]
+#gradle-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+#gradle-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versionsPlugin" }
+assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref = "assertk" }
+atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
+bson = { module = "org.mongodb:bson", version.ref = "mongodb" }
+clikt = { module = "com.github.ajalt:clikt", version.ref = "clikt" }
+commons-codec = { module = "commons-codec:commons-codec", version.ref = "commonsCodec" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
+exposed-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+faker = { module = "uk.dioxic.faker4j:faker4j", version.ref = "faker" }
+jaudiotagger = { module = "net.jthink:jaudiotagger", version.ref = "jaudiotagger" }
+junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+kbson = { module = "com.github.jershell:kbson", version.ref = "kbson" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
+koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinCoroutines" }
+kotlin-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinCoroutines" }
+kotlin-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinDatetime" }
+kotlin-poet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinPoet" }
+kotlin-poetKsp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinPoet" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinSerialization" }
+kotlin-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinSerialization" }
+kotlin-stdlib-common = { module = "org.jetbrains.kotlin:stdlib-common", version.ref = "kotlin" }
+kotlin-stdlib-js = { module = "org.jetbrains.kotlin:stdlib-js", version.ref = "kotlin" }
+kotlin-stdlib-jvm = { module = "org.jetbrains.kotlin:stdlib-jvm", version.ref = "kotlin" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
+ktor-client-json-js = { module = "io.ktor:ktor-client-json-js", version.ref = "ktor" }
+ktor-serialization = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-auto-head-response = { module = "io.ktor:ktor-server-auto-head-response", version.ref = "ktor" }
+ktor-server-caching-headers = { module = "io.ktor:ktor-server-caching-headers", version.ref = "ktor" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
+ktor-server-compression = { module = "io.ktor:ktor-server-compression", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
+ktor-server-html-builder = { module = "io.ktor:ktor-server-html-builder", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-partial-content = { module = "io.ktor:ktor-server-partial-content", version.ref = "ktor" }
+ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = "ktor" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
+ktor-server-tests = { module = "io.ktor:ktor-server-tests", version.ref = "ktor" }
+ktor-websockets = { module = "io.ktor:ktor-websockets", version.ref = "ktor" }
+log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
+log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
+log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4j" }
+log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
+log4j-kotlin = { module = "org.apache.logging.log4j:log4j-api-kotlin", version.ref = "log4jKotlin" }
+lucene-analysis-common = { module = "org.apache.lucene:lucene-analysis-common", version.ref = "lucene" }
+lucene-core = { module = "org.apache.lucene:lucene-core", version.ref = "lucene" }
+lucene-codecs = { module = "org.apache.lucene:lucene-codecs", version.ref = "lucene" }
+lucene-facet = { module = "org.apache.lucene:lucene-facet", version.ref = "lucene" }
+lucene-queryparser = { module = "org.apache.lucene:lucene-queryparser", version.ref = "lucene" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+mongodb-async = { module = "org.mongodb:mongodb-driver-reactivestreams", version.ref = "mongodb" }
+mongodb-sync = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongodb" }
+reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-core = { module = "org.slf4j:slf4j-core", version.ref = "slf4j" }
+sqlcipher = { module = "io.github.willena:sqlite-jdbc", version.ref = "sqlcipher" }
+statistics = { module = "org.nield:kotlin-statistics", version.ref = "statistics" }
+fixture = { module = "com.appmattus.fixture:fixture", version.ref = "fixture" }
+fixture-faker = { module = "com.appmattus.fixture:fixture-javafaker", version.ref = "fixture" }
+
+[bundles]
+logging = ["log4j-core", "log4j-api", "log4j-slf4j", "log4j-jul", "log4j-kotlin"]
+ktorServer = ["ktor-serialization", "ktor-server-core", "ktor-server-netty", "ktor-websockets",
+    "ktor-server-call-logging", "ktor-server-compression", "ktor-server-status-pages",
+    "ktor-server-content-negotiation", "ktor-server-cors", "ktor-server-sessions", "ktor-server-html-builder",
+    "ktor-server-caching-headers", "ktor-server-partial-content", "ktor-server-auto-head-response"]
+ktorClient = ["ktor-client-core", "ktor-client-js", "ktor-serialization", "ktor-client-content-negotiation"]
+exposed = ["exposed-core", "exposed-dao", "exposed-jdbc", "exposed-datetime"]
+lucene = ["lucene-core", "lucene-queryparser", "lucene-analysis-common"]
+koin = ["koin-core", "koin-ktor", "koin-logger-slf4j"]
+fixture = ["fixture", "fixture-faker"]
+
+[plugins]
+atomicfu = { id = "org.jetbrains.kotlin.plugin.atomicfu", version.ref = "kotlin" }
+axion = { id = "pl.allegro.tech.build.axion-release", version.ref = "axionPlugin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+kotlin-js = { id = "org.jetbrains.kotlin.js", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+versions = { id = "com.github.ben-manes.versions", version.ref = "versionsPlugin" }

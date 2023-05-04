@@ -13,5 +13,6 @@
         <Logger name="org.jaudiotagger.audio.wav" level="FATAL"/>
         <Logger name="org.jaudiotagger.audio.flac" level="FATAL"/>
         <Logger name="uk.dioxic.muon" level="DEBUG"/>
+        <Logger name="io.mockk" level="DEBUG"/>
     </Loggers>
 </Configuration>

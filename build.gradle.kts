@@ -1,32 +1,16 @@
-//import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val spekVersion = "2.0.16"
-val ktorVersion = "1.6.5"
-val kotlinVersion = "1.5.30"
-val serializationVersion = "1.3.1"
-val log4jVersion = "2.16.0"
-//val muirwikComponentVersion = "0.6.7-IR"
-val muirwikComponentVersion = "0.9.1"
-val reactVersion = "17.0.2"
-val kotlinJsVersion = "pre.236-kotlin-$kotlinVersion"
-//val kotlinJsVersion = "pre.265-kotlin-$kotlinVersion"
-val koinVersion = "3.1.4"
-val luceneVersion = "9.0.0"
-val assertjVersion = "3.21.0"
-val mockkVersion = "1.12.1"
 
 plugins {
-    kotlin("multiplatform") version "1.5.30"
-    kotlin("plugin.serialization") version "1.5.30"
+    kotlin("multiplatform") version "1.8.21"
+    kotlin("plugin.serialization") version "1.8.21"
+    id("pl.allegro.tech.build.axion-release") version "1.15.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.github.ben-manes.versions") version "0.46.0"
     application
-    id("pl.allegro.tech.build.axion-release") version "1.13.6"
-//    id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("com.github.ben-manes.versions") version "0.39.0"
 }
 
-group = "uk.dioxic.muon"
 version = scmVersion.version
 
 repositories {
@@ -37,129 +21,121 @@ application {
     mainClass.set("uk.dioxic.muon.ApplicationKt")
 }
 
+fun kotlinw(target: String): String =
+    "org.jetbrains.kotlin-wrappers:kotlin-$target"
+
 kotlin {
     jvm {
         compilations.all {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.jvmTarget = "17"
         }
         withJava()
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()
         }
     }
-    js(IR) {
+    js {
         useCommonJs()
         browser {
             commonWebpackConfig {
-                cssSupport.enabled = true
+                cssSupport {
+                    enabled.set(true)
+                }
+            }
+            testTask {
+                enabled = false
             }
 //            dceTask {
 //                dceOptions.devMode = true
 //            }
-            binaries.executable()
+            webpackTask {
+                outputFileName = "app.js"
+            }
         }
+        binaries.executable()
     }
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(kotlin("stdlib-common"))
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-                implementation("io.ktor:ktor-client-core:$ktorVersion")
+                implementation(libs.kotlin.serialization.core)
+                implementation(libs.koin.core)
+                implementation(libs.kotlin.datetime)
+                implementation(libs.kotlin.coroutines.test)
             }
         }
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test"))
-//                implementation(kotlin("test-common"))
-//                implementation(kotlin("test-annotations-common"))
+                implementation(libs.kotlin.test)
             }
         }
 
         val jvmMain by getting {
-//            dependsOn(commonMain)
             dependencies {
-                implementation("io.insert-koin:koin-ktor:$koinVersion")
-                implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
-
-                implementation("io.ktor:ktor-serialization:$ktorVersion")
-                implementation("io.ktor:ktor-server-core:$ktorVersion")
-                implementation("io.ktor:ktor-server-netty:$ktorVersion")
-                implementation("io.ktor:ktor-websockets:$ktorVersion")
-                implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-
-                // logging
-//                implementation(platform("org.apache.logging.log4j:log4j-bom:2.14.1"))
-                implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
-                implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
-                implementation("org.apache.logging.log4j:log4j-jul:$log4jVersion")
-                implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
-
-                implementation("com.github.ajalt:clikt:2.8.0")
-                implementation("net.jthink:jaudiotagger:3.0.1")
-
-                // lucene
-                implementation("org.apache.lucene:lucene-core:$luceneVersion")
-                implementation("org.apache.lucene:lucene-queryparser:$luceneVersion")
-
+                implementation(libs.bundles.ktorServer)
+                implementation(libs.bundles.logging)
+                implementation(libs.bundles.lucene)
+                implementation(libs.bundles.koin)
+                implementation(libs.kotlin.reflect)
+                implementation(libs.clikt)
+                implementation(libs.jaudiotagger)
+                implementation(libs.sqlcipher)
+//                implementation("io.ktor:ktor-server-sessions-jvm:2.0.0-beta-1")
             }
         }
 
         val jvmTest by getting {
-//            dependsOn(commonTest)
             dependencies {
-                implementation(kotlin("test"))
-//                implementation(kotlin("test-common"))
-//                implementation(kotlin("test-annotations-common"))
-//                implementation(platform("org.junit:junit-bom:5.8.2"))
-//                implementation("org.junit.jupiter:junit-jupiter")
-//                implementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
-                implementation("org.assertj:assertj-core:$assertjVersion")
-                implementation("io.mockk:mockk:$mockkVersion")
-//                runtimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
-//                runtimeOnly("org.spekframework.spek2:spek-runtime-jvm:$spekVersion")
+                implementation(libs.kotlin.test)
+                implementation(libs.assertj)
+                implementation(libs.mockk)
+                implementation(libs.bundles.fixture)
             }
         }
 
         val jsMain by getting {
-//            dependsOn(commonMain)
             dependencies {
-                implementation(kotlin("stdlib-js", kotlinVersion))
+                implementation(libs.bundles.ktorClient)
 
-                //ktor client js json
-                implementation("io.ktor:ktor-client-js:$ktorVersion") //include http&websockets
-                implementation("io.ktor:ktor-client-json-js:$ktorVersion")
-                implementation("io.ktor:ktor-client-serialization-js:$ktorVersion")
+                implementation(
+                    project.dependencies.enforcedPlatform(
+                        kotlinw("wrappers-bom:1.0.0-${libs.versions.kotlinWrapper.get()}")
+                    )
+                )
 
-                //React, React DOM + Wrappers
-                implementation(npm("react", reactVersion))
-                implementation(npm("react-dom", reactVersion))
-                implementation("org.jetbrains.kotlin-wrappers:kotlin-react:$reactVersion-$kotlinJsVersion")
-                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom:$reactVersion-$kotlinJsVersion")
+                implementation(kotlinw("react"))
+                implementation(kotlinw("react-dom"))
+                implementation(kotlinw("tanstack-react-query"))
+                implementation(kotlinw("tanstack-react-table"))
+                implementation(kotlinw("react-router-dom"))
 
-                //styled components
-                implementation(npm("styled-components", "~5.3.0"))
-                implementation("org.jetbrains.kotlin-wrappers:kotlin-styled:5.3.0-$kotlinJsVersion")
+                implementation(kotlinw("emotion"))
+                implementation(kotlinw("mui"))
+                implementation(kotlinw("mui-icons"))
 
-                // material ui
-                implementation("com.ccfraser.muirwik:muirwik-components:$muirwikComponentVersion")
+                implementation(npm("chroma-js", "2.4.2"))
             }
         }
-        val jsTest by getting
     }
 }
 
-scmVersion {
-    repository.type = "git"
-    repository.directory = rootProject.file("./")
-    repository.remote = "origin"
-
-    tag.prefix = "v"
-    tag.versionSeparator = ""
-}
+//scmVersion {
+//    versionCreator("versionWithBranch")
+//    repository {
+////        type.set("git")
+//        directory = rootProject.file("./")
+//        remote = "origin"
+//    }
+//
+//    tag {
+//        prefix = "v"
+//        versionSeparator = ""
+//    }
+//}
 
 // include JS artifacts in any JAR we generate
 tasks.getByName<Jar>("jvmJar") {
-    val taskName = if ("true" == project.findProperty("isProduction")) {
+    val taskName = if ("true" == project.findProperty("isProduction")
+        || project.gradle.startParameter.taskNames.contains("installDist")) {
         "jsBrowserProductionWebpack"
     } else {
         "jsBrowserDevelopmentWebpack"
@@ -167,18 +143,14 @@ tasks.getByName<Jar>("jvmJar") {
     val webpackTask = tasks.getByName<KotlinWebpack>(taskName)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     dependsOn(webpackTask) // make sure JS gets compiled first
-    from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) // bring output file along into the JAR
+    from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) {
+        into("static")
+    }
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
+tasks.getByName<KotlinWebpack>("jsBrowserProductionWebpack") {
+    dependsOn(tasks.getByName("jsDevelopmentExecutableCompileSync"))
 }
-
-//tasks.withType<Test> {
-//    useJUnitPlatform {
-//        includeEngines("spek2")
-//    }
-//}
 
 distributions {
     main {
@@ -191,30 +163,66 @@ distributions {
     }
 }
 
-// Alias "installDist" as "stage" (for cloud providers)
-tasks.create("stage") {
-    dependsOn(tasks.getByName("installDist"))
-}
 
-tasks.named<Copy>("jvmProcessResources") {
-    val jsBrowserDistribution = tasks.named("jsBrowserDistribution")
-    from(jsBrowserDistribution)
-}
-
-tasks.named<JavaExec>("run") {
-    dependsOn(tasks.named<Jar>("jvmJar"))
-    classpath(tasks.named<Jar>("jvmJar"))
+tasks.getByName<JavaExec>("run") {
+    classpath(tasks.getByName<Jar>("jvmJar"))
 }
 
 tasks.withType<Test> {
-    systemProperty("java.util.logging.manager", System.getProperty("java.util.logging.manager"))
+    systemProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
 }
 
-//tasks.withType<ShadowJar> {
-//    archiveBaseName.set("shadow")
-//    mergeServiceFiles()
-//    archiveFileName.set("muon")
-//    manifest {
-//        attributes(mapOf("Main-Class" to "uk.dioxic.muon.ApplicationKt"))
+tasks.withType<ShadowJar> {
+    val webpackTask = tasks.getByName<KotlinWebpack>("jsBrowserProductionWebpack")
+    mergeServiceFiles()
+//    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn(webpackTask) // make sure JS gets compiled first
+    from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) {
+        into("static")
+    }
+    manifest {
+        attributes(mapOf(
+            "Main-Class" to "uk.dioxic.muon.ApplicationKt",
+            "Multi-Release" to "true"
+        ))
+    }
+}
+
+tasks.getByName("distZip") {
+    dependsOn(tasks.getByName("jsJar"))
+    dependsOn(tasks.getByName("allMetadataJar"))
+}
+
+tasks.getByName("distTar") {
+    dependsOn(tasks.getByName("jsJar"))
+    dependsOn(tasks.getByName("allMetadataJar"))
+}
+
+//tasks.getByName("jsBrowserDevelopmentWebpack") {
+//    dependsOn(tasks.getByName("jsProductionExecutableCompileSync"))
+//}
+//
+//tasks.getByName("jsBrowserProductionWebpack") {
+//    dependsOn(tasks.getByName("jsProductionExecutableCompileSync"))
+//    dependsOn(tasks.getByName("jsDevelopmentExecutableCompileSync"))
+//}
+
+//tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask> {
+//    resolutionStrategy {
+//        componentSelection {
+//            all {
+//                if (isNonStable(candidate.version) && !isNonStable(currentVersion)) {
+//                    reject("Release candidate")
+//                }
+//            }
+//        }
 //    }
 //}
+
+fun isNonStable(version: String): Boolean {
+    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
+    val regex = "^[0-9,.v-]+(-r)?$".toRegex()
+    val isStable = stableKeyword || regex.matches(version)
+    return isStable.not()
+}
+

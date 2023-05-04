@@ -2,91 +2,165 @@
 
 package uk.dioxic.muon
 
-import io.ktor.application.*
-import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.serialization.*
-import io.ktor.server.engine.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
+import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.autohead.*
+import io.ktor.server.plugins.cachingheaders.*
+import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.compression.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.partialcontent.*
+import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
 import kotlinx.serialization.json.Json
-import org.jaudiotagger.audio.AudioFileIO
+import org.apache.logging.log4j.kotlin.logger
+import org.koin.core.logger.Level
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
-import org.koin.ktor.ext.Koin
+import org.koin.dsl.onClose
+import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+import uk.dioxic.muon.common.Global
+import uk.dioxic.muon.exceptions.CsrfInvalidException
 import uk.dioxic.muon.exceptions.IdNotFoundException
-import uk.dioxic.muon.exceptions.MusicImportException
-import uk.dioxic.muon.repository.*
-import uk.dioxic.muon.service.MusicService
-import uk.dioxic.muon.service.MusicServiceImpl
-import java.util.logging.Level
-import kotlin.io.path.ExperimentalPathApi
-
-val muonHome = "${System.getenv("HOMEPATH")}/.muon"
+import uk.dioxic.muon.repository.LuceneRepository
+import uk.dioxic.muon.repository.RekordboxRepository
+import uk.dioxic.muon.repository.SettingsRepository
+import uk.dioxic.muon.repository.ImportRepository
+import uk.dioxic.muon.server.*
+import uk.dioxic.muon.server.plugins.CsrfPlugin
+import uk.dioxic.muon.service.SearchService
+import uk.dioxic.muon.service.TrackService
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.days
 
 private val appModule = module {
-    single<ConfigRepository> { ConfigRepositoryImpl(configDirectory = muonHome) }
-    single<LibraryRepository> { LibraryRepositoryImpl(get()) }
-    single<MusicRepository> { MusicRepositoryImpl("index") }
-    single<MusicService> { MusicServiceImpl(get()) }
-    single { ShoppingRepository() }
+    single { LuceneRepository(Global.configPath.resolve("index")) } onClose {
+        it?.close()
+    }
+    singleOf(::RekordboxRepository) onClose {
+        it?.close()
+    }
+    singleOf(::SearchService)
+    single { SettingsRepository(Global.configPath) }
+    singleOf(::TrackService)
+    singleOf(::ImportRepository)
 }
 
 fun main(args: Array<String>) {
     System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
-    AudioFileIO.logger.level = Level.OFF
-    embeddedServer(Netty, commandLineEnvironment(args)).start()
+    EngineMain.main(args)
 }
 
-@ExperimentalPathApi
-fun Application.main() {
+fun Application.plugins() {
     val env = environment.config.property("ktor.environment").getString()
-    install(CallLogging)
+    val isDevelopment = env == "dev"
+    val useCsrf = environment.config.property("ktor.useCsrf").getString().toBoolean()
+    val logger = logger()
+
+    install(CallLogging) {
+        filter { call ->
+            call.request.path().startsWith("/api")
+        }
+    }
     install(ContentNegotiation) {
         json(Json {
-            prettyPrint = env == "dev"
+            prettyPrint = isDevelopment
+            encodeDefaults = true
         })
     }
-    install(CORS) {
-        method(HttpMethod.Get)
-        method(HttpMethod.Post)
-        method(HttpMethod.Delete)
-        anyHost()
-    }
+    install(PartialContent)
+    install(AutoHeadResponse)
+//    install(CORS) {
+//        host("0.0.0.0:5000")
+//        anyHost()
+//        header(HttpHeaders.ContentType)
+//    }
     install(Compression) {
         gzip()
     }
+    install(CachingHeaders) {
+        options { _, outgoingContent ->
+            if (!isDevelopment) {
+                when (outgoingContent.contentType?.withoutParameters()) {
+                    ContentType.Image.XIcon, ContentType.Image.PNG, ContentType.Image.JPEG,
+                    ContentType.Application.JavaScript, ContentType.Text.CSS ->
+                        CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 7.days.inWholeSeconds.toInt()))
+
+                    else -> null
+                }
+            } else {
+                null
+            }
+        }
+    }
     install(Koin) {
-        slf4jLogger()
+        slf4jLogger(level = Level.INFO)
         modules(appModule)
     }
+    install(Sessions) {
+        apiSessionCookie(isDevelopment)
+    }
+    if (useCsrf) {
+        install(CsrfPlugin) {
+            validateHeader("X-CSRF") { it.call.getCsrfToken() }
+        }
+    }
     install(StatusPages) {
-        exception<IdNotFoundException> { cause ->
-            call.respond(HttpStatusCode.NotFound, "file Id [${cause.id}] not found")
-        }
-        exception<MusicImportException> { cause ->
-            call.respond(HttpStatusCode.NotModified, cause.errors)
-        }
-        exception<IllegalStateException> { cause ->
-            call.respond(HttpStatusCode.BadRequest, cause.message ?: "")
+        exception<Throwable> { call, cause ->
+            when (cause) {
+                is IdNotFoundException -> call.respondText(
+                    text = "file Id [${cause.id}] not found",
+                    status = HttpStatusCode.NotFound
+                )
+
+                is CsrfInvalidException ->
+                    call.respond(HttpStatusCode.Forbidden)
+
+                is java.nio.file.FileAlreadyExistsException -> call.respondText(
+                    text = "file already exists: ${cause.message}",
+                    status = HttpStatusCode.InternalServerError
+                )
+
+                is CancellationException -> {}
+
+                else -> {
+                    logger.error(cause)
+                    call.respondText(
+                        cause.message.orEmpty(),
+                        status = HttpStatusCode.InternalServerError
+                    )
+                }
+            }
         }
     }
 
-    routing {
-        shoppingList()
-        library()
-        music()
-        config()
-        index()
+}
 
-        static("/") {
-            resources("")
-        }
+fun Application.routes() {
+    val env = environment.config.property("ktor.environment").getString()
+
+    routing {
+        settings()
+        tracks()
+        lucene()
+        import()
+        indexHtml()
+
+        staticResources("/", "static")
 
         get("/env") {
-            call.respondText(env)
+            val envMap = System.getenv().toMutableMap()
+            envMap["ktor.environment"] = env
+            call.respond(envMap)
         }
     }
 }
+

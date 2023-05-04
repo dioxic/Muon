@@ -1,97 +1,115 @@
 package uk.dioxic.muon.api
 
 import io.ktor.client.*
-import io.ktor.client.features.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.js.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.window
-import uk.dioxic.muon.*
-import uk.dioxic.muon.audio.AudioFile
-import uk.dioxic.muon.audio.ImportError
-import uk.dioxic.muon.config.AudioImportConfig
-import uk.dioxic.muon.config.LibraryConfig
-import uk.dioxic.muon.model.ConfigMap
+import uk.dioxic.muon.utils.CsrfTokenHandler
 
-val endpoint = window.location.origin // only needed until https://github.com/ktorio/ktor/issues/1695 is resolved
-val configEndpoint = endpoint + configPath
+class InternalServerException(
+    response: HttpResponse,
+    override val message: String
+) : ResponseException(response, message)
 
-val client = HttpClient {
-    install(JsonFeature) { serializer = KotlinxSerializer() }
+val client = HttpClient(Js) {
+    install(ContentNegotiation) {
+        json()
+    }
     defaultRequest {
         port = 8080
     }
-}
+    expectSuccess = true
+    HttpResponseValidator {
+        handleResponseExceptionWithRequest { exception, _ ->
+            // the default response validator only throw ResponseExceptions
+            val responseException = exception as? ResponseException ?: return@handleResponseExceptionWithRequest
 
-suspend fun getAudioFiles(libraryId: String, refresh: Boolean = false): List<AudioFile> =
-    client.get(path = musicPath) {
-        parameter("refresh", refresh)
-        parameter("library", libraryId)
-    }
-
-suspend fun getImportConfig(): AudioImportConfig =
-    client.get {
-        url {
-            path(configPath, importPath)
-        }
-    }
-
-suspend fun getLibraryConfig(): LibraryConfig =
-    client.get {
-        url {
-            path(configPath, libraryPath)
-        }
-    }
-
-suspend fun saveAudioFiles(libraryId: String? = null, files: List<AudioFile>) =
-    client.patch<List<ImportError>>(
-        path = musicPath,
-        body = files
-    ) {
-        contentType(ContentType.Application.Json)
-        parameter("library", libraryId)
-    }
-
-suspend fun deleteAudioFile(file: AudioFile) {
-    return client.delete {
-        url {
-            path(musicPath, file.id)
-        }
-        contentType(ContentType.Application.Json)
-    }
-}
-
-suspend fun fetchFullConfig(): ConfigMap =
-    client.get(path = configPath)
-
-suspend fun saveLibraryConfig(config: AudioImportConfig) {
-    return client.post {
-        url {
-            path(configPath, AudioImportConfig.path)
-        }
-        contentType(ContentType.Application.Json)
-        body = config
-    }
-}
-
-suspend fun addShoppingListItem(shoppingListItem: ShoppingListItem) {
-    client.post<Unit> {
-        url {
-            path(shoppingListPath)
-        }
-        contentType(ContentType.Application.Json)
-        body = shoppingListItem
-    }
-}
-
-suspend fun deleteShoppingListItem(shoppingListItem: ShoppingListItem) {
-    client.delete<Unit> {
-        url {
-            path(shoppingListPath, shoppingListItem.id.toString())
+            with(responseException.response) {
+                when (status) {
+                    HttpStatusCode.InternalServerError -> throw InternalServerException(this, bodyAsText())
+                }
+            }
         }
     }
 }
 
-suspend fun getShoppingList(): List<ShoppingListItem> =
-    client.get(path = shoppingListPath)
+fun HttpRequestBuilder.localUrl(path: String) = url {
+    takeFrom(window.location.href)
+    encodedPath = path
+}
+
+suspend inline fun <reified T> apiRequest(requestConfigurator: HttpRequestBuilder.() -> Unit): T {
+    val res = client.request {
+        requestConfigurator()
+        if (method != HttpMethod.Get) {
+            header("X-CSRF", CsrfTokenHandler.getToken())
+        }
+    }
+    return res.body()
+}
+
+object Api {
+
+    suspend inline fun <reified T> get(path: String, vararg parameters: Pair<String, String>): T =
+        apiRequest {
+            method = HttpMethod.Get
+            localUrl(path)
+            parameters.forEach { (k, v) ->
+                parameter(k, v)
+            }
+        }
+
+    suspend inline fun <reified T> rawPost(path: String, noinline formBuilder: FormBuilder.() -> Unit): T =
+        apiRequest {
+            method = HttpMethod.Post
+            localUrl(path)
+            formData(formBuilder)
+        }
+
+    suspend inline fun <reified T, reified TResult> post(
+        path: String,
+        data: T,
+        vararg parameters: Pair<String, String>
+    ): TResult =
+        apiRequest {
+            method = HttpMethod.Post
+            localUrl(path)
+            parameters.forEach { (k, v) ->
+                parameter(k, v)
+            }
+
+            contentType(ContentType.Application.Json)
+            setBody(data)
+        }
+
+    suspend inline fun <reified T, reified TResult> put(path: String, data: T): TResult =
+        apiRequest {
+            method = HttpMethod.Put
+            localUrl(path)
+            contentType(ContentType.Application.Json)
+            setBody(data)
+        }
+
+    suspend inline fun <reified T> patch(path: String, data: T): T =
+        apiRequest {
+            method = HttpMethod.Patch
+            localUrl(path)
+            contentType(ContentType.Application.Json)
+            setBody(data)
+        }
+
+    suspend inline fun delete(path: String): Unit =
+        apiRequest {
+            method = HttpMethod.Delete
+            localUrl(path)
+            contentType(ContentType.Application.Json)
+        }
+
+}
