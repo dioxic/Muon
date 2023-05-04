@@ -116,7 +116,7 @@ class LuceneTest {
     private fun IndexSearcher.searchWithResults(query: Query): List<TestResult> =
         this.search(query, 10)
             .scoreDocs
-            .map { this.doc(it.doc) to it.score }
+            .map { this.storedFields().document(it.doc) to it.score }
             .map { (doc, score) -> TestResult("${doc["artist"]} - ${doc["title"]}", score) }
 
     private fun setup(testData: List<TestData>, analyzer: Analyzer): IndexSearcher {
