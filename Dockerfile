@@ -9,6 +9,5 @@ EXPOSE 5005:5005
 RUN mkdir /app
 WORKDIR /home/gradle/src
 COPY --from=build /home/gradle/src/build/libs/*-all.jar /app/muon.jar
-#COPY build/libs/*-all.jar /app/muon.jar
 ENTRYPOINT ["java","-jar","/app/muon.jar"]
 #ENTRYPOINT ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "-jar", "/app/muon.jar"]

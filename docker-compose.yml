@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  muon:
+    build: .
+    ports:
+      - "8080:8080"
+      - "5005:5005"
+    volumes:
+      - /mnt/dj:/mnt/dj
+    environment:
+      - HOMEPATH=/root
