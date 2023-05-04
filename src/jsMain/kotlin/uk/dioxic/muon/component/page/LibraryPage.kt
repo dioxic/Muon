@@ -21,6 +21,7 @@ import uk.dioxic.muon.component.table.actions.RowAction
 import uk.dioxic.muon.component.table.columns.rowActionTemplate
 import uk.dioxic.muon.context.IsPlayingContext
 import uk.dioxic.muon.context.PlayTrackContext
+import uk.dioxic.muon.context.TogglePlayStateContext
 import uk.dioxic.muon.hook.useTrackSearch
 import uk.dioxic.muon.model.Track
 import web.cssom.Color
@@ -47,16 +48,17 @@ val LibraryPage = VFC {
     val theme = useTheme<Theme>()
     val (searchText, setSearchText) = useState("")
     val search = useTrackSearch(searchText)
-    val tracks = useMemo(search.status) { search.data ?: emptyArray() }
-    val (isPlaying, setIsPlaying) = useContext(IsPlayingContext)!!
+    val tracks = search.data ?: emptyArray()
+    val isPlaying = useContext(IsPlayingContext)!!
     val (playTrack, setPlayTrack) = useContext(PlayTrackContext)!!
+    val togglePlayState = useContext(TogglePlayStateContext)!!
 
     fun handlePlayClick(track: Track) {
-        if (track == playTrack) {
-            setIsPlaying(!isPlaying)
-        } else {
+        if (track != playTrack) {
             setPlayTrack(track)
-            setIsPlaying(true)
+        }
+        else {
+            togglePlayState()
         }
     }
 

@@ -3,38 +3,59 @@ package uk.dioxic.muon.context
 import react.*
 import uk.dioxic.muon.Routes
 import uk.dioxic.muon.model.Track
+import web.events.EventType
 import web.html.Audio
 import web.html.HTMLAudioElement
 
 val PlayTrackContext = createContext<StateInstance<Track?>>()
-val IsPlayingContext = createContext<StateInstance<Boolean>>()
+val IsPlayingContext = createContext<Boolean>()
+val TogglePlayStateContext = createContext<() -> Unit>()
 
 val AudioPlayerModule = FC<PropsWithChildren> { props ->
     val playTrackState = useState<Track?>(null)
-    val isPlayingState = useState(false)
     val (playTrack, _) = playTrackState
-    val (isPlaying, _) = isPlayingState
+    val (isPlaying, setIsPlaying) = useState(false)
     val audioRef = useRef<HTMLAudioElement>(null)
+
+    fun attachListeners(audio: Audio) {
+        with(audio) {
+            addEventListener(type = EventType("ended"), callback = {
+                setIsPlaying(false)
+            })
+        }
+    }
 
     useEffect(playTrack) {
         audioRef.current?.pause()
 
         if (playTrack != null) {
-            audioRef.current = Audio(Routes.trackAudio(playTrack))
+            audioRef.current = Audio(Routes.trackAudio(playTrack)).also {
+                attachListeners(it)
+                it.play()
+            }
+            setIsPlaying(true)
         }
     }
 
-    useEffect(isPlaying, playTrack) {
-        if (isPlaying) {
+    useEffect(*emptyArray()) {
+        cleanup { audioRef.current?.pause() }
+    }
+
+    fun togglePlayState() {
+        if (!isPlaying) {
             audioRef.current?.play()
+            setIsPlaying(true)
         } else {
             audioRef.current?.pause()
+            setIsPlaying(false)
         }
     }
 
-    PlayTrackContext(playTrackState) {
-        IsPlayingContext(isPlayingState) {
-            +props.children
+    TogglePlayStateContext.Provider(::togglePlayState) {
+        PlayTrackContext(playTrackState) {
+            IsPlayingContext(isPlaying) {
+                +props.children
+            }
         }
     }
 }

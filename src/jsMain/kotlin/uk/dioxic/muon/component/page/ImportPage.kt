@@ -29,6 +29,7 @@ import uk.dioxic.muon.component.table.columns.rowActionTemplate
 import uk.dioxic.muon.context.IsPlayingContext
 import uk.dioxic.muon.context.PlayTrackContext
 import uk.dioxic.muon.context.SettingsContext
+import uk.dioxic.muon.context.TogglePlayStateContext
 import uk.dioxic.muon.hook.*
 import uk.dioxic.muon.model.Track
 import kotlin.time.Duration.Companion.seconds
@@ -42,15 +43,16 @@ val ImportPage = VFC {
     val import = useImportMutation()
     val (editDialogTracks, setEditDialogTracks) = useState<Array<Track>>(emptyArray())
     val (importDialogTracks, setImportDialogTracks) = useState<Array<Track>>(emptyArray())
-    val (isPlaying, setIsPlaying) = useContext(IsPlayingContext)!!
+    val isPlaying = useContext(IsPlayingContext)!!
     val (playTrack, setPlayTrack) = useContext(PlayTrackContext)!!
+    val togglePlayState = useContext(TogglePlayStateContext)!!
 
     fun handlePlayClick(track: Track) {
-        if (track == playTrack) {
-            setIsPlaying(!isPlaying)
-        } else {
+        if (track != playTrack) {
             setPlayTrack(track)
-            setIsPlaying(true)
+        }
+        else {
+            togglePlayState()
         }
     }
 
