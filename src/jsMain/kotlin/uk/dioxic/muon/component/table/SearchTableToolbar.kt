@@ -61,7 +61,7 @@ val SearchTableToolbar = FC<SearchTableToolbarProps> { (title, searchText, setSe
                 autoComplete = "off"
                 placeholder = "Search Library"
                 onChange = { event ->
-                    debounce((event.target as HTMLInputElement).value, 500) {
+                    debounce((event.target.asDynamic() as HTMLInputElement).value, 500) {
                         if (it != searchText && (it.length > 3 || it.isEmpty())) {
                             setSearchText(it)
                         }
