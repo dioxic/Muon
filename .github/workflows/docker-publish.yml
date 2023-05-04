@@ -31,5 +31,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/muon:latest
+          tags: dioxic/muon:latest
           labels: ${{ steps.meta.outputs.labels }}
