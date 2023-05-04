@@ -20,7 +20,7 @@ import uk.dioxic.muon.common.getSelectedData
 import uk.dioxic.muon.component.dialog.ImportDialog
 import uk.dioxic.muon.component.dialog.TrackEditDialog
 import uk.dioxic.muon.component.table.BasicTable
-import uk.dioxic.muon.component.table.TableToolbar
+import uk.dioxic.muon.component.table.ActionTableToolbar
 import uk.dioxic.muon.component.table.actions.RowAction
 import uk.dioxic.muon.component.table.actions.ToolbarAction
 import uk.dioxic.muon.component.table.columns.checkboxCellTemplate
@@ -28,14 +28,15 @@ import uk.dioxic.muon.component.table.columns.checkboxHeaderTemplate
 import uk.dioxic.muon.component.table.columns.rowActionTemplate
 import uk.dioxic.muon.context.IsPlayingContext
 import uk.dioxic.muon.context.PlayTrackContext
+import uk.dioxic.muon.context.SettingsContext
 import uk.dioxic.muon.hook.*
 import uk.dioxic.muon.model.Track
 import kotlin.time.Duration.Companion.seconds
 
 val ImportPage = VFC {
-    val settings = useSettingsFetch()
+    val settings = useContext(SettingsContext)
     val fetch = useImportFetch()
-    val tracks = useMemo(fetch.status) { fetch.data ?: emptyArray() }
+    val tracks = fetch.data ?: emptyArray()
     val reload = useImportReload()
     val delete = useImportDelete()
     val import = useImportMutation()
@@ -148,7 +149,7 @@ val ImportPage = VFC {
                 enableSorting = false
             }
         ).apply {
-            if (settings.data?.standardiseFilenames == false) {
+            if (settings?.standardiseFilenames == false) {
                 add(jso {
                     id = "filename"
                     header = StringOrTemplateHeader("Filename")
@@ -208,7 +209,7 @@ val ImportPage = VFC {
     Box {
         Paper {
             TableContainer {
-                TableToolbar {
+                ActionTableToolbar {
                     title = "Import Table"
                     actions = toolbarActions
                     selectedCount = table.getSelectedRowModel().rows.size

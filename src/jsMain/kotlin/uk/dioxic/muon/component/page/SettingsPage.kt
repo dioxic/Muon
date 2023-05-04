@@ -7,19 +7,18 @@ import mui.material.*
 import mui.system.responsive
 import mui.system.sx
 import org.w3c.dom.HTMLInputElement
-import react.ReactNode
-import react.VFC
+import react.*
+import react.dom.events.FormEvent
 import react.dom.html.ReactHTML
 import react.dom.onChange
-import react.useEffect
-import react.useState
 import uk.dioxic.muon.common.percent
-import uk.dioxic.muon.hook.useSettingsFetch
+import uk.dioxic.muon.context.SettingsContext
 import uk.dioxic.muon.hook.useSettingsSave
 import web.cssom.Display
 import web.cssom.FontFamily
 import web.cssom.FontSize
 import web.cssom.px
+import web.html.HTMLDivElement
 import web.html.InputType
 
 private val json = Json {
@@ -34,30 +33,35 @@ private val defaultTextProps: BaseTextFieldProps = jso {
     autoComplete = "off"
 }
 
+fun FormEvent<HTMLDivElement>.htmlInputValue() =
+    (target.asDynamic() as HTMLInputElement).value
+
 val SettingsPage = VFC {
-    val settings = useSettingsFetch().data!!
+    val settings = useContext(SettingsContext)!!
     val saveSettings = useSettingsSave()
-    val (localSettings, setLocalSettings) = useState(settings)
+    val (form, setForm) = useState(settings)
 
     useEffect(settings) {
-        if (settings != localSettings) {
-            setLocalSettings(settings)
+        if (settings != form) {
+            setForm(settings)
         }
     }
 
     fun handleSave() {
-        if (settings != localSettings) {
-            saveSettings(localSettings)
+        if (settings != form) {
+            saveSettings(form)
         }
     }
 
     fun setLocalFolderMapping(rbFolder: String, localFolder: String) {
-        setLocalSettings(localSettings.copy(
-            folderMappings = if (rbFolder.isEmpty() && localFolder.isEmpty())
-                emptyList()
-            else
-                listOf(rbFolder to localFolder)
-        ))
+        setForm(
+            form.copy(
+                folderMappings = if (rbFolder.isEmpty() && localFolder.isEmpty())
+                    emptyList()
+                else
+                    listOf(rbFolder to localFolder)
+            )
+        )
     }
 
     Stack {
@@ -73,7 +77,7 @@ val SettingsPage = VFC {
                 labelId = "theme-select-label"
                 value = settings.theme.unsafeCast<Nothing?>()
                 onChange = { event, _ ->
-                    saveSettings(localSettings.copy(theme = event.target.value))
+                    saveSettings(form.copy(theme = event.target.value))
                 }
                 MenuItem {
                     value = "dark"
@@ -88,11 +92,9 @@ val SettingsPage = VFC {
         TextField {
             id = "importDir"
             label = ReactNode("Import Folder")
-            value = localSettings.importDir
+            value = form.importDir
             onChange = { event ->
-                setLocalSettings(localSettings.copy(
-                    importDir = (event.target.asDynamic() as HTMLInputElement).value
-                ))
+                setForm(form.copy(importDir = event.htmlInputValue()))
             }
             onBlur = { _ -> handleSave() }
 
@@ -101,11 +103,9 @@ val SettingsPage = VFC {
         TextField {
             id = "downloadDir"
             label = ReactNode("Download Folder")
-            value = localSettings.downloadDirs.firstOrNull()
+            value = form.downloadDirs.firstOrNull().orEmpty()
             onChange = { event ->
-                setLocalSettings(localSettings.copy(
-                    downloadDirs = listOf((event.target.asDynamic() as HTMLInputElement).value)
-                ))
+                setForm(form.copy(downloadDirs = listOf(event.htmlInputValue())))
             }
             onBlur = { _ -> handleSave() }
 
@@ -114,11 +114,9 @@ val SettingsPage = VFC {
         TextField {
             id = "rbDatabase"
             label = ReactNode("Rekordbox Database")
-            value = localSettings.rekordboxDatabase
+            value = form.rekordboxDatabase
             onChange = { event ->
-                setLocalSettings(localSettings.copy(
-                    rekordboxDatabase = (event.target.asDynamic() as HTMLInputElement).value
-                ))
+                setForm(form.copy(rekordboxDatabase = event.htmlInputValue()))
             }
             onBlur = { _ -> handleSave() }
 
@@ -127,11 +125,9 @@ val SettingsPage = VFC {
         TextField {
             id = "deleteDir"
             label = ReactNode("Recycle Bin Folder")
-            value = localSettings.deleteDir
+            value = form.deleteDir
             onChange = { event ->
-                setLocalSettings(localSettings.copy(
-                    deleteDir = (event.target.asDynamic() as HTMLInputElement).value
-                ))
+                setForm(form.copy(deleteDir = event.htmlInputValue()))
             }
             onBlur = { _ -> handleSave() }
 
@@ -151,11 +147,11 @@ val SettingsPage = VFC {
                 }
                 id = "rekordboxFolder"
                 label = ReactNode("Rekordbox Folder")
-                value = localSettings.folderMappings.firstOrNull()?.first
+                value = form.folderMappings.firstOrNull()?.first.orEmpty()
                 onChange = { event ->
                     setLocalFolderMapping(
-                        rbFolder = (event.target.asDynamic() as HTMLInputElement).value,
-                        localFolder = localSettings.folderMappings.firstOrNull()?.second ?: ""
+                        rbFolder = event.htmlInputValue(),
+                        localFolder = form.folderMappings.firstOrNull()?.second ?: ""
                     )
                 }
                 onBlur = { _ -> handleSave() }
@@ -168,11 +164,11 @@ val SettingsPage = VFC {
                 }
                 id = "localFolder"
                 label = ReactNode("Local Folder")
-                value = localSettings.folderMappings.firstOrNull()?.second
+                value = form.folderMappings.firstOrNull()?.second.orEmpty()
                 onChange = { event ->
                     setLocalFolderMapping(
-                        rbFolder = localSettings.folderMappings.firstOrNull()?.first ?: "",
-                        localFolder = (event.target.asDynamic() as HTMLInputElement).value
+                        rbFolder = form.folderMappings.firstOrNull()?.first ?: "",
+                        localFolder = event.htmlInputValue()
                     )
                 }
                 onBlur = { _ -> handleSave() }

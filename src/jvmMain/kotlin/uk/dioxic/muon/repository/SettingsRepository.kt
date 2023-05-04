@@ -23,7 +23,6 @@ class SettingsRepository(path: Path) {
 
     fun save(settings: Settings): Settings {
         logger.debug("Saving settings")
-        settings.validate()
         Files.writeString(settingsFile, Json.encodeToString(settings))
         this.settings = settings
         notifyListeners()

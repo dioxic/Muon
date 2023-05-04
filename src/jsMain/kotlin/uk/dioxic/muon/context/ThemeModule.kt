@@ -11,12 +11,14 @@ import react.FC
 import react.PropsWithChildren
 import react.createContext
 import uk.dioxic.muon.common.Themes
+import uk.dioxic.muon.config.Settings
 import uk.dioxic.muon.hook.useSettingsFetch
 import uk.dioxic.muon.hook.useSettingsSave
 import web.cssom.Color
 import web.cssom.integer
 
 val ThemeContext = createContext<() -> Unit>()
+val SettingsContext = createContext<Settings>()
 
 val ThemeModule = FC<PropsWithChildren> { props ->
     val settings = useSettingsFetch()
@@ -43,12 +45,14 @@ val ThemeModule = FC<PropsWithChildren> { props ->
     }
 
     if (settings.isSuccess) {
-        ThemeContext.Provider(::toggleColorMode) {
-            ThemeProvider {
-                this.theme = settings.data?.let { getTheme(it.theme) } ?: Themes.Light
+        SettingsContext(settings.data) {
+            ThemeContext.Provider(::toggleColorMode) {
+                ThemeProvider {
+                    this.theme = settings.data?.let { getTheme(it.theme) } ?: Themes.Light
 
-                CssBaseline()
-                +props.children
+                    CssBaseline()
+                    +props.children
+                }
             }
         }
     }

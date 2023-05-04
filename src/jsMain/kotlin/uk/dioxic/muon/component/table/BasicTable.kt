@@ -6,7 +6,6 @@ import react.FC
 import react.Props
 import tanstack.react.table.renderCell
 import tanstack.react.table.renderHeader
-import tanstack.table.core.RowData
 import tanstack.table.core.Table
 import uk.dioxic.muon.common.getIsSortedBoolean
 import uk.dioxic.muon.common.getTableSortLabelDirection

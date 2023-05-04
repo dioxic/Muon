@@ -9,6 +9,8 @@ import react.Props
 import react.ReactNode
 import react.dom.html.ReactHTML.form
 import react.dom.onChange
+import react.useContext
+import uk.dioxic.muon.context.SettingsContext
 import uk.dioxic.muon.hook.useSettingsFetch
 import uk.dioxic.muon.hook.useTrackSave
 import uk.dioxic.muon.model.Track
@@ -34,7 +36,7 @@ private val defaultTextProps: BaseTextFieldProps = jso {
 
 val TrackEditDialog = FC<TrackDialogProps> { props ->
     val saveTrack = useTrackSave()
-    val settings = useSettingsFetch().data
+    val settings = useContext(SettingsContext)
     var editTrack = props.tracks.merge()
 
     fun handleSave() {

@@ -7,12 +7,12 @@ import kotlinx.serialization.Serializable
 data class Settings(
     val theme: String,
     val downloadDirs: List<String> = emptyList(),
-    val importDir: String? = null,
-    val rekordboxDatabase: String? = null,
+    val importDir: String = "",
+    val rekordboxDatabase: String = "",
     val lastRekordboxRefresh: LocalDateTime,
     val folderMappings: List<Pair<String,String>> = emptyList(),
     val softDelete: Boolean = true,
-    val deleteDir: String? = null,
+    val deleteDir: String = "",
     val standardiseFilenames: Boolean = true,
 ) {
     companion object {

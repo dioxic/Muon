@@ -16,18 +16,18 @@ import web.cssom.integer
 import web.cssom.number
 import web.cssom.px
 
-external interface TableToolbarProps : Props {
+external interface ActionTableToolbarProps : Props {
     var title: String
     var selectedCount: Int
     var actions: List<ToolbarAction>
 }
 
 // TODO use proper types when wrapper supports it - https://github.com/JetBrains/kotlin-wrappers/issues/1129
-private operator fun TableToolbarProps.component1() = title
-private operator fun TableToolbarProps.component2() = selectedCount
-private operator fun TableToolbarProps.component3() = actions
+private operator fun ActionTableToolbarProps.component1() = title
+private operator fun ActionTableToolbarProps.component2() = selectedCount
+private operator fun ActionTableToolbarProps.component3() = actions
 
-val TableToolbar = FC<TableToolbarProps> { (title, selectedCount, actions) ->
+val ActionTableToolbar = FC<ActionTableToolbarProps> { (title, selectedCount, actions) ->
 
     val theme = useTheme<Theme>()
 

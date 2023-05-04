@@ -21,7 +21,7 @@ fun <TData> defaultQueryOptions(queryKey: QueryKey): UseQueryOptions<TData, Thro
         retry = { failureCount, _ -> (failureCount < 1) }
         staleTime = JsDuration.MAX_VALUE
         onError = { error ->
-            when(error) {
+            when (error) {
                 is ResponseException -> addAlert(Alert.AlertError("Error fetching $queryKey - ${error.response.status.description}"))
                 else -> addAlert(Alert.AlertError("Error fetching $queryKey - ${error.message}"))
             }
@@ -162,7 +162,12 @@ fun <T : IdType> ReadonlyArray<T>?.replace(replacement: T?) =
     when {
         replacement == null && this != null -> this
         replacement != null && this != null -> this
-            .map { if (it.id == replacement.id) replacement else it }
+            .map {
+                if (it.id == replacement.id) {
+                    println("replacing id=${replacement.id}")
+                    replacement
+                } else it
+            }
             .toTypedArray()
 
         else -> emptyArray()

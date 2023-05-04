@@ -12,7 +12,10 @@ import kotlinx.html.*
 import org.koin.ktor.ext.inject
 import uk.dioxic.muon.Routes
 import uk.dioxic.muon.common.getLocalPath
+import uk.dioxic.muon.common.validate
+import uk.dioxic.muon.config.Settings
 import uk.dioxic.muon.model.ImportResponse
+import uk.dioxic.muon.model.SettingsResponse
 import uk.dioxic.muon.model.Track
 import uk.dioxic.muon.model.Tracks
 import uk.dioxic.muon.repository.SettingsRepository
@@ -100,7 +103,11 @@ fun Routing.settings() {
             call.respond(settingsRepository.get())
         }
         put {
-            call.respond(settingsRepository.save(call.receive()))
+            val settings = call.receive<Settings>()
+            call.respond(SettingsResponse(
+                settings = settingsRepository.save(settings),
+                errors = settings.validate()
+            ))
         }
     }
 }
