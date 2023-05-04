@@ -16,8 +16,8 @@ class SettingsRepository(path: Path) {
 
     private val logger = logger()
     private val settingsFile = path.resolve("settings.json")
-    private var settings: Settings = loadSettings()
     private val listeners = mutableListOf<SettingsListener>()
+    private var settings: Settings = loadSettings()
 
     fun get() = settings
 
