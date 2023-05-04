@@ -19,6 +19,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import io.ktor.util.cio.*
 import kotlinx.serialization.json.Json
 import org.apache.logging.log4j.kotlin.logger
 import org.koin.core.logger.Level
@@ -128,7 +129,9 @@ fun Application.plugins() {
                     text = "file already exists: ${cause.message}",
                     status = HttpStatusCode.InternalServerError
                 )
-
+                is ChannelWriteException -> {
+                    logger.warn("ChannelWriteException - ${cause.message}")
+                }
                 is CancellationException -> {}
 
                 else -> {

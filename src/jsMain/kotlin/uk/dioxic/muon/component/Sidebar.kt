@@ -9,17 +9,16 @@ import react.Props
 import react.ReactNode
 import react.dom.html.ReactHTML
 import react.router.dom.NavLink
+import react.router.useLoaderData
 import react.router.useLocation
-import react.useContext
 import uk.dioxic.muon.common.Area
 import uk.dioxic.muon.common.Sizes.Sidebar
-import uk.dioxic.muon.context.PagesContext
+import uk.dioxic.muon.entity.Pages
 import web.cssom.Color
 import web.cssom.TextDecoration
-import web.cssom.TextDecorationColor
 
 val Sidebar = FC<Props> {
-    val pages = useContext(PagesContext)
+    val pages = useLoaderData().unsafeCast<Pages>()
     val lastPathname = useLocation().pathname.substringAfterLast("/")
 
     Box {
@@ -32,25 +31,27 @@ val Sidebar = FC<Props> {
             variant = DrawerVariant.permanent
             anchor = DrawerAnchor.left
 
-            Toolbar()
+            Box {
+                Toolbar()
 
-            List {
-                sx { width = Sidebar.Width }
+                List {
+                    sx { width = Sidebar.Width }
 
-                for ((key, name) in pages!!) {
-                    NavLink {
-                        to = key
+                    for ((key, name) in pages) {
+                        NavLink {
+                            to = key
 
-                        css {
-                            textDecoration = TextDecoration.solid
-                            color = Color.currentcolor
-                        }
+                            css {
+                                textDecoration = TextDecoration.solid
+                                color = Color.currentcolor
+                            }
 
-                        ListItemButton {
-                            selected = lastPathname == key
+                            ListItemButton {
+                                selected = lastPathname == key
 
-                            ListItemText {
-                                primary = ReactNode(name)
+                                ListItemText {
+                                    primary = ReactNode(name)
+                                }
                             }
                         }
                     }

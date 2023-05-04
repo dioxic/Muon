@@ -74,7 +74,7 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                     id = "title"
                     label = ReactNode("Title")
                     defaultValue = editTrack.title
-                    onChange = { event -> editTrack = editTrack.copy(title = (event.target as HTMLInputElement).value) }
+                    onChange = { event -> editTrack = editTrack.copy(title = (event.target.asDynamic() as HTMLInputElement).value) }
 
                     +defaultTextProps
                 }
@@ -83,7 +83,7 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                     label = ReactNode("Artist")
                     defaultValue = editTrack.artist
                     onChange =
-                        { event -> editTrack = editTrack.copy(artist = (event.target as HTMLInputElement).value) }
+                        { event -> editTrack = editTrack.copy(artist = (event.target.asDynamic() as HTMLInputElement).value) }
 
                     +defaultTextProps
                 }
@@ -92,7 +92,7 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                     label = ReactNode("Lyricist")
                     defaultValue = editTrack.lyricist
                     onChange =
-                        { event -> editTrack = editTrack.copy(lyricist = (event.target as HTMLInputElement).value) }
+                        { event -> editTrack = editTrack.copy(lyricist = (event.target.asDynamic() as HTMLInputElement).value) }
 
                     +defaultTextProps
                 }
@@ -100,7 +100,7 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                     id = "album"
                     label = ReactNode("Album")
                     defaultValue = editTrack.album
-                    onChange = { event -> editTrack = editTrack.copy(album = (event.target as HTMLInputElement).value) }
+                    onChange = { event -> editTrack = editTrack.copy(album = (event.target.asDynamic() as HTMLInputElement).value) }
 
                     +defaultTextProps
                 }
@@ -109,7 +109,7 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                     label = ReactNode("Comment")
                     defaultValue = editTrack.comment
                     onChange =
-                        { event -> editTrack = editTrack.copy(comment = (event.target as HTMLInputElement).value) }
+                        { event -> editTrack = editTrack.copy(comment = (event.target.asDynamic() as HTMLInputElement).value) }
 
                     +defaultTextProps
                 }
@@ -118,7 +118,7 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                     label = ReactNode("Genre")
                     defaultValue = editTrack.genre
                     onChange =
-                        { event -> editTrack = editTrack.copy(genre = (event.target as HTMLInputElement).value) }
+                        { event -> editTrack = editTrack.copy(genre = (event.target.asDynamic() as HTMLInputElement).value) }
 
                     +defaultTextProps
                 }
@@ -129,7 +129,7 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                         defaultValue = editTrack.filename
                         disabled = settings?.standardiseFilenames
                         onChange =
-                            { event -> editTrack = editTrack.copy(filename = (event.target as HTMLInputElement).value) }
+                            { event -> editTrack = editTrack.copy(filename = (event.target.asDynamic() as HTMLInputElement).value) }
 
                         +defaultTextProps
                     }

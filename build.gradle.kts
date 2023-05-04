@@ -79,7 +79,6 @@ kotlin {
                 implementation(libs.clikt)
                 implementation(libs.jaudiotagger)
                 implementation(libs.sqlcipher)
-//                implementation("io.ktor:ktor-server-sessions-jvm:2.0.0-beta-1")
             }
         }
 
@@ -135,7 +134,8 @@ kotlin {
 // include JS artifacts in any JAR we generate
 tasks.getByName<Jar>("jvmJar") {
     val taskName = if ("true" == project.findProperty("isProduction")
-        || project.gradle.startParameter.taskNames.contains("installDist")) {
+        || project.gradle.startParameter.taskNames.contains("installDist")
+    ) {
         "jsBrowserProductionWebpack"
     } else {
         "jsBrowserDevelopmentWebpack"
@@ -149,7 +149,17 @@ tasks.getByName<Jar>("jvmJar") {
 }
 
 tasks.getByName<KotlinWebpack>("jsBrowserProductionWebpack") {
-    dependsOn(tasks.getByName("jsDevelopmentExecutableCompileSync"))
+    dependsOn(
+        tasks.getByName("jsProductionExecutableCompileSync"),
+        tasks.getByName("jsDevelopmentExecutableCompileSync")
+    )
+}
+
+tasks.getByName<KotlinWebpack>("jsBrowserDevelopmentWebpack") {
+    dependsOn(
+        tasks.getByName("jsProductionExecutableCompileSync"),
+        tasks.getByName("jsDevelopmentExecutableCompileSync")
+    )
 }
 
 distributions {
@@ -176,36 +186,31 @@ tasks.withType<ShadowJar> {
     val webpackTask = tasks.getByName<KotlinWebpack>("jsBrowserProductionWebpack")
     mergeServiceFiles()
 //    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    dependsOn(webpackTask) // make sure JS gets compiled first
+    dependsOn(webpackTask, tasks.getByName("jsBrowserDistribution")) // make sure JS gets compiled first
     from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) {
         into("static")
     }
     manifest {
-        attributes(mapOf(
-            "Main-Class" to "uk.dioxic.muon.ApplicationKt",
-            "Multi-Release" to "true"
-        ))
+        attributes(
+            mapOf(
+                "Main-Class" to "uk.dioxic.muon.ApplicationKt",
+                "Multi-Release" to "true"
+            )
+        )
     }
 }
 
 tasks.getByName("distZip") {
-    dependsOn(tasks.getByName("jsJar"))
-    dependsOn(tasks.getByName("allMetadataJar"))
+    dependsOn(tasks.getByName("distTar"))
 }
 
 tasks.getByName("distTar") {
-    dependsOn(tasks.getByName("jsJar"))
-    dependsOn(tasks.getByName("allMetadataJar"))
+    dependsOn(
+        tasks.getByName("jsJar"),
+        tasks.getByName("allMetadataJar"),
+        tasks.getByName("shadowJar"),
+    )
 }
-
-//tasks.getByName("jsBrowserDevelopmentWebpack") {
-//    dependsOn(tasks.getByName("jsProductionExecutableCompileSync"))
-//}
-//
-//tasks.getByName("jsBrowserProductionWebpack") {
-//    dependsOn(tasks.getByName("jsProductionExecutableCompileSync"))
-//    dependsOn(tasks.getByName("jsDevelopmentExecutableCompileSync"))
-//}
 
 //tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask> {
 //    resolutionStrategy {
