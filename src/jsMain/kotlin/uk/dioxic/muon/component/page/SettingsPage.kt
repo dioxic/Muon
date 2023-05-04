@@ -145,8 +145,8 @@ val SettingsPage = VFC {
                 sx {
                     width = 50.percent
                 }
-                id = "rekordboxFolder"
-                label = ReactNode("Rekordbox Folder")
+                id = "remoteFolder"
+                label = ReactNode("Remote Folder")
                 value = form.folderMappings.firstOrNull()?.first.orEmpty()
                 onChange = { event ->
                     setLocalFolderMapping(
