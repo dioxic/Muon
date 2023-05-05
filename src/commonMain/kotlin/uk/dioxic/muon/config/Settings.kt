@@ -10,7 +10,7 @@ data class Settings(
     val importDir: String = "",
     val rekordboxDatabase: String = "",
     val lastRekordboxRefresh: LocalDateTime,
-    val folderMappings: List<Pair<String,String>> = emptyList(),
+    val dirMappings: List<DirMapping> = emptyList(),
     val softDelete: Boolean = true,
     val deleteDir: String = "",
     val standardiseFilenames: Boolean = true,
@@ -22,3 +22,9 @@ data class Settings(
         )
     }
 }
+
+@Serializable
+data class DirMapping(
+    val rbDir: String,
+    val hostDir: String
+)

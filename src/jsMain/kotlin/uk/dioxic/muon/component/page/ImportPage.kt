@@ -35,7 +35,7 @@ import uk.dioxic.muon.model.Track
 import kotlin.time.Duration.Companion.seconds
 
 val ImportPage = VFC {
-    val settings = useContext(SettingsContext)
+    val (settings) = useContext(SettingsContext)!!
     val fetch = useImportFetch()
     val tracks = fetch.data ?: emptyArray()
     val reload = useImportReload()
@@ -151,7 +151,7 @@ val ImportPage = VFC {
                 enableSorting = false
             }
         ).apply {
-            if (settings?.standardiseFilenames == false) {
+            if (!settings.standardiseFilenames) {
                 add(jso {
                     id = "filename"
                     header = StringOrTemplateHeader("Filename")

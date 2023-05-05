@@ -4,7 +4,6 @@ import mui.material.*
 import react.FC
 import react.Props
 import uk.dioxic.muon.model.Track
-import uk.dioxic.muon.model.Tracks
 
 external interface ImportDialogProps : Props {
     var tracks: Array<out Track>
