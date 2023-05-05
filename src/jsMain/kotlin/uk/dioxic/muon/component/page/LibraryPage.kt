@@ -1,30 +1,34 @@
 package uk.dioxic.muon.component.page
 
 import js.core.jso
-import mui.icons.material.Circle
-import mui.icons.material.CircleOutlined
 import mui.icons.material.PauseCircle
 import mui.icons.material.PlayCircle
-import mui.material.*
+import mui.material.Box
+import mui.material.MuiRating
+import mui.material.Paper
+import mui.material.TableContainer
 import mui.material.styles.Theme
 import mui.material.styles.useTheme
 import mui.system.sx
-import react.*
+import react.VFC
+import react.useContext
+import react.useMemo
+import react.useState
 import tanstack.react.table.useReactTable
 import tanstack.table.core.ColumnDef
-import tanstack.table.core.ColumnDefTemplate
 import tanstack.table.core.StringOrTemplateHeader
 import tanstack.table.core.getCoreRowModel
 import uk.dioxic.muon.component.table.BasicTable
 import uk.dioxic.muon.component.table.SearchTableToolbar
 import uk.dioxic.muon.component.table.actions.RowAction
+import uk.dioxic.muon.component.table.columns.colorCellTemplate
+import uk.dioxic.muon.component.table.columns.ratingCellTemplate
 import uk.dioxic.muon.component.table.columns.rowActionTemplate
 import uk.dioxic.muon.context.IsPlayingContext
 import uk.dioxic.muon.context.PlayTrackContext
 import uk.dioxic.muon.context.TogglePlayStateContext
 import uk.dioxic.muon.hook.useTrackSearch
 import uk.dioxic.muon.model.Track
-import web.cssom.Color
 import kotlin.time.Duration.Companion.seconds
 
 private val minimumWidths = mapOf(
@@ -121,15 +125,7 @@ val LibraryPage = VFC {
             jso {
                 id = "color"
                 header = StringOrTemplateHeader("Color")
-                cell = ColumnDefTemplate { ctx ->
-                    ctx.row.original.color?.let { rbColor ->
-                        createElement(Circle, jso {
-                            sx {
-                                color = Color(rbColor.name.lowercase())
-                            }
-                        })
-                    } ?: CircleOutlined.create()
-                }
+                cell = colorCellTemplate()
             },
             jso {
                 id = "bpm"
@@ -139,12 +135,7 @@ val LibraryPage = VFC {
             jso {
                 id = "rating"
                 header = StringOrTemplateHeader("Rating")
-                cell = ColumnDefTemplate { ctx ->
-                    createElement(Rating, jso {
-                        value = ctx.row.original.rating ?: 0
-                        readOnly = true
-                    })
-                }
+                cell = ratingCellTemplate()
             },
             jso {
                 id = "tags"
