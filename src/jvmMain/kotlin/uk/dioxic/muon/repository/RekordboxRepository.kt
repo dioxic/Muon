@@ -3,6 +3,7 @@ package uk.dioxic.muon.repository
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDateTime
 import org.apache.logging.log4j.kotlin.logger
+import uk.dioxic.muon.common.getLocalPath
 import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.RbColor
 import uk.dioxic.muon.model.Track
@@ -16,7 +17,7 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.pathString
 
 
-class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable, TrackRepository {
+class RekordboxRepository(val settingsRepository: SettingsRepository) : Closeable, TrackRepository {
     private val logger = logger()
     private val cipherKey = "402fd482c38817c35ffa8ffb8c7d93143b749e7d315df7a81732a1ff43608497"
     private var conn: Connection? = null
@@ -31,7 +32,7 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable, T
 
     private fun connect(database: String?) {
         close()
-        conn = if (database != null) {
+        conn = if (!database.isNullOrBlank()) {
             logger.debug("Connecting to database $database")
             DriverManager.getConnection("jdbc:sqlite:$database?cipher=sqlcipher&legacy=4&key=$cipherKey")
         } else {
@@ -110,7 +111,9 @@ class RekordboxRepository(settingsRepository: SettingsRepository) : Closeable, T
     }
 
     private fun ResultSet.toTrack(): Track {
-        val fullPath = Path.of(getString("fullPath"))
+        val fullPath = Path.of(
+            settingsRepository.get().getLocalPath(getString("fullPath"))
+        )
         return Track(
             title = getString("title").orEmpty(),
             artist = getString("artist").orEmpty(),

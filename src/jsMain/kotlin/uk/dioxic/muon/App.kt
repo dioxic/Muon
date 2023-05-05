@@ -13,6 +13,7 @@ import tanstack.react.query.QueryClientProvider
 import uk.dioxic.muon.component.*
 import uk.dioxic.muon.context.AlertModule
 import uk.dioxic.muon.context.AudioPlayerModule
+import uk.dioxic.muon.context.SettingsModule
 import uk.dioxic.muon.context.ThemeModule
 import web.dom.document
 
@@ -45,26 +46,18 @@ private val hashRouter = createHashRouter(
     )
 )
 
-private val simpleRoute = createHashRouter(
-    routes = arrayOf(
-        jso {
-            path = "/"
-            Component = Placeholder
-            ErrorBoundary = Error
-        }
-    )
-)
-
 private val queryClient = QueryClient()
 
 private val App = FC<Props> {
     QueryClientProvider {
         client = queryClient
         AlertModule {
-            ThemeModule {
-                AudioPlayerModule {
-                    RouterProvider {
-                        router = hashRouter
+            SettingsModule {
+                ThemeModule {
+                    AudioPlayerModule {
+                        RouterProvider {
+                            router = hashRouter
+                        }
                     }
                 }
             }

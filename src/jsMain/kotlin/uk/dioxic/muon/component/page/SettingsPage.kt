@@ -3,6 +3,7 @@ package uk.dioxic.muon.component.page
 import js.core.jso
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import mui.icons.material.Error
 import mui.material.*
 import mui.system.responsive
 import mui.system.sx
@@ -11,9 +12,11 @@ import react.*
 import react.dom.events.FormEvent
 import react.dom.html.ReactHTML
 import react.dom.onChange
+import uk.dioxic.muon.common.InputProps
 import uk.dioxic.muon.common.percent
+import uk.dioxic.muon.config.DirMapping
 import uk.dioxic.muon.context.SettingsContext
-import uk.dioxic.muon.hook.useSettingsSave
+import uk.dioxic.muon.model.ValidationErrors
 import web.cssom.Display
 import web.cssom.FontFamily
 import web.cssom.FontSize
@@ -36,9 +39,26 @@ private val defaultTextProps: BaseTextFieldProps = jso {
 fun FormEvent<HTMLDivElement>.htmlInputValue() =
     (target.asDynamic() as HTMLInputElement).value
 
+fun validationAdornment(id: String, errors: ValidationErrors) =
+    jso<TextFieldProps> {
+        errors.find { it.id == id }?.also {
+            error = true
+            InputProps = jso {
+                endAdornment = InputAdornment.create {
+                    position = InputAdornmentPosition.end
+                    Tooltip {
+                        this.title = ReactNode(it.msg)
+                        Error {
+                            color = SvgIconColor.error
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 val SettingsPage = VFC {
-    val settings = useContext(SettingsContext)!!
-    val saveSettings = useSettingsSave()
+    val (settings, saveSettings, validationErrors) = useContext(SettingsContext)!!
     val (form, setForm) = useState(settings)
 
     useEffect(settings) {
@@ -53,13 +73,13 @@ val SettingsPage = VFC {
         }
     }
 
-    fun setLocalFolderMapping(rbFolder: String, localFolder: String) {
+    fun setDirMapping(rbDir: String, hostDir: String) {
         setForm(
             form.copy(
-                folderMappings = if (rbFolder.isEmpty() && localFolder.isEmpty())
+                dirMappings = if (rbDir.isEmpty() && hostDir.isEmpty())
                     emptyList()
                 else
-                    listOf(rbFolder to localFolder)
+                    listOf(DirMapping(rbDir, hostDir))
             )
         )
     }
@@ -76,6 +96,7 @@ val SettingsPage = VFC {
                 label = ReactNode("Theme")
                 labelId = "theme-select-label"
                 value = settings.theme.unsafeCast<Nothing?>()
+                error = validationErrors.any { it.id == "theme" }
                 onChange = { event, _ ->
                     saveSettings(form.copy(theme = event.target.value))
                 }
@@ -98,6 +119,7 @@ val SettingsPage = VFC {
             }
             onBlur = { _ -> handleSave() }
 
+            +validationAdornment("importDir", validationErrors)
             +defaultTextProps
         }
         TextField {
@@ -109,6 +131,7 @@ val SettingsPage = VFC {
             }
             onBlur = { _ -> handleSave() }
 
+            +validationAdornment("downloadDirs", validationErrors)
             +defaultTextProps
         }
         TextField {
@@ -120,6 +143,7 @@ val SettingsPage = VFC {
             }
             onBlur = { _ -> handleSave() }
 
+            +validationAdornment("rekordboxDatabase", validationErrors)
             +defaultTextProps
         }
         TextField {
@@ -131,6 +155,7 @@ val SettingsPage = VFC {
             }
             onBlur = { _ -> handleSave() }
 
+            +validationAdornment("deleteDir", validationErrors)
             +defaultTextProps
         }
         Divider { +"Folder Mappings" }
@@ -145,34 +170,36 @@ val SettingsPage = VFC {
                 sx {
                     width = 50.percent
                 }
-                id = "remoteFolder"
-                label = ReactNode("Remote Folder")
-                value = form.folderMappings.firstOrNull()?.first.orEmpty()
+                id = "rbDir"
+                label = ReactNode("Rekordbox Directory")
+                value = form.dirMappings.firstOrNull()?.rbDir.orEmpty()
                 onChange = { event ->
-                    setLocalFolderMapping(
-                        rbFolder = event.htmlInputValue(),
-                        localFolder = form.folderMappings.firstOrNull()?.second ?: ""
+                    setDirMapping(
+                        rbDir = event.htmlInputValue(),
+                        hostDir = form.dirMappings.firstOrNull()?.hostDir ?: ""
                     )
                 }
                 onBlur = { _ -> handleSave() }
 
+                +validationAdornment("rbDir", validationErrors)
                 +defaultTextProps
             }
             TextField {
                 sx {
                     width = 50.percent
                 }
-                id = "localFolder"
-                label = ReactNode("Local Folder")
-                value = form.folderMappings.firstOrNull()?.second.orEmpty()
+                id = "hostDir"
+                label = ReactNode("Host Directory")
+                value = form.dirMappings.firstOrNull()?.hostDir.orEmpty()
                 onChange = { event ->
-                    setLocalFolderMapping(
-                        rbFolder = form.folderMappings.firstOrNull()?.first ?: "",
-                        localFolder = event.htmlInputValue()
+                    setDirMapping(
+                        rbDir = form.dirMappings.firstOrNull()?.rbDir ?: "",
+                        hostDir = event.htmlInputValue()
                     )
                 }
                 onBlur = { _ -> handleSave() }
 
+                +validationAdornment("hostDir", validationErrors)
                 +defaultTextProps
             }
         }

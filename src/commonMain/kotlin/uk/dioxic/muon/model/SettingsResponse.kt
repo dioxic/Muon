@@ -8,6 +8,3 @@ data class SettingsResponse(
     val settings: Settings,
     val errors: ValidationErrors
 )
-
-typealias ValidationErrors = MutableList<ValidationError>
-typealias ValidationError = Pair<String, String>

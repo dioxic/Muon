@@ -11,7 +11,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.html.*
 import org.koin.ktor.ext.inject
 import uk.dioxic.muon.Routes
-import uk.dioxic.muon.common.getLocalPath
 import uk.dioxic.muon.common.validate
 import uk.dioxic.muon.config.Settings
 import uk.dioxic.muon.model.ImportResponse
@@ -26,7 +25,6 @@ import java.io.File
 fun Routing.tracks() {
     val searchService by inject<SearchService>()
     val trackService by inject<TrackService>()
-    val settingsRepository by inject<SettingsRepository>()
 
     route(Routes.track) {
         get("/{id}") {
@@ -38,7 +36,7 @@ fun Routing.tracks() {
         get("/{id}/audio") {
             val id = call.parameters["id"]
             trackService.getTrackById(id!!)?.path?.let { path ->
-                val audioFile = File(settingsRepository.get().getLocalPath(path))
+                val audioFile = File(path)
                 call.response.header(
                     name = HttpHeaders.ContentDisposition,
                     value = ContentDisposition.Attachment
@@ -100,14 +98,19 @@ fun Routing.settings() {
 
     route(Routes.settings) {
         get {
-            call.respond(settingsRepository.get())
+            val settings = settingsRepository.get()
+            call.respond(
+                SettingsResponse(settings, settings.validate())
+            )
         }
         put {
             val settings = call.receive<Settings>()
-            call.respond(SettingsResponse(
-                settings = settingsRepository.save(settings),
-                errors = settings.validate()
-            ))
+            call.respond(
+                SettingsResponse(
+                    settings = settingsRepository.save(settings),
+                    errors = settings.validate()
+                )
+            )
         }
     }
 }

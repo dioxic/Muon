@@ -11,7 +11,6 @@ import react.dom.html.ReactHTML.form
 import react.dom.onChange
 import react.useContext
 import uk.dioxic.muon.context.SettingsContext
-import uk.dioxic.muon.hook.useSettingsFetch
 import uk.dioxic.muon.hook.useTrackSave
 import uk.dioxic.muon.model.Track
 import web.cssom.px
@@ -35,8 +34,8 @@ private val defaultTextProps: BaseTextFieldProps = jso {
 }
 
 val TrackEditDialog = FC<TrackDialogProps> { props ->
+    val (settings) = useContext(SettingsContext)!!
     val saveTrack = useTrackSave()
-    val settings = useContext(SettingsContext)
     var editTrack = props.tracks.merge()
 
     fun handleSave() {
@@ -129,7 +128,7 @@ val TrackEditDialog = FC<TrackDialogProps> { props ->
                         id = "filename"
                         label = ReactNode("Filename")
                         defaultValue = editTrack.filename
-                        disabled = settings?.standardiseFilenames
+                        disabled = settings.standardiseFilenames
                         onChange =
                             { event -> editTrack = editTrack.copy(filename = (event.target.asDynamic() as HTMLInputElement).value) }
 

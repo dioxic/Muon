@@ -9,7 +9,7 @@ import kotlin.io.path.Path
 fun Settings.validate(): ValidationErrors =
     mutableListOf<ValidationError>().apply {
         if (!listOf("light", "dark").contains(theme)) {
-            add("theme" to "theme not set!")
+            add(ValidationError("theme", "theme not set!"))
         }
 
         validateIsFile("rekordboxDatabase", rekordboxDatabase)
@@ -19,47 +19,39 @@ fun Settings.validate(): ValidationErrors =
         downloadDirs.forEach {
             validateIsDir("downloadDirs", it)
         }
+        dirMappings.forEach {
+            validateNotEmpty("rbDir", it.rbDir)
+            validateIsDir("hostDir", it.hostDir)
+        }
     }
+
+context(ValidationErrors)
+fun addError(valid: Boolean, attrName: String, errMsg: String): Boolean {
+    if (!valid) {
+        add(ValidationError(attrName, errMsg))
+    }
+    return valid
+}
 
 context(ValidationErrors)
 fun validateNotEmpty(attrName: String, value: List<*>) =
-    value.isNotEmpty().also {
-        if (!it) {
-            add(attrName to "$attrName is empty!")
-        }
-    }
+    addError(value.isNotEmpty(), attrName, "$attrName is empty!")
 
 context(ValidationErrors)
 fun validateNotEmpty(attrName: String, value: String) =
-    value.isNotEmpty().also {
-        if (!it) {
-            add(attrName to "$attrName is empty!")
-        }
-    }
+    addError(value.isNotEmpty(), attrName, "$attrName is empty!")
 
 context(ValidationErrors)
 fun validateExists(attrName: String, value: String) =
     validateNotEmpty(attrName, value) &&
-            Files.exists(Path(value)).also {
-                if (!it) {
-                    add(attrName to "$attrName [$value] does not exist!")
-                }
-            }
+            addError(Files.exists(Path(value)), attrName, "$attrName [$value] does not exist!")
 
 context(ValidationErrors)
 fun validateIsDir(attrName: String, value: String) =
     validateExists(attrName, value) &&
-            Files.isDirectory(Path(value)).also {
-                if (!it) {
-                    add(attrName to "$attrName [$value] is not a directory!")
-                }
-            }
+            addError(Files.isDirectory(Path(value)), attrName, "$attrName [$value] is not a directory!")
 
 context(ValidationErrors)
 fun validateIsFile(attrName: String, value: String) =
     validateExists(attrName, value) &&
-            Files.isRegularFile(Path(value)).also {
-                if (!it) {
-                    add(attrName to "$attrName [$value] is not a file!")
-                }
-            }
+            addError(Files.isRegularFile(Path(value)), attrName, "$attrName [$value] is not a file!")
