@@ -5,6 +5,7 @@ import org.jaudiotagger.audio.SupportedFileFormat
 import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.Tag
 import uk.dioxic.muon.common.toHex
+import uk.dioxic.muon.common.toLocalDateTimeUtc
 import uk.dioxic.muon.model.FileType
 import uk.dioxic.muon.model.Track
 import java.io.File
@@ -107,6 +108,7 @@ fun File.toTrack(): Track {
         path = this.absolutePath,
         title = tag.title.nullIfBlank() ?: title,
         year = tag.year,
+        createDate = this.lastModified().toLocalDateTimeUtc(),
     )
 }
 

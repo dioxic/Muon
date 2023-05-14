@@ -30,7 +30,6 @@ class TrackService(
         logger.debug("importing track ${track.path}")
 
         val importDir = settingsRepository.get().importDir
-        requireNotNull(importDir) { "import directory is not set!" }
 
         val file = File(track.path)
         require(file.isFile) { "$track is not a file!" }

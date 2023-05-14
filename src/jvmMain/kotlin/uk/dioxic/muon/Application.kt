@@ -135,7 +135,7 @@ fun Application.plugins() {
                 is CancellationException -> {}
 
                 else -> {
-                    logger.error(cause)
+                    logger.error(cause.message.orEmpty(), cause)
                     call.respondText(
                         cause.message.orEmpty(),
                         status = HttpStatusCode.InternalServerError

@@ -1,5 +1,6 @@
 package uk.dioxic.muon.model
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -17,6 +18,7 @@ data class Track(
     val length: Int,
     val year: String,
     val fileSize: Int,
+    val createDate: LocalDateTime,
     val type: FileType,
     val bpm: Int? = null,
     val key: String? = null,
@@ -40,6 +42,7 @@ data class Track(
             length = 0,
             year = "",
             fileSize = 0,
+            createDate = LocalDateTime.parse("1985-01-01T00:00:00"),
             type = FileType.UNKNOWN,
         )
     }

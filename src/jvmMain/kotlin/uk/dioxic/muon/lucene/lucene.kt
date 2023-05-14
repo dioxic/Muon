@@ -1,10 +1,14 @@
 package uk.dioxic.muon.lucene
 
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.UtcOffset
+import kotlinx.datetime.toInstant
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.CharArraySet
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 import org.apache.lucene.document.*
 import org.apache.lucene.index.IndexOptions
+import uk.dioxic.muon.common.toEpochSecondsUtc
 import uk.dioxic.muon.model.Track
 
 
@@ -33,14 +37,15 @@ fun Track.toDocument(searchAnalyser: Analyzer): Document = Document().apply {
     add(StringField("genre", genre, Field.Store.NO))
     add(StringField("year", year, Field.Store.NO))
     add(StringField("fileType", type.toString(), Field.Store.NO))
+    add(SortedNumericDocValuesField("createDate", createDate.toEpochSecondsUtc()))
     add(IntPoint("bitrate", bitrate))
     add(IntPoint("length", length))
     add(StringField("path", path, Field.Store.NO))
     add(StringField("filename", filename, Field.Store.NO))
     add(IntPoint("filesize", fileSize))
     key?.let { add(StringField("key", key, Field.Store.NO)) }
-    rating?.let { add(IntPoint("rating", it))}
-    bpm?.let { add(IntPoint("bpm", it))}
+    rating?.let { add(IntPoint("rating", it)) }
+    bpm?.let { add(IntPoint("bpm", it)) }
     color?.apply { add(StringField("color", name, Field.Store.NO)) }
 }
 
