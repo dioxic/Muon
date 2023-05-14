@@ -45,7 +45,14 @@ class LuceneRepository(indexPath: Path) : Closeable {
         text: String?,
         maxResults: Int
     ) = searcherManager.use { searcher ->
-        searcher.search(query(text), maxResults)
+        when {
+            text.isNullOrBlank() -> {
+                val sort = Sort(SortedNumericSortField("createDate", SortField.Type.LONG, true))
+                searcher.search(MatchAllDocsQuery(), maxResults, sort, false)
+            }
+
+            else -> searcher.search(query(text), maxResults)
+        }
             .scoreDocs
             .map { searcher.storedFields().document(it.doc, setOf("id")).get("id") }
     }
@@ -101,10 +108,7 @@ class LuceneRepository(indexPath: Path) : Closeable {
             build()
         }
 
-    private fun query(text: String? = null): Query =
-        if (text.isNullOrBlank()) {
-            MatchAllDocsQuery()
-        } else {
+    private fun query(text: String): Query =
 //            with(PhraseQuery.Builder()) {
 //                setSlop(2)
 //                text.split(Regex("\\s+")).forEach {
@@ -113,20 +117,18 @@ class LuceneRepository(indexPath: Path) : Closeable {
 //                }
 //                build()
 //            }
-
-            with(BooleanQuery.Builder()) {
+        with(BooleanQuery.Builder()) {
 //                add(
 //                    QueryParser("search", searchAnalyser).parse(QueryParser.escape(text)),
 //                    Occur.SHOULD
 //                )
-                analyze(text, searchAnalyser).forEach {
-                    logger.info("token: $it")
-                    add(FuzzyQuery(Term("search", it), 2), Occur.MUST)
-                }
-
-
-                build()
+            analyze(text, searchAnalyser).forEach {
+                logger.info("token: $it")
+                add(FuzzyQuery(Term("search", it), 2), Occur.MUST)
             }
+
+
+            build()
         }
 
 }

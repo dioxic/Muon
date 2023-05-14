@@ -2,6 +2,9 @@ package uk.dioxic.muon.repository
 
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toKotlinInstant
+import kotlinx.datetime.toLocalDateTime
 import org.apache.logging.log4j.kotlin.logger
 import uk.dioxic.muon.common.getLocalPath
 import uk.dioxic.muon.model.FileType
@@ -17,7 +20,7 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.pathString
 
 
-class RekordboxRepository(val settingsRepository: SettingsRepository) : Closeable, TrackRepository {
+class RekordboxRepository(private val settingsRepository: SettingsRepository) : Closeable, TrackRepository {
     private val logger = logger()
     private val cipherKey = "402fd482c38817c35ffa8ffb8c7d93143b749e7d315df7a81732a1ff43608497"
     private var conn: Connection? = null
@@ -139,8 +142,13 @@ class RekordboxRepository(val settingsRepository: SettingsRepository) : Closeabl
             color = getString("color")?.let { RbColor.valueOf(it.uppercase()) },
             rating = getInt("rating"),
             tags = getString("tags")?.split(",") ?: emptyList(),
+            createDate = getLocalDateTime("createdOn")
         )
     }
+
+    context(ResultSet)
+    private fun getLocalDateTime(columnLabel: String) =
+        getTimestamp(columnLabel).toInstant().toKotlinInstant().toLocalDateTime(TimeZone.UTC)
 
     private fun Int.toFileType() = when (this) {
         5 -> FileType.FLAC
